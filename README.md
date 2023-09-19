@@ -1,5 +1,16 @@
 # Texel tuner
 
+Thanks to [@toanth](https://github.com/toanth/) for helping me understand this tuner's behavior, for the minor fixes required to get it up and running and for help me debugging my own code.
+
+Regarding the tuner's behavior, in their words:
+
+> From my understanding of Gedas' tuner, it assumes that your evaluation is a linear sum of features: Each feature (such as having a knight) can occur several times (or not at all) in a given position, and the tuner updates weights (such as the value of a knight) based on how often a position with this feature led to a win.
+
+> The eval gets executed when you load the fens.
+After that, the tuner only uses the stored weights and doesn't execute the eval again.
+
+----
+
 This project is based on the linear evaluation ideas described in https://github.com/AndyGrant/Ethereal/blob/master/Tuning.pdf. The code is loosely based on an implementation in Weiss, which can be found at https://github.com/TerjeKir/weiss.
 
 The project internally uses https://github.com/Disservin/chess-library

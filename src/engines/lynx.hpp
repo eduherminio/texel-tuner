@@ -538,7 +538,6 @@ public:
         }
         std::cout << "};\n{ ";
 
-
         std::cout << "// Piece values\n{ ";
         // Piece values mg
         std::cout << "// Piece values mg" << std::endl;
@@ -816,7 +815,7 @@ EvalResult Lynx::get_external_eval_result(const Chess::Board &board)
 
             eval -= AdditionalPieceEvaluation(rotatedPieceSquareIndex, pieceIndex, board, Chess::Color::BLACK, coefficients);
 
-            coefficients[pieceIndex * 64 + pieceSquareIndex] -= 1;
+            coefficients[(pieceIndex - 6) * 64 + pieceSquareIndex] -= 1;
         }
     }
 
