@@ -1119,9 +1119,17 @@ inline void Board::loadFen(std::string fen) {
     const std::string &move_right = params[1];
     const std::string &castling = params[2];
     const std::string &en_passant = params[3];
+    // half_moves_ = std::stoi(params.size() > 4 ? params[4] : "0");
+    // full_moves_ = std::stoi(params.size() > 4 ? params[5] : "1") * 2;
 
-    half_moves_ = std::stoi(params.size() > 4 ? params[4] : "0");
-    full_moves_ = std::stoi(params.size() > 4 ? params[5] : "1") * 2;
+// Changes by @toanth
+    if (params.size() > 4 && !params[4].empty() && std::isdigit(params[4][0])) {
+        half_moves_ = std::stoi(params[4]);
+        full_moves_ = std::stoi(params[5]) * 2;
+    } else { // missing (half)move counter or epd. Don't worry about parsing it.
+        half_moves_ = 0;
+        full_moves_ = 0;
+    }
 
     side_to_move_ = (move_right == "w") ? Color::WHITE : Color::BLACK;
 

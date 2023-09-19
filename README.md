@@ -7,7 +7,7 @@ The project internally uses https://github.com/Disservin/chess-library
 ## Plugging in your evaluation
 To add your own evaluation it is required to transform your evaluation into a linear system.
 
-For each position in the training dataset, the evaluation should count the occurances of each evaluation term, and return a `coefficients_t` object where each entry is the count oftimes an evaluation term has been userd per-side.
+For each position in the training dataset, the evaluation should count the occurances of each evaluation term, and return a `coefficients_t` object where each entry is the count of times an evaluation term has been used per-side.
 
 For a new engine it's required to implement an evaluation class with 4 functions and 2 constexpr variables. More on them at [Evaluation class](#evaluation-class)
 
@@ -41,7 +41,7 @@ This parameter indicates whether or not the engine supports translating from a b
 ### get_initial_parameters
 This function retrieves the initial parameters of the evaluation in a vector form. Each parameter is an entry in `parameters_t`.
 
-If the ealuation used is tapered, each entry is an `std::array<double, 2>`, where the first value is the midgame value and the second value is the endgame value.
+If the evaluation used is tapered, each entry is an `std::array<double, 2>`, where the first value is the midgame value and the second value is the endgame value.
 
 If the evaluationis not tapered, the entry is just the plain value of the parameter used in the evaluation.
 
