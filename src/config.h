@@ -5,14 +5,17 @@
 #include "engines/fourku.h"
 #include "engines/toy.h"
 #include "engines/toy_tapered.h"
+#include "engines/lynx.hpp"
 
 #define TAPERED 1
 //using TuneEval = Toy::ToyEval;
 //using TuneEval = Toy::ToyEvalTapered;
-using TuneEval = Fourku::FourkuEval;
+//using TuneEval = Fourku::FourkuEval;
+using TuneEval = Lynx;
 constexpr int32_t thread_count = 12;
 constexpr double preferred_k = 0;
-constexpr int32_t max_epoch = 50000;
+constexpr int32_t max_epoch = 2000;
+// constexpr int32_t max_epoch = 11001;
 constexpr bool retune_from_zero = false;
 constexpr bool enable_qsearch = false;
 constexpr bool print_data_entries = false;
