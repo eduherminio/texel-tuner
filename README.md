@@ -11,6 +11,13 @@ After that, the tuner only uses the stored weights and doesn't execute the eval 
 
 > One thing that kept tripping me up is that in an actual engine, you want to compute the score relative to the side to move, but in the tuner, you compute it relative to white.
 
+Links to some training datasets:
+
+- [Zurichess v7](https://bitbucket.org/zurichess/tuner/downloads/quiet-labeled.v7.epd.gz)
+
+- ['lichess-big3.resolved'](https://discord.com/channels/1132289356011405342/1137454121876721755/1153433610527981598c)
+
+
 ----
 
 This project is based on the linear evaluation ideas described in https://github.com/AndyGrant/Ethereal/blob/master/Tuning.pdf. The code is loosely based on an implementation in Weiss, which can be found at https://github.com/TerjeKir/weiss.
