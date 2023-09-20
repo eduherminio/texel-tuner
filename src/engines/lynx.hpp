@@ -6,6 +6,7 @@
 #include <array>
 #include <bit>
 #include <string>
+#include <cmath>
 
 using u64 = uint64_t;
 
@@ -125,6 +126,11 @@ public:
 
     static EvalResult get_external_eval_result(const Chess::Board &board);
 
+    static int round(double value)
+    {
+        std::cout << std::round(value);
+    }
+
     static void print_parameters(const parameters_t &parameters)
     {
         std::string names[] = {"pawn", "knight", "bishop", "rook", "queen", "king"};
@@ -137,7 +143,7 @@ public:
                 std::cout << "\n { // " << names[piece] << " " << (phase == 0 ? "mg" : "eg") << "\n";
                 for (int square = 0; square < 64; ++square)
                 {
-                    std::cout << parameters[piece * 64 + square][phase] << ", ";
+                    std::cout << round(parameters[piece * 64 + square][phase]) << ", ";
                     if (square % 8 == 7)
                         std::cout << "\n";
                 }
@@ -151,60 +157,60 @@ public:
         std::cout << "// Piece values mg" << std::endl;
         for (int piece = 0; piece < 5; ++piece)
         {
-            std::cout << parameters[64 * 6 + piece][0] << ", ";
+            std::cout << round(parameters[64 * 6 + piece][0]) << ", ";
         }
-        std::cout << "0.0, \n"; // King
+        std::cout << "00, \n"; // King
 
         // Piece values eg
         std::cout << "// Piece values eg" << std::endl;
         for (int piece = 0; piece < 5; ++piece)
         {
-            std::cout << parameters[64 * 6 + piece][1] << ", ";
+            std::cout << round(parameters[64 * 6 + piece][1]) << ", ";
         }
-        std::cout << "0.0 };\n"; // King
+        std::cout << "00 };\n"; // King
 
         auto base = 64 * 6 + 4;
 
         std::cout << "// DoubledPawnPenalty" << std::endl;
-        std::cout << "[" << parameters[DoubledPawnPenaltyIndex][0] << ", " << parameters[DoubledPawnPenaltyIndex][1] << "], " << std::endl;
+        std::cout << "[" << round(parameters[DoubledPawnPenaltyIndex][0]) << ", " << round(parameters[DoubledPawnPenaltyIndex][1]) << "], " << std::endl;
 
         std::cout << "// IsolatedPawnPenalty" << std::endl;
-        std::cout << "[" << parameters[IsolatedPawnPenaltyIndex][0] << ", " << parameters[IsolatedPawnPenaltyIndex][1] << "], " << std::endl;
+        std::cout << "[" << round(parameters[IsolatedPawnPenaltyIndex][0]) << ", " << round(parameters[IsolatedPawnPenaltyIndex][1]) << "], " << std::endl;
 
         std::cout << "// OpenFileRookBonus" << std::endl;
-        std::cout << "[" << parameters[OpenFileRookBonusIndex][0] << ", " << parameters[OpenFileRookBonusIndex][1] << "], " << std::endl;
+        std::cout << "[" << round(parameters[OpenFileRookBonusIndex][0]) << ", " << round(parameters[OpenFileRookBonusIndex][1]) << "], " << std::endl;
 
         std::cout << "// SemiOpenFileRookBonus" << std::endl;
-        std::cout << "[" << parameters[SemiOpenFileRookBonusIndex][0] << ", " << parameters[SemiOpenFileRookBonusIndex][1] << "], " << std::endl;
+        std::cout << "[" << round(parameters[SemiOpenFileRookBonusIndex][0]) << ", " << round(parameters[SemiOpenFileRookBonusIndex][1]) << "], " << std::endl;
 
         std::cout << "// BishopMobilityBonus" << std::endl;
-        std::cout << "[" << parameters[BishopMobilityBonusIndex][0] << ", " << parameters[BishopMobilityBonusIndex][1] << "], " << std::endl;
+        std::cout << "[" << round(parameters[BishopMobilityBonusIndex][0]) << ", " << round(parameters[BishopMobilityBonusIndex][1]) << "], " << std::endl;
 
         std::cout << "// QueenMobilityBonus" << std::endl;
-        std::cout << "[" << parameters[QueenMobilityBonusIndex][0] << ", " << parameters[QueenMobilityBonusIndex][1] << "], " << std::endl;
+        std::cout << "[" << round(parameters[QueenMobilityBonusIndex][0]) << ", " << round(parameters[QueenMobilityBonusIndex][1]) << "], " << std::endl;
 
         std::cout << "// SemiOpenFileKingPenalty" << std::endl;
-        std::cout << "[" << parameters[SemiOpenFileKingPenaltyIndex][0] << ", " << parameters[SemiOpenFileKingPenaltyIndex][1] << "], " << std::endl;
+        std::cout << "[" << round(parameters[SemiOpenFileKingPenaltyIndex][0]) << ", " << round(parameters[SemiOpenFileKingPenaltyIndex][1]) << "], " << std::endl;
 
         std::cout << "// OpenFileKingPenalty" << std::endl;
-        std::cout << "[" << parameters[OpenFileKingPenaltyIndex][0] << ", " << parameters[OpenFileKingPenaltyIndex][1] << "], " << std::endl;
+        std::cout << "[" << round(parameters[OpenFileKingPenaltyIndex][0]) << ", " << round(parameters[OpenFileKingPenaltyIndex][1]) << "], " << std::endl;
 
         // std::cout << "// KingShieldBonus" << std::endl;
-        // std::cout << "[" << parameters[KingShieldBonusIndex][0] << ", " << parameters[KingShieldBonusIndex][1] << "], " << std::endl;
+        // std::cout << "[" << round(parameters[KingShieldBonusIndex][0]) << ", " << round(parameters[KingShieldBonusIndex][1] << "]), " << std::endl;
 
         std::cout << "// BishopPairMaxBonus" << std::endl;
-        std::cout << "[" << parameters[BishopPairMaxBonusIndex][0] << ", " << parameters[BishopPairMaxBonusIndex][1] << "], " << std::endl;
+        std::cout << "[" << round(parameters[BishopPairMaxBonusIndex][0]) << ", " << round(parameters[BishopPairMaxBonusIndex][1]) << "], " << std::endl;
 
         std::cout << "// Passed pawns" << std::endl;
         std::cout << "{ ";
         for (int rank = 0; rank < 8; ++rank)
         {
-            std::cout << parameters[PassedPawnBonusStartIndex + rank][0] << ", ";
+            std::cout << round(parameters[PassedPawnBonusStartIndex + rank][0]) << ", ";
         }
         std::cout << "};\n{ ";
         for (int rank = 0; rank < 8; ++rank)
         {
-            std::cout << parameters[PassedPawnBonusStartIndex + rank][1] << ", ";
+            std::cout << round(parameters[PassedPawnBonusStartIndex + rank][1]) << ", ";
         }
         std::cout << "}";
 
