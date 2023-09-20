@@ -459,11 +459,12 @@ EvalResult Lynx::get_external_eval_result(const Chess::Board &board)
     endGameScore += EndGamePositionalTables[11][blackKing];
     eval -= KingAdditionalEvaluation(blackKing, Chess::Color::BLACK, board, pieceCount, coefficients);
 
-    return EvalResult{
-        std::move(coefficients),
-        (double)(board.sideToMove() == Chess::Color::WHITE
-                     ? eval
-                     : -eval)};
+    // Debugging eval
+    // return EvalResult{
+    //     std::move(coefficients),
+    //     (double)(board.sideToMove() == Chess::Color::WHITE
+    //                  ? eval
+    //                  : -eval)};
 
     // Check if drawn position due to lack of material
     if (endGameScore >= 0)
