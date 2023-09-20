@@ -428,7 +428,7 @@ EvalResult Lynx::get_external_eval_result(const Chess::Board &board)
 
     for (int pieceIndex = 6; pieceIndex < 11; ++pieceIndex)
     {
-        auto tunerPieceIndex = (pieceIndex - 6); // [0, 6]
+        auto tunerPieceIndex = (pieceIndex - 6); // [0, 5]
         // Bitboard copy that we 'empty'
         auto bitboard = GetPiece(board, (Chess::PieceType)tunerPieceIndex, Chess::Color::BLACK);
 
@@ -451,15 +451,17 @@ EvalResult Lynx::get_external_eval_result(const Chess::Board &board)
         }
     }
 
-    auto whiteKing = Chess::lsb(GetPiece(board, Chess::PieceType::KING, Chess::Color::WHITE)) ^ 56;
+    auto whiteKing = Chess::lsb(GetPiece(board, Chess::PieceType::KING, Chess::Color::WHITE));
     middleGameScore += MiddleGamePositionalTables[5][whiteKing];
     endGameScore += EndGamePositionalTables[5][whiteKing];
     eval += KingAdditionalEvaluation(whiteKing, Chess::Color::WHITE, board, pieceCount, coefficients);
+    IncrementCoefficients(coefficients, 64 * 5 + whiteKing, Chess::Color::WHITE);
 
-    auto blackKing = Chess::lsb(GetPiece(board, Chess::PieceType::KING, Chess::Color::BLACK)) ^ 56;
+    auto blackKing = Chess::lsb(GetPiece(board, Chess::PieceType::KING, Chess::Color::BLACK));
     middleGameScore += MiddleGamePositionalTables[11][blackKing];
     endGameScore += EndGamePositionalTables[11][blackKing];
     eval -= KingAdditionalEvaluation(blackKing, Chess::Color::BLACK, board, pieceCount, coefficients);
+    IncrementCoefficients(coefficients, 64 * 5 + blackKing, Chess::Color::BLACK);
 
     // Debugging eval
     // return EvalResult{
