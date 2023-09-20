@@ -14,7 +14,7 @@
 using TuneEval = Lynx;
 constexpr int32_t thread_count = 12;
 constexpr double preferred_k = 0;
-constexpr int32_t max_epoch = 2000;
+constexpr int32_t max_epoch = 5001;
 // constexpr int32_t max_epoch = 11001;
 constexpr bool retune_from_zero = false;
 constexpr bool enable_qsearch = false;
