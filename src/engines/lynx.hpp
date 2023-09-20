@@ -421,7 +421,8 @@ EvalResult Lynx::get_external_eval_result(const Chess::Board &board)
 
             eval += AdditionalPieceEvaluation(pieceSquareIndex, pieceIndex, board, Chess::Color::WHITE, coefficients);
 
-            coefficients[pieceIndex * 64 + pieceSquareIndex] += 1;
+            IncrementCoefficients(coefficients, 64 * 6 + pieceIndex, Chess::Color::WHITE);
+            IncrementCoefficients(coefficients, 64 * pieceIndex + pieceSquareIndex, Chess::Color::WHITE);
         }
     }
 
@@ -439,13 +440,14 @@ EvalResult Lynx::get_external_eval_result(const Chess::Board &board)
 
             middleGameScore += MiddleGamePositionalTables[pieceIndex][pieceSquareIndex] - pestoPieceValue[tunerPieceIndex];
             endGameScore += EndGamePositionalTables[pieceIndex][pieceSquareIndex] - pestoPieceValue[tunerPieceIndex + 5];
-            gamePhase += phaseValues[pieceIndex];
+            gamePhase += phaseValues[tunerPieceIndex];
 
             ++pieceCount[pieceIndex];
 
             eval -= AdditionalPieceEvaluation(pieceSquareIndex, pieceIndex, board, Chess::Color::BLACK, coefficients);
 
-            coefficients[(pieceIndex - 6) * 64 + pieceSquareIndex] -= 1;
+            IncrementCoefficients(coefficients, 64 * 6 + tunerPieceIndex, Chess::Color::BLACK);
+            IncrementCoefficients(coefficients, 64 * tunerPieceIndex + pieceSquareIndex, Chess::Color::BLACK);
         }
     }
 
@@ -504,17 +506,18 @@ EvalResult Lynx::get_external_eval_result(const Chess::Board &board)
     if (pieceCount[2] >= 2)
     {
         eval += BishopPairMaxBonus * endGamePhase / 24;
-        ++coefficients[BishopPairMaxBonusIndex];
+        IncrementCoefficients(coefficients, BishopPairMaxBonusIndex, Chess::Color::WHITE);
     }
     if (pieceCount[8] >= 2)
     {
         eval -= BishopPairMaxBonus * endGamePhase / 24;
-        --coefficients[BishopPairMaxBonusIndex];
+        IncrementCoefficients(coefficients, BishopPairMaxBonusIndex, Chess::Color::BLACK);
     }
 
     return EvalResult{
         std::move(coefficients),
-        (double)(board.sideToMove() == Chess::Color::WHITE
-                     ? eval
-                     : -eval)};
+        (double)eval};
+    // (double)(board.sideToMove() == Chess::Color::WHITE
+    //              ? eval
+    //              : -eval)};
 }
