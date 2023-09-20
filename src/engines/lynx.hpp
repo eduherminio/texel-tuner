@@ -317,6 +317,7 @@ int RookAdditonalEvaluation(int squareIndex, int pieceIndex, const Chess::Board 
 
 int BishopAdditionalEvaluation(int squareIndex, const Chess::Board &board, const Chess::Color &color, coefficients_t &coefficients)
 {
+    return 0;
     auto mobilityCount = Chess::popcount(Chess::Attacks::BISHOP(static_cast<Chess::Square>(squareIndex), __builtin_bswap64(board.occ())));
     IncrementCoefficients(coefficients, BishopMobilityBonusIndex, color, mobilityCount);
 
@@ -325,6 +326,7 @@ int BishopAdditionalEvaluation(int squareIndex, const Chess::Board &board, const
 
 int QueenAdditionalEvaluation(int squareIndex, const Chess::Board &board, const Chess::Color &color, coefficients_t &coefficients)
 {
+    return 0;
     auto mobilityCount = Chess::popcount(Chess::Attacks::QUEEN(static_cast<Chess::Square>(squareIndex), __builtin_bswap64(board.occ())));
     IncrementCoefficients(coefficients, QueenMobilityBonusIndex, color, mobilityCount);
 
