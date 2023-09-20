@@ -1,6 +1,6 @@
 # Texel tuner
 
-Thanks to [@toanth](https://github.com/toanth/) for helping me understand this tuner's behavior, for the minor fixes required to get it up and running and for help me debugging my own code.
+Thanks to [@toanth](https://github.com/toanth/) for helping me understand this tuner's behavior, for the minor fixes required to get it up and running and for helping me debugging my own code.
 
 Regarding the tuner's behavior, in their words:
 
@@ -8,6 +8,15 @@ Regarding the tuner's behavior, in their words:
 
 > The eval gets executed when you load the fens.
 After that, the tuner only uses the stored weights and doesn't execute the eval again.
+
+> One thing that kept tripping me up is that in an actual engine, you want to compute the score relative to the side to move, but in the tuner, you compute it relative to white.
+
+Links to some training datasets:
+
+- [Zurichess v7](https://bitbucket.org/zurichess/tuner/downloads/quiet-labeled.v7.epd.gz)
+
+- ['lichess-big3.resolved'](https://discord.com/channels/1132289356011405342/1137454121876721755/1153433610527981598c)
+
 
 ----
 
