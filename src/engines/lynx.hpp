@@ -128,7 +128,7 @@ public:
 
     static int round(double value)
     {
-        std::cout << std::round(value);
+        return std::round(value);
     }
 
     static void print_parameters(const parameters_t &parameters)
