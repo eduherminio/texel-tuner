@@ -41,11 +41,13 @@ const int OpenFileKingPenalty_MG = 15;
 const int OpenFileKingPenalty_EG = 15;
 const int OpenFileKingPenaltyIndex = 64 * 6 + 4 + 8;
 
-// const int KingShieldBonus = 5;
+const int KingShieldBonus_MG = 5;
+const int KingShieldBonus_EG = 5;
+const int KingShieldBonusIndex = 64 * 6 + 4 + 9;
 
-const int BishopPairBonus_MG = 100;
+const int BishopPairBonus_MG = 0;
 const int BishopPairBonus_EG = 100;
-const int BishopPairMaxBonusIndex = 64 * 6 + 4 + 9;
+const int BishopPairMaxBonusIndex = 64 * 6 + 4 + 10;
 
 constexpr static std::array<int, 8> PassedPawnBonus_MG = {
     0, 10, 30, 50, 75, 100, 150, 200};
@@ -53,18 +55,7 @@ constexpr static std::array<int, 8> PassedPawnBonus_MG = {
 constexpr static std::array<int, 8> PassedPawnBonus_EG = {
     0, 10, 30, 50, 75, 100, 150, 200};
 
-const int PassedPawnBonusStartIndex = 64 * 6 + 4 + 10;
-
-// std::array<int, 12> pestoPieceValue = {
-//     82, 337, 365, 477, 1025, // 0,
-//     94, 281, 297, 512,  936, // 0
-// };
-std::array<int, 12> pestoPieceValue = {
-    100, 300, 300, 500, 900, // 0,
-    100, 300, 300, 500, 900, // 0,
-};
-
-std::array<int, 6> phaseValues = {0, 1, 1, 2, 4, 0};
+const int PassedPawnBonusStartIndex = 64 * 6 + 4 + 11;
 
 static constexpr int numParameters = 64 * 6 +
                                      5 + // Piece values
@@ -77,7 +68,7 @@ static constexpr int numParameters = 64 * 6 +
                                      1 + // SemiOpenFileKingPenalty
                                      1 + // OpenFileKingPenalty
                                      1 + // BishopPairMaxBonus
-                                         //  1 +    // KingShieldBonus
+                                     1 + // KingShieldBonus
                                      8   // PassedPawnBonus
     ;
 class Lynx
@@ -115,6 +106,7 @@ public:
         result.push_back({(double)QueenMobilityBonus_MG, (double)QueenMobilityBonus_EG});
         result.push_back({(double)SemiOpenFileKingPenalty_MG, (double)SemiOpenFileKingPenalty_EG});
         result.push_back({(double)OpenFileKingPenalty_MG, (double)OpenFileKingPenalty_EG});
+        result.push_back({(double)KingShieldBonus_MG, (double)KingShieldBonus_EG});
         result.push_back({(double)BishopPairBonus_MG, (double)BishopPairBonus_EG});
 
         for (int rank = 0; rank < 8; ++rank)
@@ -187,8 +179,6 @@ public:
         }
         std::cout << "0\n];" << std::endl; // King
 
-        auto base = 64 * 6 + 4;
-
         std::cout << "\"DoubledPawnPenalty\": {" << std::endl;
         std::cout << "\t\"MG\": " << round(parameters[DoubledPawnPenaltyIndex][0]) << ",\n";
         std::cout << "\t\"EG\": " << round(parameters[DoubledPawnPenaltyIndex][1]) << "\n}," << std::endl;
@@ -221,12 +211,13 @@ public:
         std::cout << "\t\"MG\": " << round(parameters[OpenFileKingPenaltyIndex][0]) << ",\n";
         std::cout << "\t\"EG\": " << round(parameters[OpenFileKingPenaltyIndex][1]) << "\n}," << std::endl;
 
+        std::cout << "\"KingShieldBonus\": {" << std::endl;
+        std::cout << "\t\"MG\": " << round(parameters[KingShieldBonusIndex][0]) << ",\n";
+        std::cout << "\t\"EG\": " << round(parameters[KingShieldBonusIndex][1]) << "\n}," << std::endl;
+
         std::cout << "\"BishopPairBonus\": {" << std::endl;
         std::cout << "\t\"MG\": " << round(parameters[BishopPairMaxBonusIndex][0]) << ",\n";
         std::cout << "\t\"EG\": " << round(parameters[BishopPairMaxBonusIndex][1]) << "\n}," << std::endl;
-
-        // std::cout << "// KingShieldBonus" << std::endl;
-        // std::cout << "[" << round(parameters[KingShieldBonusIndex][0]) << ", " << round(parameters[KingShieldBonusIndex][1] << "]), " << std::endl;
 
         std::cout << "\"PassedPawnBonus\": {" << std::endl;
         for (int rank = 0; rank < 8; ++rank)
@@ -354,6 +345,7 @@ std::pair<int, int> BishopAdditionalEvaluation(int squareIndex, int pieceIndex, 
 
     auto mobilityCount = Chess::popcount(Chess::Attacks::BISHOP(static_cast<Chess::Square>(squareIndex), __builtin_bswap64(board.occ())));
     IncrementCoefficients(coefficients, BishopMobilityBonusIndex, color);
+
     middleGameBonus += BishopMobilityBonus_MG * mobilityCount;
     endGameBonus += BishopMobilityBonus_EG * mobilityCount;
 
@@ -404,10 +396,10 @@ std::pair<int, int> KingAdditionalEvaluation(int squareIndex, Chess::Color kingS
         }
     }
 
-    return std::make_pair(middleGameBonus, endGameBonus);
+    auto ownPiecesAroundCount = Chess::popcount(Chess::Attacks::KING(static_cast<Chess::Square>(squareIndex)) & __builtin_bswap64(board.us(kingSide)));
 
-    // return bonus + KingShieldBonus *
-    //                Chess::popcount(Chess::Attacks::KING(static_cast<Chess::Square>(squareIndex) & __builtin_bswap64(OccupancyBitBoards[(int)kingSide])));
+    return std::make_pair(middleGameBonus + KingShieldBonus_MG * ownPiecesAroundCount,
+            endGameBonus + KingShieldBonus_EG * ownPiecesAroundCount);
 }
 
 std::pair<int, int> AdditionalPieceEvaluation(int pieceSquareIndex, int pieceIndex, const int pieceCount[], const Chess::Board &board, const Chess::Color &color, coefficients_t &coefficients)
@@ -452,9 +444,6 @@ EvalResult Lynx::get_external_eval_result(const Chess::Board &board)
         {
             auto pieceSquareIndex = Chess::lsb(bitboard);
             Chess::poplsb(bitboard);
-            // auto rotatedPieceSquareIndex = pieceSquareIndex ^ 56;
-            // std::cout << "\t"
-            //   << "sq: " << rotatedPieceSquareIndex << "value: " << MiddleGamePositionalTables[pieceIndex][rotatedPieceSquareIndex] << std::endl;
 
             middleGameScore += MiddleGamePositionalTables[pieceIndex][pieceSquareIndex] + pestoPieceValue[pieceIndex];
             endGameScore += EndGamePositionalTables[pieceIndex][pieceSquareIndex] + pestoPieceValue[pieceIndex + 5];
@@ -481,7 +470,6 @@ EvalResult Lynx::get_external_eval_result(const Chess::Board &board)
         {
             auto pieceSquareIndex = Chess::lsb(bitboard);
             Chess::poplsb(bitboard);
-            // auto rotatedPieceSquareIndex = pieceSquareIndex ^ 56;
 
             middleGameScore += MiddleGamePositionalTables[pieceIndex][pieceSquareIndex] - pestoPieceValue[tunerPieceIndex];
             endGameScore += EndGamePositionalTables[pieceIndex][pieceSquareIndex] - pestoPieceValue[tunerPieceIndex + 5];

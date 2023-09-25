@@ -398,3 +398,15 @@ constexpr static std::array<int, 64> Rank =
         2UL, 2UL, 2UL, 2UL, 2UL, 2UL, 2UL, 2UL,
         1UL, 1UL, 1UL, 1UL, 1UL, 1UL, 1UL, 1UL,
         0UL, 0UL, 0UL, 0UL, 0UL, 0UL, 0UL, 0UL};
+
+constexpr std::array<int, 12> pestoPieceValue = {
+    82, 337, 365, 477, 1025, // 0,
+    94, 281, 297, 512,  936, // 0
+};
+
+// constexpr std::array<int, 12> simpleEvalPieceValue = {
+//     100, 300, 300, 500, 900, // 0,
+//     100, 300, 300, 500, 900, // 0,
+// };
+
+std::array<int, 6> phaseValues = {0, 1, 1, 2, 4, 0};

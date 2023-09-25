@@ -500,6 +500,11 @@ static void load_fen(const DataSource& source, const parameters_t& parameters, c
 
     const auto eval_result = TuneEval::get_fen_eval_result(fen);
 
+    if constexpr (print_eval)
+    {
+        std::cout << fen << ": " << eval_result.score << std::endl;
+    }
+
     Entry entry;
     entry.white_to_move = get_fen_color_to_move(fen);
 #if TAPERED
@@ -707,8 +712,11 @@ void Tuner::run(const std::vector<DataSource>& sources)
     auto parameters = TuneEval::get_initial_parameters();
     cout << "Got " << parameters.size() << " parameters" << endl;
 
+if constexpr (!print_eval)
+{
     cout << "Initial parameters:" << endl;
     TuneEval::print_parameters(parameters);
+}
 
     vector<Entry> entries;
 
@@ -728,7 +736,10 @@ void Tuner::run(const std::vector<DataSource>& sources)
     cout << "Data loading complete" << endl << endl;
 
     print_statistics(parameters, entries);
-
+    if constexpr (print_eval)
+    {
+        return;
+    }
     if constexpr (retune_from_zero)
     {
         for (auto& parameter : parameters)
@@ -738,7 +749,7 @@ void Tuner::run(const std::vector<DataSource>& sources)
             parameter[static_cast<int>(PhaseStages::Endgame)] = static_cast<tune_t>(0);
 #else
             parameter = static_cast<tune_t>(0);
-#endif            
+#endif
         }
     }
 
