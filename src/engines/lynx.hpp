@@ -344,7 +344,7 @@ std::pair<int, int> BishopAdditionalEvaluation(int squareIndex, int pieceIndex, 
     int middleGameBonus = 0, endGameBonus = 0;
 
     auto mobilityCount = Chess::popcount(Chess::Attacks::BISHOP(static_cast<Chess::Square>(squareIndex), __builtin_bswap64(board.occ())));
-    IncrementCoefficients(coefficients, BishopMobilityBonusIndex, color, mobilityCount);
+    // IncrementCoefficients(coefficients, BishopMobilityBonusIndex, color, mobilityCount);
 
     middleGameBonus += BishopMobilityBonus_MG * mobilityCount;
     endGameBonus += BishopMobilityBonus_EG * mobilityCount;
@@ -362,7 +362,7 @@ std::pair<int, int> BishopAdditionalEvaluation(int squareIndex, int pieceIndex, 
 std::pair<int, int> QueenAdditionalEvaluation(int squareIndex, const Chess::Board &board, const Chess::Color &color, coefficients_t &coefficients)
 {
     auto mobilityCount = Chess::popcount(Chess::Attacks::QUEEN(static_cast<Chess::Square>(squareIndex), __builtin_bswap64(board.occ())));
-    IncrementCoefficients(coefficients, QueenMobilityBonusIndex, color, mobilityCount);
+    // IncrementCoefficients(coefficients, QueenMobilityBonusIndex, color, mobilityCount);
 
     return std::make_pair(QueenMobilityBonus_MG * mobilityCount, QueenMobilityBonus_EG * mobilityCount);
 }
@@ -398,7 +398,7 @@ std::pair<int, int> KingAdditionalEvaluation(int squareIndex, Chess::Color kingS
     }
 
     auto ownPiecesAroundCount = Chess::popcount(Chess::Attacks::KING(static_cast<Chess::Square>(squareIndex)) & __builtin_bswap64(board.us(kingSide)));
-    IncrementCoefficients(coefficients, KingShieldBonusIndex, kingSide, ownPiecesAroundCount);
+    // IncrementCoefficients(coefficients, KingShieldBonusIndex, kingSide, ownPiecesAroundCount);
 
     return std::make_pair(middleGameBonus + KingShieldBonus_MG * ownPiecesAroundCount,
                           endGameBonus + KingShieldBonus_EG * ownPiecesAroundCount);
