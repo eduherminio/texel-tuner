@@ -253,15 +253,15 @@ std::pair<int, int> PawnAdditionalEvaluation(int squareIndex, int pieceIndex, co
     auto doublePawnsCount = Chess::popcount(GetPieceSwappingEndianness(board, Chess::PieceType::PAWN, color) & (FileMasks[squareIndex]));
     if (doublePawnsCount > 1)
     {
-        middleGameBonus -= doublePawnsCount * DoubledPawnPenalty_MG;
-        endGameBonus -= doublePawnsCount * DoubledPawnPenalty_EG;
+        middleGameBonus += doublePawnsCount * DoubledPawnPenalty_MG;
+        endGameBonus += doublePawnsCount * DoubledPawnPenalty_EG;
         IncrementCoefficients(coefficients, DoubledPawnPenaltyIndex, color);
     }
 
     if ((GetPieceSwappingEndianness(board, Chess::PieceType::PAWN, color) & IsolatedPawnMasks[squareIndex]) == 0) // isIsolatedPawn
     {
-        middleGameBonus -= IsolatedPawnPenalty_MG;
-        endGameBonus -= IsolatedPawnPenalty_EG;
+        middleGameBonus += IsolatedPawnPenalty_MG;
+        endGameBonus += IsolatedPawnPenalty_EG;
         IncrementCoefficients(coefficients, IsolatedPawnPenaltyIndex, color);
     }
 
@@ -377,22 +377,22 @@ std::pair<int, int> KingAdditionalEvaluation(int squareIndex, Chess::Color kingS
         if (((GetPieceSwappingEndianness(board, Chess::PieceType::PAWN, Chess::Color::WHITE) | GetPieceSwappingEndianness(board, Chess::PieceType::PAWN, Chess::Color::BLACK)) & FileMasks[squareIndex]) == 0) // isOpenFile
         {
             // std::cout << "Open: " << (kingSide == Chess::Color::WHITE ? "White" : "Black") << std::endl;
-            middleGameBonus -= OpenFileKingPenalty_MG;
-            endGameBonus -= OpenFileKingPenalty_EG;
+            middleGameBonus += OpenFileKingPenalty_MG;
+            endGameBonus += OpenFileKingPenalty_EG;
             IncrementCoefficients(coefficients, OpenFileKingPenaltyIndex, kingSide);
         }
         else if (kingSide == Chess::Color::WHITE && (GetPieceSwappingEndianness(board, Chess::PieceType::PAWN, Chess::Color::WHITE) & FileMasks[squareIndex]) == 0) // isSemiOpenFile
         {
             // std::cout << "Semiopen: " << (kingSide == Chess::Color::WHITE ? "White" : "Black") << std::endl;
-            middleGameBonus -= SemiOpenFileKingPenalty_MG;
-            endGameBonus -= SemiOpenFileKingPenalty_EG;
+            middleGameBonus += SemiOpenFileKingPenalty_MG;
+            endGameBonus += SemiOpenFileKingPenalty_EG;
             IncrementCoefficients(coefficients, SemiOpenFileKingPenaltyIndex, kingSide);
         }
         else if (kingSide == Chess::Color::BLACK && (GetPieceSwappingEndianness(board, Chess::PieceType::PAWN, Chess::Color::BLACK) & FileMasks[squareIndex]) == 0) // isSemiOpenFile
         {
             // std::cout << "Semiopen: "  << (kingSide == Chess::Color::WHITE ? "White" : "Black") << std::endl;
-            middleGameBonus -= SemiOpenFileKingPenalty_MG;
-            endGameBonus -= SemiOpenFileKingPenalty_EG;
+            middleGameBonus += SemiOpenFileKingPenalty_MG;
+            endGameBonus += SemiOpenFileKingPenalty_EG;
             IncrementCoefficients(coefficients, SemiOpenFileKingPenaltyIndex, kingSide);
         }
     }
