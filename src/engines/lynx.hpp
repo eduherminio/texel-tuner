@@ -83,14 +83,24 @@ public:
     {
         parameters_t result{};
 
-        assert(MiddleGamePositionalTables.size() == 12);
-        assert(EndGamePositionalTables.size() == 12);
+        assert(MiddleGamePositionalWhiteTables.size() == 6);
+        assert(EndGamePositionalWhiteTables.size() == 6);
+
+        for (int p = 0; p < 6; ++p)
+        {
+            for (int sq = 0; sq < 64; ++sq)
+            {
+                assert(MiddleGamePositionalTables(p, sq) == MiddleGamePositionalWhiteTables[p][sq]);
+                assert(MiddleGamePositionalTables(p + 6, sq) == -MiddleGamePositionalWhiteTables[p][sq ^ 56]);
+                assert(MiddleGamePositionalTables(p, sq) == -MiddleGamePositionalTables(p + 6, sq ^ 56));
+            }
+        }
 
         for (int piece = 0; piece < 6; ++piece)
         {
             for (int square = 0; square < 64; ++square)
             {
-                result.push_back({(double)MiddleGamePositionalTables[piece][square], (double)EndGamePositionalTables[piece + 6][square]});
+                result.push_back({(double)MiddleGamePositionalTables(piece, square), (double)EndGamePositionalTables(piece + 6, square)});
             }
         }
         for (int piece = 0; piece < 5; ++piece)
@@ -165,7 +175,8 @@ public:
         {
             std::cout << "-" << round(parameters[64 * 6 + piece][0]) << ", ";
         }
-        std::cout << "0\n];\n" << std::endl; // King
+        std::cout << "0\n];\n"
+                  << std::endl; // King
 
         std::cout << "public static readonly int[] EndGamePieceValues =\n[\n\t";
         for (int piece = 0; piece < 5; ++piece)
@@ -177,7 +188,8 @@ public:
         {
             std::cout << "-" << round(parameters[64 * 6 + piece][1]) << ", ";
         }
-        std::cout << "0\n];\n" << std::endl; // King
+        std::cout << "0\n];\n"
+                  << std::endl; // King
 
         std::cout << "\"DoubledPawnPenalty\": {" << std::endl;
         std::cout << "\t\"MG\": " << round(parameters[DoubledPawnPenaltyIndex][0]) << ",\n";
@@ -447,8 +459,8 @@ EvalResult Lynx::get_external_eval_result(const Chess::Board &board)
             auto pieceSquareIndex = Chess::lsb(bitboard);
             Chess::poplsb(bitboard);
 
-            middleGameScore += MiddleGamePositionalTables[pieceIndex][pieceSquareIndex] + pestoPieceValue[pieceIndex];
-            endGameScore += EndGamePositionalTables[pieceIndex][pieceSquareIndex] + pestoPieceValue[pieceIndex + 5];
+            middleGameScore += MiddleGamePositionalTables(pieceIndex, pieceSquareIndex) + pestoPieceValue[pieceIndex];
+            endGameScore += EndGamePositionalTables(pieceIndex, pieceSquareIndex) + pestoPieceValue[pieceIndex + 5];
             gamePhase += phaseValues[pieceIndex];
 
             ++pieceCount[pieceIndex];
@@ -473,8 +485,8 @@ EvalResult Lynx::get_external_eval_result(const Chess::Board &board)
             auto pieceSquareIndex = Chess::lsb(bitboard);
             Chess::poplsb(bitboard);
 
-            middleGameScore += MiddleGamePositionalTables[pieceIndex][pieceSquareIndex] - pestoPieceValue[tunerPieceIndex];
-            endGameScore += EndGamePositionalTables[pieceIndex][pieceSquareIndex] - pestoPieceValue[tunerPieceIndex + 5];
+            middleGameScore += MiddleGamePositionalTables(pieceIndex, pieceSquareIndex) - pestoPieceValue[tunerPieceIndex];
+            endGameScore += EndGamePositionalTables(pieceIndex, pieceSquareIndex) - pestoPieceValue[tunerPieceIndex + 5];
             gamePhase += phaseValues[tunerPieceIndex];
 
             ++pieceCount[pieceIndex];
@@ -490,14 +502,14 @@ EvalResult Lynx::get_external_eval_result(const Chess::Board &board)
 
     auto whiteKing = Chess::lsb(GetPieceSwappingEndianness(board, Chess::PieceType::KING, Chess::Color::WHITE));
     auto kingPair = KingAdditionalEvaluation(whiteKing, Chess::Color::WHITE, board, pieceCount, coefficients);
-    middleGameScore += MiddleGamePositionalTables[5][whiteKing] + kingPair.first;
-    endGameScore += EndGamePositionalTables[5][whiteKing] + kingPair.second;
+    middleGameScore += MiddleGamePositionalTables(5, whiteKing) + kingPair.first;
+    endGameScore += EndGamePositionalTables(5, whiteKing) + kingPair.second;
     IncrementCoefficients(coefficients, 64 * 5 + whiteKing, Chess::Color::WHITE);
 
     auto blackKing = Chess::lsb(GetPieceSwappingEndianness(board, Chess::PieceType::KING, Chess::Color::BLACK));
     kingPair = KingAdditionalEvaluation(blackKing, Chess::Color::BLACK, board, pieceCount, coefficients);
-    middleGameScore += MiddleGamePositionalTables[11][blackKing] - kingPair.first;
-    endGameScore += EndGamePositionalTables[11][blackKing] - kingPair.second;
+    middleGameScore += MiddleGamePositionalTables(11, blackKing) - kingPair.first;
+    endGameScore += EndGamePositionalTables(11, blackKing) - kingPair.second;
     IncrementCoefficients(coefficients, 64 * 5 + blackKing, Chess::Color::BLACK);
 
     // Debugging eval
