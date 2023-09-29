@@ -9,51 +9,51 @@
 
 using u64 = uint64_t;
 
-const int DoubledPawnPenalty_MG = 10;
-const int DoubledPawnPenalty_EG = 10;
+const int DoubledPawnPenalty_MG = -3;
+const int DoubledPawnPenalty_EG = -11;
 const int DoubledPawnPenaltyIndex = 64 * 6 + 4 + 1;
 
-const int IsolatedPawnPenalty_MG = 10;
-const int IsolatedPawnPenalty_EG = 10;
+const int IsolatedPawnPenalty_MG = -13;
+const int IsolatedPawnPenalty_EG = -10;
 const int IsolatedPawnPenaltyIndex = 64 * 6 + 4 + 2;
 
-const int OpenFileRookBonus_MG = 15;
-const int OpenFileRookBonus_EG = 15;
+const int OpenFileRookBonus_MG = 42;
+const int OpenFileRookBonus_EG = 22;
 const int OpenFileRookBonusIndex = 64 * 6 + 4 + 3;
 
-const int SemiOpenFileRookBonus_MG = 10;
-const int SemiOpenFileRookBonus_EG = 10;
+const int SemiOpenFileRookBonus_MG = 18;
+const int SemiOpenFileRookBonus_EG = 16;
 const int SemiOpenFileRookBonusIndex = 64 * 6 + 4 + 4;
 
-const int BishopMobilityBonus_MG = 1;
-const int BishopMobilityBonus_EG = 1;
+const int BishopMobilityBonus_MG = 8;
+const int BishopMobilityBonus_EG = 7;
 const int BishopMobilityBonusIndex = 64 * 6 + 4 + 5;
 
-const int QueenMobilityBonus_MG = 1;
-const int QueenMobilityBonus_EG = 1;
+const int QueenMobilityBonus_MG = 2;
+const int QueenMobilityBonus_EG = 7;
 const int QueenMobilityBonusIndex = 64 * 6 + 4 + 6;
 
-const int SemiOpenFileKingPenalty_MG = 10;
-const int SemiOpenFileKingPenalty_EG = 10;
+const int SemiOpenFileKingPenalty_MG = -29;
+const int SemiOpenFileKingPenalty_EG = 19;
 const int SemiOpenFileKingPenaltyIndex = 64 * 6 + 4 + 7;
 
-const int OpenFileKingPenalty_MG = 15;
-const int OpenFileKingPenalty_EG = 15;
+const int OpenFileKingPenalty_MG = -81;
+const int OpenFileKingPenalty_EG = 3;
 const int OpenFileKingPenaltyIndex = 64 * 6 + 4 + 8;
 
-const int KingShieldBonus_MG = 5;
-const int KingShieldBonus_EG = 5;
+const int KingShieldBonus_MG = 15;
+const int KingShieldBonus_EG = -5;
 const int KingShieldBonusIndex = 64 * 6 + 4 + 9;
 
-const int BishopPairBonus_MG = 0;
-const int BishopPairBonus_EG = 100;
+const int BishopPairBonus_MG = 22;
+const int BishopPairBonus_EG = 65;
 const int BishopPairMaxBonusIndex = 64 * 6 + 4 + 10;
 
 constexpr static std::array<int, 8> PassedPawnBonus_MG = {
-    0, 10, 30, 50, 75, 100, 150, 200};
+    0, -2, -13, -12, 13, 38, 53, 200};
 
 constexpr static std::array<int, 8> PassedPawnBonus_EG = {
-    0, 10, 30, 50, 75, 100, 150, 200};
+    0, 5, 10, 32, 62, 132, 191, 200};
 
 const int PassedPawnBonusStartIndex = 64 * 6 + 4 + 11;
 
@@ -105,7 +105,7 @@ public:
         }
         for (int piece = 0; piece < 5; ++piece)
         {
-            result.push_back({(double)pestoPieceValue[piece], (double)pestoPieceValue[piece + 5]});
+            result.push_back({(double)PieceValue[piece], (double)PieceValue[piece + 5]});
         }
 
         result.push_back({(double)DoubledPawnPenalty_MG, (double)DoubledPawnPenalty_EG});
@@ -459,8 +459,8 @@ EvalResult Lynx::get_external_eval_result(const Chess::Board &board)
             auto pieceSquareIndex = Chess::lsb(bitboard);
             Chess::poplsb(bitboard);
 
-            middleGameScore += MiddleGamePositionalTables(pieceIndex, pieceSquareIndex) + pestoPieceValue[pieceIndex];
-            endGameScore += EndGamePositionalTables(pieceIndex, pieceSquareIndex) + pestoPieceValue[pieceIndex + 5];
+            middleGameScore += MiddleGamePositionalTables(pieceIndex, pieceSquareIndex) + PieceValue[pieceIndex];
+            endGameScore += EndGamePositionalTables(pieceIndex, pieceSquareIndex) + PieceValue[pieceIndex + 5];
             gamePhase += phaseValues[pieceIndex];
 
             ++pieceCount[pieceIndex];
@@ -485,8 +485,8 @@ EvalResult Lynx::get_external_eval_result(const Chess::Board &board)
             auto pieceSquareIndex = Chess::lsb(bitboard);
             Chess::poplsb(bitboard);
 
-            middleGameScore += MiddleGamePositionalTables(pieceIndex, pieceSquareIndex) - pestoPieceValue[tunerPieceIndex];
-            endGameScore += EndGamePositionalTables(pieceIndex, pieceSquareIndex) - pestoPieceValue[tunerPieceIndex + 5];
+            middleGameScore += MiddleGamePositionalTables(pieceIndex, pieceSquareIndex) - PieceValue[tunerPieceIndex];
+            endGameScore += EndGamePositionalTables(pieceIndex, pieceSquareIndex) - PieceValue[tunerPieceIndex + 5];
             gamePhase += phaseValues[tunerPieceIndex];
 
             ++pieceCount[pieceIndex];
