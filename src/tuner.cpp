@@ -502,7 +502,7 @@ static void load_fen(const DataSource& source, const parameters_t& parameters, c
 
     if constexpr (print_eval)
     {
-        std::cout << fen << ": " << eval_result.score << std::endl;
+        std::cout << fen << ": " << TuneEval::NormalizeScore(eval_result.score) << std::endl;
     }
 
     Entry entry;

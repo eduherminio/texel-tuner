@@ -139,6 +139,8 @@ public:
 
     static EvalResult get_external_eval_result(const Chess::Board &board);
 
+    static int NormalizeScore(int score);
+
     static int round(double value)
     {
         return std::round(value);
@@ -437,6 +439,14 @@ std::pair<int, int> AdditionalPieceEvaluation(int pieceSquareIndex, int pieceInd
     default:
         return std::make_pair(0, 0);
     }
+}
+
+int Lynx::NormalizeScore(int score)
+{
+    return (score == 0 || score > 27000 || score < -27000)
+
+               ? score
+               : score * 100 / EvalNormalizationCoefficient;
 }
 
 EvalResult Lynx::get_external_eval_result(const Chess::Board &board)
