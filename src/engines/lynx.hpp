@@ -11,43 +11,43 @@ using u64 = uint64_t;
 
 const int DoubledPawnPenalty_MG = -3;
 const int DoubledPawnPenalty_EG = -11;
-const int DoubledPawnPenaltyIndex = 64 * 6 + 4 + 1;
+const int DoubledPawnPenaltyIndex = 64 * 6 + 0;
 
 const int IsolatedPawnPenalty_MG = -13;
 const int IsolatedPawnPenalty_EG = -10;
-const int IsolatedPawnPenaltyIndex = 64 * 6 + 4 + 2;
+const int IsolatedPawnPenaltyIndex = 64 * 6 + 1;
 
 const int OpenFileRookBonus_MG = 42;
 const int OpenFileRookBonus_EG = 22;
-const int OpenFileRookBonusIndex = 64 * 6 + 4 + 3;
+const int OpenFileRookBonusIndex = 64 * 6 + 2;
 
 const int SemiOpenFileRookBonus_MG = 18;
 const int SemiOpenFileRookBonus_EG = 16;
-const int SemiOpenFileRookBonusIndex = 64 * 6 + 4 + 4;
+const int SemiOpenFileRookBonusIndex = 64 * 6 + 3;
 
 const int BishopMobilityBonus_MG = 8;
 const int BishopMobilityBonus_EG = 7;
-const int BishopMobilityBonusIndex = 64 * 6 + 4 + 5;
+const int BishopMobilityBonusIndex = 64 * 6 + 4;
 
 const int QueenMobilityBonus_MG = 2;
 const int QueenMobilityBonus_EG = 7;
-const int QueenMobilityBonusIndex = 64 * 6 + 4 + 6;
+const int QueenMobilityBonusIndex = 64 * 6 + 5;
 
 const int SemiOpenFileKingPenalty_MG = -29;
 const int SemiOpenFileKingPenalty_EG = 19;
-const int SemiOpenFileKingPenaltyIndex = 64 * 6 + 4 + 7;
+const int SemiOpenFileKingPenaltyIndex = 64 * 6 + 6;
 
 const int OpenFileKingPenalty_MG = -81;
 const int OpenFileKingPenalty_EG = 3;
-const int OpenFileKingPenaltyIndex = 64 * 6 + 4 + 8;
+const int OpenFileKingPenaltyIndex = 64 * 6 + 7;
 
 const int KingShieldBonus_MG = 15;
 const int KingShieldBonus_EG = -5;
-const int KingShieldBonusIndex = 64 * 6 + 4 + 9;
+const int KingShieldBonusIndex = 64 * 6 + 8;
 
 const int BishopPairBonus_MG = 22;
 const int BishopPairBonus_EG = 65;
-const int BishopPairMaxBonusIndex = 64 * 6 + 4 + 10;
+const int BishopPairMaxBonusIndex = 64 * 6 + 9;
 
 constexpr static std::array<int, 8> PassedPawnBonus_MG = {
     0, -2, -13, -12, 13, 38, 53, 200};
@@ -55,10 +55,9 @@ constexpr static std::array<int, 8> PassedPawnBonus_MG = {
 constexpr static std::array<int, 8> PassedPawnBonus_EG = {
     0, 5, 10, 32, 62, 132, 191, 200};
 
-const int PassedPawnBonusStartIndex = 64 * 6 + 4 + 11;
+const int PassedPawnBonusStartIndex = 64 * 6 + 10;
 
 static constexpr int numParameters = 64 * 6 +
-                                     5 + // Piece values
                                      1 + // DoubledPawnPenalty
                                      1 + // IsolatedPawnPenalty
                                      1 + // OpenFileRookBonus
@@ -100,12 +99,8 @@ public:
         {
             for (int square = 0; square < 64; ++square)
             {
-                result.push_back({(double)MiddleGamePositionalTables(piece, square), (double)EndGamePositionalTables(piece + 6, square)});
+                result.push_back({(double)MiddleGamePositionalTables(piece, square) + ((piece + 1) % 6 == 0 ? 0 : PieceValue[piece]), (double)EndGamePositionalTables(piece + 6, square) + ((piece + 1) % 6 == 0 ? 0 : PieceValue[piece + 5])});
             }
-        }
-        for (int piece = 0; piece < 5; ++piece)
-        {
-            result.push_back({(double)PieceValue[piece], (double)PieceValue[piece + 5]});
         }
 
         result.push_back({(double)DoubledPawnPenalty_MG, (double)DoubledPawnPenalty_EG});
@@ -148,6 +143,49 @@ public:
 
     static void print_parameters(const parameters_t &parameters)
     {
+        int pieceValues[12];
+
+        for (int phase = 0; phase <= 1; ++phase)
+        {
+            if (phase == 0)
+                std::cout << "public static readonly int[] MiddleGamePieceValues =\n[\n\t";
+
+            else
+                std::cout << "\npublic static readonly int[] EndGamePieceValues =\n[\n\t";
+
+            for (int piece = 0; piece < 5; ++piece)
+            {
+                int sum = 0;
+
+                for (int square = 0; square < 64; ++square)
+                {
+                    sum += parameters[piece * 64 + square][phase];
+                }
+
+                auto average = (sum / 64.0);
+
+                auto pieceIndex = piece + phase * 6;
+                pieceValues[pieceIndex] = static_cast<int>(std::round(average));
+                std::cout << "+" << pieceValues[pieceIndex] << ", ";
+            }
+
+            // Kings
+            auto kingIndex = 5 + phase * 6;
+            pieceValues[kingIndex] = 0;
+            std::cout << pieceValues[kingIndex] << ",\n\t";
+
+            for (int piece = 0; piece < 5; ++piece)
+            {
+                auto pieceIndex = piece + phase * 6;
+                std::cout << "-" << pieceValues[pieceIndex] << ", ";
+            }
+
+            if (phase == 0)
+                std::cout << pieceValues[kingIndex] << ",\n\t";
+            else
+                std::cout << pieceValues[kingIndex] << "\n];\n";
+        }
+
         std::string names[] = {"Pawn", "Knight", "Bishop", "Rook", "Queen", "King"};
         for (int piece = 0; piece < 6; ++piece)
         {
@@ -156,7 +194,7 @@ public:
                 std::cout << "\npublic static readonly int[] " << (phase == 0 ? "MiddleGame" : "EndGame") << names[piece] << "Table =\n[\n\t";
                 for (int square = 0; square < 64; ++square)
                 {
-                    std::cout << round(parameters[piece * 64 + square][phase]) << ", ";
+                    std::cout << round(parameters[piece * 64 + square][phase] - pieceValues[piece + phase * 6]) << ", ";
                     if (square % 8 == 7)
                         std::cout << "\n";
                     if (square != 63)
@@ -166,32 +204,6 @@ public:
             }
         }
         std::cout << std::endl;
-
-        std::cout << "public static readonly int[] MiddleGamePieceValues =\n[\n\t";
-        for (int piece = 0; piece < 5; ++piece)
-        {
-            std::cout << "+" << round(parameters[64 * 6 + piece][0]) << ", ";
-        }
-        std::cout << "0,\n\t"; // King
-        for (int piece = 0; piece < 5; ++piece)
-        {
-            std::cout << "-" << round(parameters[64 * 6 + piece][0]) << ", ";
-        }
-        std::cout << "0\n];\n"
-                  << std::endl; // King
-
-        std::cout << "public static readonly int[] EndGamePieceValues =\n[\n\t";
-        for (int piece = 0; piece < 5; ++piece)
-        {
-            std::cout << "+" << round(parameters[64 * 6 + piece][1]) << ", ";
-        }
-        std::cout << "0,\n\t"; // King
-        for (int piece = 0; piece < 5; ++piece)
-        {
-            std::cout << "-" << round(parameters[64 * 6 + piece][1]) << ", ";
-        }
-        std::cout << "0\n];\n"
-                  << std::endl; // King
 
         std::cout << "\"DoubledPawnPenalty\": {" << std::endl;
         std::cout << "\t\"MG\": " << round(parameters[DoubledPawnPenaltyIndex][0]) << ",\n";
@@ -479,7 +491,6 @@ EvalResult Lynx::get_external_eval_result(const Chess::Board &board)
             middleGameScore += pair.first;
             endGameScore += pair.second;
 
-            IncrementCoefficients(coefficients, 64 * 6 + pieceIndex, Chess::Color::WHITE);
             IncrementCoefficients(coefficients, 64 * pieceIndex + pieceSquareIndex, Chess::Color::WHITE);
         }
     }
@@ -505,7 +516,6 @@ EvalResult Lynx::get_external_eval_result(const Chess::Board &board)
             middleGameScore -= pair.first;
             endGameScore -= pair.second;
 
-            IncrementCoefficients(coefficients, 64 * 6 + tunerPieceIndex, Chess::Color::BLACK);
             IncrementCoefficients(coefficients, 64 * tunerPieceIndex + pieceSquareIndex, Chess::Color::BLACK);
         }
     }
