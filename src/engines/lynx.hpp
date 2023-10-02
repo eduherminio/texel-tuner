@@ -303,7 +303,7 @@ public:
         std::cout << "\t\t\"EG\": " << 0 << "\n\t}," << std::endl;
         for (int rank = 0; rank < 6; ++rank)
         {
-            std::cout << "\t\"Rank" << rank << "\": {" << std::endl;
+            std::cout << "\t\"Rank" << rank + 1 << "\": {" << std::endl;
             std::cout << "\t\t\"MG\": " << round(parameters[PassedPawnBonusStartIndex + rank][0]) << ",\n";
             std::cout << "\t\t\"EG\": " << round(parameters[PassedPawnBonusStartIndex + rank][1]) << "\n\t}," << std::endl;
         }
