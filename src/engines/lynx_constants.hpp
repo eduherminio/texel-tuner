@@ -296,4 +296,4 @@ constexpr std::array<int, 12> PieceValue = {
 
 std::array<int, 6> phaseValues = {0, 1, 1, 2, 4, 0};
 
-constexpr static int EvalNormalizationCoefficient = 81;
+constexpr static int EvalNormalizationCoefficient = 78;
