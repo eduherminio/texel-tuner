@@ -9,45 +9,47 @@
 
 using u64 = uint64_t;
 
+const int base = 64 * 6 - 16; // Removing pawns from 1 and 8 rank
+
 const int DoubledPawnPenalty_MG = -3;
 const int DoubledPawnPenalty_EG = -11;
-const int DoubledPawnPenaltyIndex = 64 * 6 + 0;
+const int DoubledPawnPenaltyIndex = base + 0;
 
 const int IsolatedPawnPenalty_MG = -13;
 const int IsolatedPawnPenalty_EG = -10;
-const int IsolatedPawnPenaltyIndex = 64 * 6 + 1;
+const int IsolatedPawnPenaltyIndex = base + 1;
 
 const int OpenFileRookBonus_MG = 42;
 const int OpenFileRookBonus_EG = 22;
-const int OpenFileRookBonusIndex = 64 * 6 + 2;
+const int OpenFileRookBonusIndex = base + 2;
 
 const int SemiOpenFileRookBonus_MG = 18;
 const int SemiOpenFileRookBonus_EG = 16;
-const int SemiOpenFileRookBonusIndex = 64 * 6 + 3;
+const int SemiOpenFileRookBonusIndex = base + 3;
 
 const int BishopMobilityBonus_MG = 8;
 const int BishopMobilityBonus_EG = 7;
-const int BishopMobilityBonusIndex = 64 * 6 + 4;
+const int BishopMobilityBonusIndex = base + 4;
 
 const int QueenMobilityBonus_MG = 2;
 const int QueenMobilityBonus_EG = 7;
-const int QueenMobilityBonusIndex = 64 * 6 + 5;
+const int QueenMobilityBonusIndex = base + 5;
 
 const int SemiOpenFileKingPenalty_MG = -29;
 const int SemiOpenFileKingPenalty_EG = 19;
-const int SemiOpenFileKingPenaltyIndex = 64 * 6 + 6;
+const int SemiOpenFileKingPenaltyIndex = base + 6;
 
 const int OpenFileKingPenalty_MG = -81;
 const int OpenFileKingPenalty_EG = 3;
-const int OpenFileKingPenaltyIndex = 64 * 6 + 7;
+const int OpenFileKingPenaltyIndex = base + 7;
 
 const int KingShieldBonus_MG = 15;
 const int KingShieldBonus_EG = -5;
-const int KingShieldBonusIndex = 64 * 6 + 8;
+const int KingShieldBonusIndex = base + 8;
 
 const int BishopPairBonus_MG = 22;
 const int BishopPairBonus_EG = 65;
-const int BishopPairMaxBonusIndex = 64 * 6 + 9;
+const int BishopPairMaxBonusIndex = base + 9;
 
 constexpr static std::array<int, 8> PassedPawnBonus_MG = {
     0, -2, -13, -12, 13, 38, 53, 200};
@@ -55,9 +57,9 @@ constexpr static std::array<int, 8> PassedPawnBonus_MG = {
 constexpr static std::array<int, 8> PassedPawnBonus_EG = {
     0, 5, 10, 32, 62, 132, 191, 200};
 
-const int PassedPawnBonusStartIndex = 64 * 6 + 10;
+const int PassedPawnBonusStartIndex = base + 10;
 
-static constexpr int numParameters = 64 * 6 +
+static constexpr int numParameters = base +
                                      1 + // DoubledPawnPenalty
                                      1 + // IsolatedPawnPenalty
                                      1 + // OpenFileRookBonus
@@ -68,7 +70,7 @@ static constexpr int numParameters = 64 * 6 +
                                      1 + // OpenFileKingPenalty
                                      1 + // BishopPairMaxBonus
                                      1 + // KingShieldBonus
-                                     8   // PassedPawnBonus
+                                     6   // PassedPawnBonus - removing 1 and 8 rank values
     ;
 class Lynx
 {
@@ -95,12 +97,26 @@ public:
             }
         }
 
-        for (int piece = 0; piece < 6; ++piece)
+        // Pawns
+        {
+            const int piece = 0;
+
+            for (int square = 8; square < 56; ++square)
+                result.push_back({(double)MiddleGamePositionalTables(piece, square) + PieceValue[piece], (double)EndGamePositionalTables(piece, square) + PieceValue[piece + 5]});
+        }
+        // N, B, R, Q
+        for (int piece = 1; piece < 5; ++piece)
         {
             for (int square = 0; square < 64; ++square)
-            {
-                result.push_back({(double)MiddleGamePositionalTables(piece, square) + ((piece + 1) % 6 == 0 ? 0 : PieceValue[piece]), (double)EndGamePositionalTables(piece + 6, square) + ((piece + 1) % 6 == 0 ? 0 : PieceValue[piece + 5])});
-            }
+                result.push_back({(double)MiddleGamePositionalTables(piece, square) + PieceValue[piece], (double)EndGamePositionalTables(piece, square) + PieceValue[piece + 5]});
+        }
+
+        // K
+        {
+            const int piece = 5;
+
+            for (int square = 0; square < 64; ++square)
+                result.push_back({(double)MiddleGamePositionalTables(piece, square), (double)EndGamePositionalTables(piece + 6, square)});
         }
 
         result.push_back({(double)DoubledPawnPenalty_MG, (double)DoubledPawnPenalty_EG});
@@ -114,7 +130,7 @@ public:
         result.push_back({(double)KingShieldBonus_MG, (double)KingShieldBonus_EG});
         result.push_back({(double)BishopPairBonus_MG, (double)BishopPairBonus_EG});
 
-        for (int rank = 0; rank < 8; ++rank)
+        for (int rank = 1; rank < 7; ++rank)
         {
             result.push_back({(double)PassedPawnBonus_MG[rank], (double)PassedPawnBonus_EG[rank]});
         }
@@ -153,13 +169,29 @@ public:
             else
                 std::cout << "\npublic static readonly int[] EndGamePieceValues =\n[\n\t";
 
-            for (int piece = 0; piece < 5; ++piece)
+            // Pawns
+            {
+                int pawnSum = 0;
+
+                for (int square = 0; square < 48; ++square)
+                {
+                    pawnSum += parameters[square][phase];
+                }
+
+                auto average = (pawnSum / 48.0);
+
+                auto pieceIndex = phase * 6;
+                pieceValues[pieceIndex] = static_cast<int>(std::round(average));
+                std::cout << "+" << pieceValues[pieceIndex] << ", ";
+            }
+
+            for (int piece = 1; piece < 5; ++piece)
             {
                 int sum = 0;
 
                 for (int square = 0; square < 64; ++square)
                 {
-                    sum += parameters[piece * 64 + square][phase];
+                    sum += parameters[piece * 64 - 16 + square][phase]; // Substract 16 since we're only tuning 48 pawn values
                 }
 
                 auto average = (sum / 64.0);
@@ -180,21 +212,41 @@ public:
                 std::cout << "-" << pieceValues[pieceIndex] << ", ";
             }
 
-            if (phase == 0)
-                std::cout << pieceValues[kingIndex] << ",\n\t";
-            else
-                std::cout << pieceValues[kingIndex] << "\n];\n";
+            std::cout << pieceValues[kingIndex] << "\n];\n";
         }
 
         std::string names[] = {"Pawn", "Knight", "Bishop", "Rook", "Queen", "King"};
-        for (int piece = 0; piece < 6; ++piece)
+
+        // Pawns
+        {
+            const int piece = 0;
+            for (int phase = 0; phase <= 1; ++phase)
+            {
+                std::cout << "\npublic static readonly int[] " << (phase == 0 ? "MiddleGame" : "EndGame") << names[piece] << "Table =\n[\n\t";
+
+                std::cout << "0,\t0,\t0,\t0,\t0,\t0,\t0,\t0,\n\t";
+                for (int square = 0; square < 48; ++square)
+                {
+                    std::cout << round(parameters[square][phase] - pieceValues[phase * 6]) << ", ";
+                    if (square % 8 == 7)
+                        std::cout << "\n";
+                    if (square != 63)
+                        std::cout << "\t";
+                }
+                std::cout << "0,\t0,\t0,\t0,\t0,\t0,\t0,\t0," << std::endl;
+
+                std::cout << "];\n";
+            }
+        }
+
+        for (int piece = 1; piece < 6; ++piece)
         {
             for (int phase = 0; phase <= 1; ++phase)
             {
                 std::cout << "\npublic static readonly int[] " << (phase == 0 ? "MiddleGame" : "EndGame") << names[piece] << "Table =\n[\n\t";
                 for (int square = 0; square < 64; ++square)
                 {
-                    std::cout << round(parameters[piece * 64 + square][phase] - pieceValues[piece + phase * 6]) << ", ";
+                    std::cout << round(parameters[piece * 64 - 16 + square][phase] - pieceValues[piece + phase * 6]) << ", "; // We substract the 16 non-tuned pawn valeus
                     if (square % 8 == 7)
                         std::cout << "\n";
                     if (square != 63)
@@ -246,12 +298,18 @@ public:
         std::cout << "\t\"EG\": " << round(parameters[BishopPairMaxBonusIndex][1]) << "\n}," << std::endl;
 
         std::cout << "\"PassedPawnBonus\": {" << std::endl;
-        for (int rank = 0; rank < 8; ++rank)
+        std::cout << "\t\"Rank" << 0 << "\": {" << std::endl;
+        std::cout << "\t\t\"MG\": " << 0 << ",\n";
+        std::cout << "\t\t\"EG\": " << 0 << "\n\t}," << std::endl;
+        for (int rank = 0; rank < 6; ++rank)
         {
             std::cout << "\t\"Rank" << rank << "\": {" << std::endl;
             std::cout << "\t\t\"MG\": " << round(parameters[PassedPawnBonusStartIndex + rank][0]) << ",\n";
             std::cout << "\t\t\"EG\": " << round(parameters[PassedPawnBonusStartIndex + rank][1]) << "\n\t}," << std::endl;
         }
+        std::cout << "\t\"Rank" << 7 << "\": {" << std::endl;
+        std::cout << "\t\t\"MG\": " << 0 << ",\n";
+        std::cout << "\t\t\"EG\": " << 0 << "\n\t}," << std::endl;
         std::cout << "}";
 
         std::cout << '\n'
@@ -491,7 +549,10 @@ EvalResult Lynx::get_external_eval_result(const Chess::Board &board)
             middleGameScore += pair.first;
             endGameScore += pair.second;
 
-            IncrementCoefficients(coefficients, 64 * pieceIndex + pieceSquareIndex, Chess::Color::WHITE);
+            if (pieceIndex == 0)
+                IncrementCoefficients(coefficients, 64 * pieceIndex + pieceSquareIndex - 8, Chess::Color::WHITE);
+            else
+                IncrementCoefficients(coefficients, 64 * pieceIndex + pieceSquareIndex - 16, Chess::Color::WHITE);
         }
     }
 
@@ -516,7 +577,10 @@ EvalResult Lynx::get_external_eval_result(const Chess::Board &board)
             middleGameScore -= pair.first;
             endGameScore -= pair.second;
 
-            IncrementCoefficients(coefficients, 64 * tunerPieceIndex + pieceSquareIndex, Chess::Color::BLACK);
+            if (pieceIndex == 6)
+                IncrementCoefficients(coefficients, 64 * tunerPieceIndex + pieceSquareIndex - 8, Chess::Color::BLACK);
+            else
+                IncrementCoefficients(coefficients, 64 * tunerPieceIndex + pieceSquareIndex - 16, Chess::Color::BLACK);
         }
     }
 
@@ -524,13 +588,13 @@ EvalResult Lynx::get_external_eval_result(const Chess::Board &board)
     auto kingPair = KingAdditionalEvaluation(whiteKing, Chess::Color::WHITE, board, pieceCount, coefficients);
     middleGameScore += MiddleGamePositionalTables(5, whiteKing) + kingPair.first;
     endGameScore += EndGamePositionalTables(5, whiteKing) + kingPair.second;
-    IncrementCoefficients(coefficients, 64 * 5 + whiteKing, Chess::Color::WHITE);
+    IncrementCoefficients(coefficients, 64 * 5 + whiteKing - 16, Chess::Color::WHITE);
 
     auto blackKing = Chess::lsb(GetPieceSwappingEndianness(board, Chess::PieceType::KING, Chess::Color::BLACK));
     kingPair = KingAdditionalEvaluation(blackKing, Chess::Color::BLACK, board, pieceCount, coefficients);
     middleGameScore += MiddleGamePositionalTables(11, blackKing) - kingPair.first;
     endGameScore += EndGamePositionalTables(11, blackKing) - kingPair.second;
-    IncrementCoefficients(coefficients, 64 * 5 + blackKing, Chess::Color::BLACK);
+    IncrementCoefficients(coefficients, 64 * 5 + blackKing - 16, Chess::Color::BLACK);
 
     // Debugging eval
     // return EvalResult{

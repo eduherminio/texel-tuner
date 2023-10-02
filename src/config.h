@@ -13,7 +13,7 @@
 //using TuneEval = Fourku::FourkuEval;
 using TuneEval = Lynx;
 constexpr int32_t thread_count = 8;
-constexpr double preferred_k = 3.5;
+constexpr double preferred_k = 0;
 constexpr int32_t max_epoch = 5001;
 // constexpr int32_t max_epoch = 11001;
 constexpr bool retune_from_zero = false;
