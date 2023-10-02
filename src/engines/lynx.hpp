@@ -363,7 +363,7 @@ std::pair<int, int> PawnAdditionalEvaluation(int squareIndex, int pieceIndex, co
             }
             middleGameBonus += PassedPawnBonus_MG[rank];
             endGameBonus += PassedPawnBonus_EG[rank];
-            IncrementCoefficients(coefficients, PassedPawnBonusStartIndex + rank, color);
+            IncrementCoefficients(coefficients, PassedPawnBonusStartIndex + rank - 1, color);   // There's no coefficient for rank 0
             // std::cout << "White pawn on " << squareIndex << " is passed, bonus " << PassedPawnBonus[rank] << std::endl;
         }
     }
