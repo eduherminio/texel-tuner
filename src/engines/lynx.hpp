@@ -379,7 +379,7 @@ std::pair<int, int> PawnAdditionalEvaluation(int squareIndex, int pieceIndex, co
 
             middleGameBonus += PassedPawnBonus_MG[rank];
             endGameBonus += PassedPawnBonus_EG[rank];
-            IncrementCoefficients(coefficients, PassedPawnBonusStartIndex + rank, color);
+            IncrementCoefficients(coefficients, PassedPawnBonusStartIndex + rank - 1, color); // There's no coefficient for rank 0
             // std::cout << "Black pawn on " << squareIndex << " is passed, bonus " << -PassedPawnBonus[rank] << std::endl;
         }
     }
@@ -552,7 +552,7 @@ EvalResult Lynx::get_external_eval_result(const Chess::Board &board)
             endGameScore += pair.second;
 
             if (pieceIndex == 0)
-                IncrementCoefficients(coefficients, 64 * pieceIndex + pieceSquareIndex - 8, Chess::Color::WHITE);
+                IncrementCoefficients(coefficients, pieceSquareIndex - 8, Chess::Color::WHITE);
             else
                 IncrementCoefficients(coefficients, 64 * pieceIndex + pieceSquareIndex - 16, Chess::Color::WHITE);
         }
@@ -580,7 +580,7 @@ EvalResult Lynx::get_external_eval_result(const Chess::Board &board)
             endGameScore -= pair.second;
 
             if (pieceIndex == 6)
-                IncrementCoefficients(coefficients, 64 * tunerPieceIndex + pieceSquareIndex - 8, Chess::Color::BLACK);
+                IncrementCoefficients(coefficients, pieceSquareIndex - 8, Chess::Color::BLACK);
             else
                 IncrementCoefficients(coefficients, 64 * tunerPieceIndex + pieceSquareIndex - 16, Chess::Color::BLACK);
         }
