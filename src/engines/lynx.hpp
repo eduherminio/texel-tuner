@@ -39,7 +39,7 @@ const int SemiOpenFileKingPenalty_MG = -29;
 const int SemiOpenFileKingPenalty_EG = 19;
 const int SemiOpenFileKingPenaltyIndex = base + 6;
 
-const int OpenFileKingPenalty_MG = -81;
+const int OpenFileKingPenalty_MG = -80;
 const int OpenFileKingPenalty_EG = 3;
 const int OpenFileKingPenaltyIndex = base + 7;
 
@@ -645,6 +645,7 @@ EvalResult Lynx::get_external_eval_result(const Chess::Board &board)
     int endGamePhase = maxPhase - gamePhase;
 
     int eval = ((middleGameScore * gamePhase) + (endGameScore * endGamePhase)) / maxPhase;
+    // eval = ((middleGameScore * gamePhase) + (endGameScore * endGamePhase));
 
     // Always white's perspective
     return EvalResult{
