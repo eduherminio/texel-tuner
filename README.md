@@ -17,6 +17,66 @@ Links to some training datasets:
 
 - ['lichess-big3.resolved'](https://discord.com/channels/1132289356011405342/1137454121876721755/1153433610527981598c)
 
+## Additions to the original tuner
+
+### Build and run instructions
+
+Instructions/examples about how to build and run the tuner are in [run.sh](./src/run.sh).
+In sort:
+
+- Make sure gcc v10 or higher is installed.
+
+- Create a `sources.csv` file under `src/` with the following format:
+  ```csv
+  # Path, WDL from side playing, position limit
+  #/home/edu/dev/texel-tuner/datasets/example.book,0,0
+  ```
+
+- Create a `build/` directory under `src/`
+
+- Inside of `src/build/`, run:
+  ```bash
+  cmake ..
+  ```
+  or
+  ```bash
+  cmake -DCMAKE_BUILD_TYPE=Debug ..
+  ```
+
+- Inside of `src/build/`, run:
+  ```bash
+  cmake --build .
+  ```
+
+- Run the executable passing the path of `sources.csv` to it:
+  ```
+  ./tuner ../sources.csv
+  ```
+
+### Checking evaluation code correctness
+
+`Is the ported evaluation code correct?` is a tricky question to answer.
+
+`print_eval` variable has been added to [config.h](./src/config.h) to answer it.
+
+When it's enabled, no tuning happens, but positions are printed next to their eval in a format that matches [Lynx's custom `staticeval` UCI command output](https://github.com/lynx-chess/Lynx).
+
+This can be used with subset of a tuning dataset (i.e. 1000 entries) and the output redirected to a file, in order to be able to compare it with your engine's actual evaluation and detect any bugs that were written by porting your evaluation code to the tuner.
+
+i.e.
+
+- Tuner:
+
+  ```bash
+  cmake --build . && ./tuner ../sources.csv > quiet-labeled-tuner-evals.epd
+  ```
+
+- Engine:
+  ```bash
+  dotnet run -c Release "staticeval quiet-labeled-subset-1_1000.epd" > quiet-labeled-evals.epd
+  ```
+
+- Compare two files manually and see if there's any difference in the evaluations
 
 ----
 
