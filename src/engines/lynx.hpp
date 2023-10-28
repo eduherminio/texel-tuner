@@ -116,7 +116,7 @@ public:
             const int piece = 5;
 
             for (int square = 0; square < 64; ++square)
-                result.push_back({(double)MiddleGamePositionalTables(piece, square), (double)EndGamePositionalTables(piece + 6, square)});
+                result.push_back({(double)MiddleGamePositionalTables(piece, square), (double)EndGamePositionalTables(piece, square)});
         }
 
         result.push_back({(double)DoubledPawnPenalty_MG, (double)DoubledPawnPenalty_EG});
