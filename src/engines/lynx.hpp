@@ -52,10 +52,10 @@ const int BishopPairBonus_EG = 65;
 const int BishopPairMaxBonusIndex = base + 9;
 
 constexpr static std::array<int, 8> PassedPawnBonus_MG = {
-    0, -2, -13, -12, 13, 38, 53, 200};
+    0, -2, -13, -12, 13, 38, 53, 0};
 
 constexpr static std::array<int, 8> PassedPawnBonus_EG = {
-    0, 5, 10, 32, 62, 132, 191, 200};
+    0, 5, 10, 32, 62, 132, 191, 0};
 
 const int PassedPawnBonusStartIndex = base + 10;
 
@@ -181,6 +181,7 @@ public:
                 auto average = (pawnSum / 48.0);
 
                 auto pieceIndex = phase * 6;
+                // pieceValues[pieceIndex] = PieceValue[phase * 5];
                 pieceValues[pieceIndex] = static_cast<int>(std::round(average));
                 std::cout << "+" << pieceValues[pieceIndex] << ", ";
             }
@@ -197,6 +198,7 @@ public:
                 auto average = (sum / 64.0);
 
                 auto pieceIndex = piece + phase * 6;
+                // pieceValues[pieceIndex] = PieceValue[piece + phase * 5];
                 pieceValues[pieceIndex] = static_cast<int>(std::round(average));
                 std::cout << "+" << pieceValues[pieceIndex] << ", ";
             }
@@ -363,7 +365,7 @@ std::pair<int, int> PawnAdditionalEvaluation(int squareIndex, int pieceIndex, co
             }
             middleGameBonus += PassedPawnBonus_MG[rank];
             endGameBonus += PassedPawnBonus_EG[rank];
-            IncrementCoefficients(coefficients, PassedPawnBonusStartIndex + rank - 1, color);   // There's no coefficient for rank 0
+            IncrementCoefficients(coefficients, PassedPawnBonusStartIndex + rank - 1, color); // There's no coefficient for rank 0
             // std::cout << "White pawn on " << squareIndex << " is passed, bonus " << PassedPawnBonus[rank] << std::endl;
         }
     }

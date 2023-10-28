@@ -10,5 +10,5 @@ cmake --build .
 
 # Release
 cmake ..
-cmake --build.
+cmake --build .
 ./tuner ../sources.csv
