@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <array>
+#include <cstdint>
 #include <vector>
 
 #define TAPERED 1

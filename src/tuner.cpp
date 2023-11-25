@@ -43,11 +43,9 @@ struct Entry
 #endif
 };
 
-static const array<WdlMarker, 6> markers
+static const array<WdlMarker, 4> markers
 {
     WdlMarker{"1.0", 1},
-    WdlMarker{"0.5", 0.5},
-    WdlMarker{"0.0", 0},
 
     WdlMarker{"1-0", 1},
     WdlMarker{"1/2-1/2", 0.5},
@@ -82,6 +80,11 @@ static tune_t get_fen_wdl(const string& original_fen, const bool original_white_
             if (word.starts_with("0."))
             {
                 wdl = stod(word);
+                marker_found = true;
+            }
+            else if (word.starts_with("[0."))
+            {
+                wdl = stod(word.substr(1, word.size() - 2));
                 marker_found = true;
             }
         }
@@ -203,27 +206,28 @@ static int32_t get_phase(const string& fen)
     return phase;
 }
 
-static int32_t get_phase(const Chess::Board& board)
+static int32_t get_phase(const chess::Board& board)
 {
     int32_t phase = 0;
 
-    for(Chess::Square square = static_cast<Chess::Square>(0); square < 64; ++square)
+    for(uint8_t square_num = 0; square_num < 64; ++square_num)
     {
-        auto piece = board.pieceAt(square);
+        const auto square = static_cast<chess::Square>(square_num);
+        const auto piece = board.at(square);
         switch (piece)
         {
-        case Chess::Piece::WHITEKNIGHT:
-        case Chess::Piece::WHITEBISHOP:
-        case Chess::Piece::BLACKKNIGHT:
-        case Chess::Piece::BLACKBISHOP:
+        case chess::Piece::WHITEKNIGHT:
+        case chess::Piece::WHITEBISHOP:
+        case chess::Piece::BLACKKNIGHT:
+        case chess::Piece::BLACKBISHOP:
             phase += 1;
             break;
-        case Chess::Piece::WHITEROOK:
-        case Chess::Piece::BLACKROOK:
+        case chess::Piece::WHITEROOK:
+        case chess::Piece::BLACKROOK:
             phase += 2;
             break;
-        case Chess::Piece::WHITEQUEEN:
-        case Chess::Piece::BLACKQUEEN:
+        case chess::Piece::WHITEQUEEN:
+        case chess::Piece::BLACKQUEEN:
             phase += 4;
             break;
         }
@@ -276,52 +280,52 @@ static void print_statistics(const parameters_t& parameters, const vector<Entry>
 constexpr tune_t inf = 1 << 20;
 struct PvEntry
 {
-    array<Chess::Move, 64> moves{};
+    array<chess::Move, 64> moves{};
     int32_t length = 0;
 };
 using pv_table_t = array<PvEntry, 64>;
 
-static int32_t get_piece_value(const Chess::Piece piece)
+static int32_t get_piece_value(const chess::Piece piece)
 {
     switch (piece)
     {
-    case Chess::Piece::WHITEPAWN:
-    case Chess::Piece::BLACKPAWN:
+    case chess::Piece::WHITEPAWN:
+    case chess::Piece::BLACKPAWN:
         return 100;
-    case Chess::Piece::WHITEKNIGHT:
-    case Chess::Piece::BLACKKNIGHT:
+    case chess::Piece::WHITEKNIGHT:
+    case chess::Piece::BLACKKNIGHT:
         return 300;
-    case Chess::Piece::WHITEBISHOP:
-    case Chess::Piece::BLACKBISHOP:
+    case chess::Piece::WHITEBISHOP:
+    case chess::Piece::BLACKBISHOP:
         return 300;
-    case Chess::Piece::WHITEROOK:
-    case Chess::Piece::BLACKROOK:
+    case chess::Piece::WHITEROOK:
+    case chess::Piece::BLACKROOK:
         return 500;
-    case Chess::Piece::WHITEQUEEN:
-    case Chess::Piece::BLACKQUEEN:
+    case chess::Piece::WHITEQUEEN:
+    case chess::Piece::BLACKQUEEN:
         return 900;
-    case Chess::Piece::WHITEKING:
-    case Chess::Piece::BLACKKING:
-    case Chess::Piece::NONE:
+    case chess::Piece::WHITEKING:
+    case chess::Piece::BLACKKING:
+    case chess::Piece::NONE:
         return 0;
         //throw std::runtime_error("Invalid piece for value");
     }
 }
 
-static int32_t mvv_lva(const Chess::Board& board, const Chess::Move move)
+static int32_t mvv_lva(const chess::Board& board, const chess::Move move)
 {
     const auto from = move.from();
     const auto to = move.to();
-    const auto piece = board.pieceAt(from);
-    Chess::Piece takes;
+    const auto piece = board.at(from);
+    chess::Piece takes;
     const auto type = move.typeOf();
-    if(type == Chess::Move::EN_PASSANT)
+    if(type == chess::Move::ENPASSANT)
     {
-        takes = board.sideToMove() == Chess::Color::WHITE ? Chess::Piece::BLACKPAWN : Chess::Piece::WHITEPAWN;
+        takes = board.sideToMove() == chess::Color::WHITE ? chess::Piece::BLACKPAWN : chess::Piece::WHITEPAWN;
     }
     else
     {
-        takes = board.pieceAt(to);
+        takes = board.at(to);
     }
 
     auto score = get_piece_value(takes);
@@ -330,7 +334,7 @@ static int32_t mvv_lva(const Chess::Board& board, const Chess::Move move)
     return score;
 }
 
-static tune_t quiescence(Chess::Board& board, const parameters_t& parameters, pv_table_t& pv_table, tune_t alpha, tune_t beta, const int32_t ply)
+static tune_t quiescence(chess::Board& board, const parameters_t& parameters, pv_table_t& pv_table, tune_t alpha, tune_t beta, const int32_t ply)
 {
     pv_table[ply].length = 0;
 
@@ -346,7 +350,7 @@ static tune_t quiescence(Chess::Board& board, const parameters_t& parameters, pv
     }
 
     Entry entry;
-    entry.white_to_move = board.sideToMove() == Chess::Color::WHITE;
+    entry.white_to_move = board.sideToMove() == chess::Color::WHITE;
 #if TAPERED
     entry.endgame_scale = eval_result.endgame_scale;
 #endif
@@ -371,8 +375,8 @@ static tune_t quiescence(Chess::Board& board, const parameters_t& parameters, pv
         alpha = eval;
     }
 
-    Chess::Movelist<Chess::Move> moves;
-    Chess::Movegen::legalmoves<Chess::Move, Chess::MoveGenType::CAPTURE>(moves, board);
+    chess::Movelist moves;
+    chess::movegen::legalmoves<chess::MoveGenType::CAPTURE>(moves, board);
     array<int32_t, 64> move_scores;
     for (int32_t move_index = 0; move_index < moves.size(); move_index++)
     {
@@ -385,7 +389,7 @@ static tune_t quiescence(Chess::Board& board, const parameters_t& parameters, pv
     }
 
     tune_t best_score = -inf;
-    auto best_move = Chess::Move(Chess::Move::NO_MOVE);
+    auto best_move = chess::Move(chess::Move::NO_MOVE);
     //for (const auto& move : movelist) {
     for(int32_t move_index = 0; move_index < moves.size(); move_index++)
     {
@@ -437,9 +441,8 @@ static tune_t quiescence(Chess::Board& board, const parameters_t& parameters, pv
     return best_score;
 }
 
-string quiescence_root(const parameters_t& parameters, const string& initial_fen)
+string cleanup_fen(const string& initial_fen)
 {
-    pv_table_t pv_table {};
     int space_count = 0;
     size_t pos = 0;
     for (size_t i = 0; i < initial_fen.size(); ++i) {
@@ -452,10 +455,16 @@ string quiescence_root(const parameters_t& parameters, const string& initial_fen
         }
     }
     const auto clean_fen = initial_fen.substr(0, pos);
+    return clean_fen;
+}
 
-    auto board = Chess::Board(clean_fen);
+chess::Board quiescence_root(const parameters_t& parameters, const string& initial_fen)
+{
+    pv_table_t pv_table {};
+    const auto clean_fen = cleanup_fen(initial_fen);
+    auto board = chess::Board(clean_fen);
     auto score = quiescence(board, parameters, pv_table, -inf, inf, 0);
-    if(board.sideToMove() == Chess::Color::BLACK)
+    if(board.sideToMove() == chess::Color::BLACK)
     {
         score = -score;
     }
@@ -477,28 +486,38 @@ string quiescence_root(const parameters_t& parameters, const string& initial_fen
         board.makeMove(pv_table[0].moves[pv_index]);
     }
 
-    auto result_fen = board.getFen();
-    return result_fen;
+    return board;
 }
 
-static void load_fen(const DataSource& source, const parameters_t& parameters, const high_resolution_clock::time_point start, vector<Entry>& entries, const string& original_fen)
+static void parse_fen(const bool side_to_move_wdl, const parameters_t& parameters, vector<Entry>& entries, const string& original_fen)
 {
     if constexpr (print_data_entries)
     {
         //cout << fen;
     }
 
-    string fen;
+    //string fen;
+    chess::Board board;
     if constexpr (enable_qsearch)
     {
-        fen = quiescence_root(parameters, original_fen);
+        board = quiescence_root(parameters, original_fen);
     }
     else
     {
-        fen = original_fen;
+        const auto clean_fen = cleanup_fen(original_fen);
+        board = chess::Board(clean_fen);
     }
 
-    const auto eval_result = TuneEval::get_fen_eval_result(fen);
+    EvalResult eval_result;
+    if constexpr (TuneEval::supports_external_chess_eval)
+    {
+        eval_result = TuneEval::get_external_eval_result(board);
+    }
+    else
+    {
+        auto fen = board.getFen();
+        eval_result = TuneEval::get_fen_eval_result(fen);
+    }
 
     if constexpr (print_eval)
     {
@@ -506,16 +525,17 @@ static void load_fen(const DataSource& source, const parameters_t& parameters, c
     }
 
     Entry entry;
-    entry.white_to_move = get_fen_color_to_move(fen);
+    //entry.white_to_move = get_fen_color_to_move(fen);
+    entry.white_to_move = board.sideToMove() == chess::Color::WHITE;
 #if TAPERED
     entry.endgame_scale = eval_result.endgame_scale;
 #endif
     const bool original_white_to_move = get_fen_color_to_move(original_fen);
     //cout << (entry.white_to_move ? "w" : "b") << " ";
-    entry.wdl = get_fen_wdl(original_fen, original_white_to_move, entry.white_to_move, source.side_to_move_wdl);
+    entry.wdl = get_fen_wdl(original_fen, original_white_to_move, entry.white_to_move, side_to_move_wdl);
     get_coefficient_entries(eval_result.coefficients, entry.coefficients, static_cast<int32_t>(parameters.size()));
 #if TAPERED
-    entry.phase = get_phase(fen);
+    entry.phase = get_phase(board);
 #endif
     entry.additional_score = 0;
     if constexpr (TuneEval::includes_additional_score)
@@ -531,26 +551,25 @@ static void load_fen(const DataSource& source, const parameters_t& parameters, c
     entries.push_back(entry);
 }
 
-static void load_fens(const DataSource& source, const parameters_t& parameters, const high_resolution_clock::time_point start, vector<Entry>& entries)
+static void read_fens(const DataSource& source, const high_resolution_clock::time_point start, vector<string>& fens)
 {
-    cout << "Loading " << source.path;
-    if(source.position_limit > 0)
+    cout << "Reading " << source.path;
+    if (source.position_limit > 0)
     {
         cout << " (" << source.position_limit << " positions)";
     }
     cout << "..." << endl;
 
     ifstream file(source.path);
-    if(!file)
+    if (!file)
     {
         cout << "Failed to open " << source.path << endl;
         throw runtime_error("Failed to open data source");
     }
 
-    int64_t position_count = 0;
     while (!file.eof())
     {
-        if (source.position_limit > 0 && position_count >= source.position_limit)
+        if (source.position_limit > 0 && fens.size() >= source.position_limit)
         {
             break;
         }
@@ -562,18 +581,89 @@ static void load_fens(const DataSource& source, const parameters_t& parameters, 
             break;
         }
 
-        load_fen(source, parameters, start, entries, original_fen);
-
-        position_count++;
-        if (position_count % data_load_print_interval == 0)
-        {
-            print_elapsed(start);
-            std::cout << "Loaded " << position_count << " entries..." << std::endl;
-        }
+        fens.push_back(original_fen);
     }
 
     print_elapsed(start);
-    std::cout << "Loaded " << position_count << " entries from " << source.path << ", " << entries.size() << " total" << std::endl;
+    std::cout << "Read " << fens.size() << " positions from " << source.path << endl;
+}
+
+static void parse_fens(ThreadPool& thread_pool, const DataSource& source, const vector<string>& fens, const parameters_t& parameters, const high_resolution_clock::time_point time_start, vector<Entry>& entries)
+{
+    cout << "Parsing " << fens.size() << " positions..." << endl;
+    array<vector<Entry>, data_load_thread_count> thread_entries;
+    const auto side_to_move_wdl = source.side_to_move_wdl;
+    constexpr int batch_size = 10000;
+    mutex mut;
+    queue<vector<string>> batches;
+    vector<string> current_batch;
+    for(const auto& fen : fens)
+    {
+        current_batch.push_back(fen);
+        if (current_batch.size() == batch_size)
+        {
+            batches.emplace(current_batch);
+            current_batch.clear();
+        }
+    }
+    if(!current_batch.empty())
+    {
+        batches.emplace(current_batch);
+    }
+
+    for (int thread_id = 0; thread_id < data_load_thread_count; thread_id++)
+    {
+        thread_pool.enqueue([thread_id, &thread_entries, &mut, side_to_move_wdl, parameters, &batches, time_start]()
+        {
+            vector<Entry> entries;
+
+            int position_count = 0;
+            while(true)
+            {
+                vector<string> thread_batch;
+                {
+                    lock_guard lock(mut);
+                    if(batches.empty())
+                    {
+                        break;
+                    }
+                    thread_batch = batches.front();
+                    batches.pop();
+                }
+
+                constexpr auto thread_data_load_print_interval = data_load_print_interval / data_load_thread_count;
+                for(auto& fen : thread_batch)
+                {
+                    parse_fen(side_to_move_wdl, parameters, entries, fen);
+                    position_count++;
+                    if (thread_id == 0 && position_count % thread_data_load_print_interval == 0)
+                    {
+                        print_elapsed(time_start);
+                        std::cout << "Parsed ~" << position_count * data_load_thread_count << " positions..." << endl;
+                    }
+                }
+            }
+
+            thread_entries[thread_id] = entries;
+        });
+    }
+
+    thread_pool.wait_for_completion();
+
+    for (int thread_id = 0; thread_id < data_load_thread_count; thread_id++)
+    {
+        for(const Entry& entry : thread_entries[thread_id])
+        {
+            entries.push_back(entry);
+        }
+    }
+}
+
+static void load_fens(ThreadPool& thread_pool, const DataSource& source, const parameters_t& parameters, const high_resolution_clock::time_point start, vector<Entry>& entries)
+{
+    vector<string> fens;
+    read_fens(source, start, fens);
+    parse_fens(thread_pool, source, fens, parameters, start, entries);
 }
 
 static tune_t sigmoid(const tune_t K, const tune_t eval)
@@ -729,9 +819,10 @@ if constexpr (!print_eval)
     //debug_entry.initial_eval = linear_eval(debug_entry, parameters);
     //entries.push_back(debug_entry);
 
+    vector<string> fens;
     for (const auto& source : sources)
     {
-        load_fens(source, parameters, start, entries);
+        load_fens(thread_pool, source, parameters, start, entries);
     }
     cout << "Data loading complete" << endl << endl;
 
@@ -773,7 +864,7 @@ if constexpr (!print_eval)
     cout << "Initial error = " << avg_error << endl;
 
     const auto loop_start = high_resolution_clock::now();
-    tune_t learning_rate = 1;
+    tune_t learning_rate = initial_learning_rate;
     int32_t max_tune_epoch = max_epoch;
 #if TAPERED
     parameters_t momentum(parameters.size(), pair_t{});
@@ -782,7 +873,7 @@ if constexpr (!print_eval)
     parameters_t momentum(parameters.size(), 0);
     parameters_t velocity(parameters.size(), 0);
 #endif
-    for (int epoch = 1; epoch < max_tune_epoch; epoch++)
+    for (int32_t epoch = 1; epoch < max_tune_epoch; epoch++)
     {
 #if TAPERED
         parameters_t gradient(parameters.size(), pair_t{});
@@ -823,11 +914,9 @@ if constexpr (!print_eval)
             TuneEval::print_parameters(parameters);
         }
 
-        constexpr int lr_drop_interval = 10000;
-        constexpr tune_t lr_drop_ratio = 1;
-        if(epoch % lr_drop_interval == 0)
+        if(epoch % learning_rate_drop_interval == 0)
         {
-            learning_rate *= lr_drop_ratio;
+            learning_rate *= learning_rate_drop_ratio;
         }
     }
 
