@@ -517,12 +517,13 @@ static void parse_fen(const bool side_to_move_wdl, const parameters_t& parameter
     {
         auto fen = board.getFen();
         eval_result = TuneEval::get_fen_eval_result(fen);
+
+        if constexpr (print_eval)
+        {
+            std::cout << fen << ": " << TuneEval::NormalizeScore(eval_result.score) << std::endl;
+        }
     }
 
-    if constexpr (print_eval)
-    {
-        std::cout << fen << ": " << TuneEval::NormalizeScore(eval_result.score) << std::endl;
-    }
 
     Entry entry;
     //entry.white_to_move = get_fen_color_to_move(fen);

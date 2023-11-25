@@ -143,12 +143,12 @@ public:
 
     static EvalResult get_fen_eval_result(const std::string &fen)
     {
-        Chess::Board board;
-        board.loadFen(fen);
+        chess::Board board;
+        board.setFen(fen);
         return get_external_eval_result(board);
     }
 
-    static EvalResult get_external_eval_result(const Chess::Board &board);
+    static EvalResult get_external_eval_result(const chess::Board &board);
 
     static int NormalizeScore(int score);
 
@@ -321,22 +321,22 @@ public:
 
 static inline parameters_t initialParameters = Lynx::get_initial_parameters();
 
-void IncrementCoefficients(coefficients_t &coefficients, int index, const Chess::Color &color, int increment = 1)
+void IncrementCoefficients(coefficients_t &coefficients, int index, const chess::Color &color, int increment = 1)
 {
-    coefficients[index] += color == Chess::Color::WHITE
+    coefficients[index] += color == chess::Color::WHITE
                                ? increment
                                : -increment;
 }
 
-Chess::U64 GetPieceSwappingEndianness(const Chess::Board &board, const Chess::PieceType &piece, const Chess::Color &color)
+chess::U64 GetPieceSwappingEndianness(const chess::Board &board, const chess::PieceType &piece, const chess::Color &color)
 {
     return __builtin_bswap64(board.pieces(piece, color));
 }
 
-std::pair<int, int> PawnAdditionalEvaluation(int squareIndex, int pieceIndex, const Chess::Board &board, const Chess::Color &color, coefficients_t &coefficients)
+std::pair<int, int> PawnAdditionalEvaluation(int squareIndex, int pieceIndex, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
 {
     int middleGameBonus = 0, endGameBonus = 0;
-    auto doublePawnsCount = Chess::popcount(GetPieceSwappingEndianness(board, Chess::PieceType::PAWN, color) & (FileMasks[squareIndex]));
+    auto doublePawnsCount = chess::builtin::popcount(GetPieceSwappingEndianness(board, chess::PieceType::PAWN, color) & (FileMasks[squareIndex]));
     if (doublePawnsCount > 1)
     {
         middleGameBonus += doublePawnsCount * DoubledPawnPenalty_MG;
@@ -344,19 +344,19 @@ std::pair<int, int> PawnAdditionalEvaluation(int squareIndex, int pieceIndex, co
         IncrementCoefficients(coefficients, DoubledPawnPenaltyIndex, color);
     }
 
-    if ((GetPieceSwappingEndianness(board, Chess::PieceType::PAWN, color) & IsolatedPawnMasks[squareIndex]) == 0) // isIsolatedPawn
+    if ((GetPieceSwappingEndianness(board, chess::PieceType::PAWN, color) & IsolatedPawnMasks[squareIndex]) == 0) // isIsolatedPawn
     {
         middleGameBonus += IsolatedPawnPenalty_MG;
         endGameBonus += IsolatedPawnPenalty_EG;
         IncrementCoefficients(coefficients, IsolatedPawnPenaltyIndex, color);
     }
 
-    if (color == Chess::Color::WHITE)
+    if (color == chess::Color::WHITE)
     {
 
-        if ((GetPieceSwappingEndianness(board, Chess::PieceType::PAWN, Chess::Color::BLACK) & WhitePassedPawnMasks[squareIndex]) == 0) // isPassedPawn
+        if ((GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK) & WhitePassedPawnMasks[squareIndex]) == 0) // isPassedPawn
         {
-            // std::cout << "Piece: " << GetPiece(board, Chess::PieceType::PAWN, Chess::Color::BLACK) << std::endl;
+            // std::cout << "Piece: " << GetPiece(board, chess::PieceType::PAWN, chess::Color::BLACK) << std::endl;
             // std::cout << "Mask: " << WhitePassedPawnMasks[squareIndex] << std::endl;
             auto rank = Rank[squareIndex];
             if (pieceIndex == 6)
@@ -372,7 +372,7 @@ std::pair<int, int> PawnAdditionalEvaluation(int squareIndex, int pieceIndex, co
     else
     {
 
-        if ((GetPieceSwappingEndianness(board, Chess::PieceType::PAWN, Chess::Color::WHITE) & BlackPassedPawnMasks[squareIndex]) == 0) // isPassedPawn
+        if ((GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE) & BlackPassedPawnMasks[squareIndex]) == 0) // isPassedPawn
         {
             auto rank = Rank[squareIndex];
             rank = 7 - rank;
@@ -387,11 +387,11 @@ std::pair<int, int> PawnAdditionalEvaluation(int squareIndex, int pieceIndex, co
     return std::make_pair(middleGameBonus, endGameBonus);
 }
 
-std::pair<int, int> RookAdditonalEvaluation(int squareIndex, int pieceIndex, const Chess::Board &board, const Chess::Color &color, coefficients_t &coefficients)
+std::pair<int, int> RookAdditonalEvaluation(int squareIndex, int pieceIndex, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
 {
     const int pawnToRookOffset = 3;
 
-    if (((GetPieceSwappingEndianness(board, Chess::PieceType::PAWN, Chess::Color::WHITE) | GetPieceSwappingEndianness(board, Chess::PieceType::PAWN, Chess::Color::BLACK)) & FileMasks[squareIndex]) == 0) // isOpenFile
+    if (((GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE) | GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK)) & FileMasks[squareIndex]) == 0) // isOpenFile
     {
         // std::cout << "OpenFileRookBonus" << std::endl;
         IncrementCoefficients(coefficients, OpenFileRookBonusIndex, color);
@@ -399,11 +399,11 @@ std::pair<int, int> RookAdditonalEvaluation(int squareIndex, int pieceIndex, con
         return std::make_pair(OpenFileRookBonus_MG, OpenFileRookBonus_EG);
     }
 
-    if (color == Chess::Color::WHITE)
+    if (color == chess::Color::WHITE)
     {
-        if ((GetPieceSwappingEndianness(board, Chess::PieceType::PAWN, Chess::Color::WHITE) & FileMasks[squareIndex]) == 0) // isSemiOpenFile
+        if ((GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE) & FileMasks[squareIndex]) == 0) // isSemiOpenFile
         {
-            // std::cout << "Piece: " << GetPiece(board, Chess::PieceType::ROOK, Chess::Color::BLACK) << std::endl;
+            // std::cout << "Piece: " << GetPiece(board, chess::PieceType::ROOK, chess::Color::BLACK) << std::endl;
             // std::cout << "Mask: " << FileMasks[squareIndex] << std::endl;
             // std::cout << "SemiOpenFileRookBonus white" << std::endl;
             IncrementCoefficients(coefficients, SemiOpenFileRookBonusIndex, color);
@@ -413,7 +413,7 @@ std::pair<int, int> RookAdditonalEvaluation(int squareIndex, int pieceIndex, con
     }
     else
     {
-        if ((GetPieceSwappingEndianness(board, Chess::PieceType::PAWN, Chess::Color::BLACK) & FileMasks[squareIndex]) == 0) // isSemiOpenFile
+        if ((GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK) & FileMasks[squareIndex]) == 0) // isSemiOpenFile
         {
             // std::cout << "SemiOpenFileRookBonus black" << std::endl;
             IncrementCoefficients(coefficients, SemiOpenFileRookBonusIndex, color);
@@ -425,11 +425,11 @@ std::pair<int, int> RookAdditonalEvaluation(int squareIndex, int pieceIndex, con
     return std::make_pair(0, 0);
 }
 
-std::pair<int, int> BishopAdditionalEvaluation(int squareIndex, int pieceIndex, const int pieceCount[], const Chess::Board &board, const Chess::Color &color, coefficients_t &coefficients)
+std::pair<int, int> BishopAdditionalEvaluation(int squareIndex, int pieceIndex, const int pieceCount[], const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
 {
     int middleGameBonus = 0, endGameBonus = 0;
 
-    auto mobilityCount = Chess::popcount(Chess::Attacks::BISHOP(static_cast<Chess::Square>(squareIndex), __builtin_bswap64(board.occ())));
+    auto mobilityCount = chess::builtin::popcount(chess::attacks::bishop(static_cast<chess::Square>(squareIndex), __builtin_bswap64(board.occ())));
     IncrementCoefficients(coefficients, BishopMobilityBonusIndex, color, mobilityCount);
 
     middleGameBonus += BishopMobilityBonus_MG * mobilityCount;
@@ -445,52 +445,52 @@ std::pair<int, int> BishopAdditionalEvaluation(int squareIndex, int pieceIndex, 
     return std::make_pair(middleGameBonus, endGameBonus);
 }
 
-std::pair<int, int> QueenAdditionalEvaluation(int squareIndex, const Chess::Board &board, const Chess::Color &color, coefficients_t &coefficients)
+std::pair<int, int> QueenAdditionalEvaluation(int squareIndex, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
 {
-    auto mobilityCount = Chess::popcount(Chess::Attacks::QUEEN(static_cast<Chess::Square>(squareIndex), __builtin_bswap64(board.occ())));
+    auto mobilityCount = chess::builtin::popcount(chess::attacks::queen(static_cast<chess::Square>(squareIndex), __builtin_bswap64(board.occ())));
     IncrementCoefficients(coefficients, QueenMobilityBonusIndex, color, mobilityCount);
 
     return std::make_pair(QueenMobilityBonus_MG * mobilityCount, QueenMobilityBonus_EG * mobilityCount);
 }
 
-std::pair<int, int> KingAdditionalEvaluation(int squareIndex, Chess::Color kingSide, const Chess::Board &board, const int pieceCount[], coefficients_t &coefficients)
+std::pair<int, int> KingAdditionalEvaluation(int squareIndex, chess::Color kingSide, const chess::Board &board, const int pieceCount[], coefficients_t &coefficients)
 {
     int middleGameBonus = 0, endGameBonus = 0;
-    auto kingSideOffset = kingSide == Chess::Color::WHITE ? 0 : 6;
+    auto kingSideOffset = kingSide == chess::Color::WHITE ? 0 : 6;
 
     if (pieceCount[9 - kingSideOffset] + pieceCount[10 - kingSideOffset] != 0) // areThereOppositeSideRooksOrQueens
     {
-        if (((GetPieceSwappingEndianness(board, Chess::PieceType::PAWN, Chess::Color::WHITE) | GetPieceSwappingEndianness(board, Chess::PieceType::PAWN, Chess::Color::BLACK)) & FileMasks[squareIndex]) == 0) // isOpenFile
+        if (((GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE) | GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK)) & FileMasks[squareIndex]) == 0) // isOpenFile
         {
-            // std::cout << "Open: " << (kingSide == Chess::Color::WHITE ? "White" : "Black") << std::endl;
+            // std::cout << "Open: " << (kingSide == chess::Color::WHITE ? "White" : "Black") << std::endl;
             middleGameBonus += OpenFileKingPenalty_MG;
             endGameBonus += OpenFileKingPenalty_EG;
             IncrementCoefficients(coefficients, OpenFileKingPenaltyIndex, kingSide);
         }
-        else if (kingSide == Chess::Color::WHITE && (GetPieceSwappingEndianness(board, Chess::PieceType::PAWN, Chess::Color::WHITE) & FileMasks[squareIndex]) == 0) // isSemiOpenFile
+        else if (kingSide == chess::Color::WHITE && (GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE) & FileMasks[squareIndex]) == 0) // isSemiOpenFile
         {
-            // std::cout << "Semiopen: " << (kingSide == Chess::Color::WHITE ? "White" : "Black") << std::endl;
+            // std::cout << "Semiopen: " << (kingSide == chess::Color::WHITE ? "White" : "Black") << std::endl;
             middleGameBonus += SemiOpenFileKingPenalty_MG;
             endGameBonus += SemiOpenFileKingPenalty_EG;
             IncrementCoefficients(coefficients, SemiOpenFileKingPenaltyIndex, kingSide);
         }
-        else if (kingSide == Chess::Color::BLACK && (GetPieceSwappingEndianness(board, Chess::PieceType::PAWN, Chess::Color::BLACK) & FileMasks[squareIndex]) == 0) // isSemiOpenFile
+        else if (kingSide == chess::Color::BLACK && (GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK) & FileMasks[squareIndex]) == 0) // isSemiOpenFile
         {
-            // std::cout << "Semiopen: "  << (kingSide == Chess::Color::WHITE ? "White" : "Black") << std::endl;
+            // std::cout << "Semiopen: "  << (kingSide == chess::Color::WHITE ? "White" : "Black") << std::endl;
             middleGameBonus += SemiOpenFileKingPenalty_MG;
             endGameBonus += SemiOpenFileKingPenalty_EG;
             IncrementCoefficients(coefficients, SemiOpenFileKingPenaltyIndex, kingSide);
         }
     }
 
-    auto ownPiecesAroundCount = Chess::popcount(Chess::Attacks::KING(static_cast<Chess::Square>(squareIndex)) & __builtin_bswap64(board.us(kingSide)));
+    auto ownPiecesAroundCount = chess::builtin::popcount(chess::attacks::king(static_cast<chess::Square>(squareIndex)) & __builtin_bswap64(board.us(kingSide)));
     IncrementCoefficients(coefficients, KingShieldBonusIndex, kingSide, ownPiecesAroundCount);
 
     return std::make_pair(middleGameBonus + KingShieldBonus_MG * ownPiecesAroundCount,
                           endGameBonus + KingShieldBonus_EG * ownPiecesAroundCount);
 }
 
-std::pair<int, int> AdditionalPieceEvaluation(int pieceSquareIndex, int pieceIndex, const int pieceCount[], const Chess::Board &board, const Chess::Color &color, coefficients_t &coefficients)
+std::pair<int, int> AdditionalPieceEvaluation(int pieceSquareIndex, int pieceIndex, const int pieceCount[], const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
 {
     switch (pieceIndex)
     {
@@ -521,7 +521,7 @@ int Lynx::NormalizeScore(int score)
                : score * 100 / EvalNormalizationCoefficient;
 }
 
-EvalResult Lynx::get_external_eval_result(const Chess::Board &board)
+EvalResult Lynx::get_external_eval_result(const chess::Board &board)
 {
     std::vector<std::int16_t> coefficients(numParameters, 0);
 
@@ -534,12 +534,12 @@ EvalResult Lynx::get_external_eval_result(const Chess::Board &board)
     for (int pieceIndex = 0; pieceIndex < 5; ++pieceIndex)
     {
         // Bitboard copy that we 'empty'
-        auto bitboard = GetPieceSwappingEndianness(board, (Chess::PieceType)pieceIndex, Chess::Color::WHITE);
+        auto bitboard = GetPieceSwappingEndianness(board, (chess::PieceType)pieceIndex, chess::Color::WHITE);
         // std::cout << pieceIndex << "bb: " << bitboard << std::endl;
         while (bitboard != 0)
         {
-            auto pieceSquareIndex = Chess::lsb(bitboard);
-            Chess::poplsb(bitboard);
+            auto pieceSquareIndex = chess::builtin::lsb(bitboard);
+            chess::builtin::poplsb(bitboard);
 
             middleGameScore += MiddleGamePositionalTables(pieceIndex, pieceSquareIndex) + PieceValue[pieceIndex];
             endGameScore += EndGamePositionalTables(pieceIndex, pieceSquareIndex) + PieceValue[pieceIndex + 5];
@@ -547,14 +547,14 @@ EvalResult Lynx::get_external_eval_result(const Chess::Board &board)
 
             ++pieceCount[pieceIndex];
 
-            auto pair = AdditionalPieceEvaluation(pieceSquareIndex, pieceIndex, pieceCount, board, Chess::Color::WHITE, coefficients);
+            auto pair = AdditionalPieceEvaluation(pieceSquareIndex, pieceIndex, pieceCount, board, chess::Color::WHITE, coefficients);
             middleGameScore += pair.first;
             endGameScore += pair.second;
 
             if (pieceIndex == 0)
-                IncrementCoefficients(coefficients, pieceSquareIndex - 8, Chess::Color::WHITE);
+                IncrementCoefficients(coefficients, pieceSquareIndex - 8, chess::Color::WHITE);
             else
-                IncrementCoefficients(coefficients, 64 * pieceIndex + pieceSquareIndex - 16, Chess::Color::WHITE);
+                IncrementCoefficients(coefficients, 64 * pieceIndex + pieceSquareIndex - 16, chess::Color::WHITE);
         }
     }
 
@@ -562,12 +562,12 @@ EvalResult Lynx::get_external_eval_result(const Chess::Board &board)
     {
         auto tunerPieceIndex = (pieceIndex - 6); // [0, 5]
         // Bitboard copy that we 'empty'
-        auto bitboard = GetPieceSwappingEndianness(board, (Chess::PieceType)tunerPieceIndex, Chess::Color::BLACK);
+        auto bitboard = GetPieceSwappingEndianness(board, (chess::PieceType)tunerPieceIndex, chess::Color::BLACK);
 
         while (bitboard != 0)
         {
-            auto pieceSquareIndex = Chess::lsb(bitboard);
-            Chess::poplsb(bitboard);
+            auto pieceSquareIndex = chess::builtin::lsb(bitboard);
+            chess::builtin::poplsb(bitboard);
 
             middleGameScore += MiddleGamePositionalTables(pieceIndex, pieceSquareIndex) - PieceValue[tunerPieceIndex];
             endGameScore += EndGamePositionalTables(pieceIndex, pieceSquareIndex) - PieceValue[tunerPieceIndex + 5];
@@ -575,33 +575,33 @@ EvalResult Lynx::get_external_eval_result(const Chess::Board &board)
 
             ++pieceCount[pieceIndex];
 
-            auto pair = AdditionalPieceEvaluation(pieceSquareIndex, pieceIndex, pieceCount, board, Chess::Color::BLACK, coefficients);
+            auto pair = AdditionalPieceEvaluation(pieceSquareIndex, pieceIndex, pieceCount, board, chess::Color::BLACK, coefficients);
             middleGameScore -= pair.first;
             endGameScore -= pair.second;
 
             if (pieceIndex == 6)
-                IncrementCoefficients(coefficients, pieceSquareIndex - 8, Chess::Color::BLACK);
+                IncrementCoefficients(coefficients, pieceSquareIndex - 8, chess::Color::BLACK);
             else
-                IncrementCoefficients(coefficients, 64 * tunerPieceIndex + pieceSquareIndex - 16, Chess::Color::BLACK);
+                IncrementCoefficients(coefficients, 64 * tunerPieceIndex + pieceSquareIndex - 16, chess::Color::BLACK);
         }
     }
 
-    auto whiteKing = Chess::lsb(GetPieceSwappingEndianness(board, Chess::PieceType::KING, Chess::Color::WHITE));
-    auto kingPair = KingAdditionalEvaluation(whiteKing, Chess::Color::WHITE, board, pieceCount, coefficients);
+    auto whiteKing = chess::builtin::lsb(GetPieceSwappingEndianness(board, chess::PieceType::KING, chess::Color::WHITE));
+    auto kingPair = KingAdditionalEvaluation(whiteKing, chess::Color::WHITE, board, pieceCount, coefficients);
     middleGameScore += MiddleGamePositionalTables(5, whiteKing) + kingPair.first;
     endGameScore += EndGamePositionalTables(5, whiteKing) + kingPair.second;
-    IncrementCoefficients(coefficients, 64 * 5 + whiteKing - 16, Chess::Color::WHITE);
+    IncrementCoefficients(coefficients, 64 * 5 + whiteKing - 16, chess::Color::WHITE);
 
-    auto blackKing = Chess::lsb(GetPieceSwappingEndianness(board, Chess::PieceType::KING, Chess::Color::BLACK));
-    kingPair = KingAdditionalEvaluation(blackKing, Chess::Color::BLACK, board, pieceCount, coefficients);
+    auto blackKing = chess::builtin::lsb(GetPieceSwappingEndianness(board, chess::PieceType::KING, chess::Color::BLACK));
+    kingPair = KingAdditionalEvaluation(blackKing, chess::Color::BLACK, board, pieceCount, coefficients);
     middleGameScore += MiddleGamePositionalTables(11, blackKing) - kingPair.first;
     endGameScore += EndGamePositionalTables(11, blackKing) - kingPair.second;
-    IncrementCoefficients(coefficients, 64 * 5 + blackKing - 16, Chess::Color::BLACK);
+    IncrementCoefficients(coefficients, 64 * 5 + blackKing - 16, chess::Color::BLACK);
 
     // Debugging eval
     // return EvalResult{
     //     std::move(coefficients),
-    //     (double)(board.sideToMove() == Chess::Color::WHITE
+    //     (double)(board.sideToMove() == chess::Color::WHITE
     //                  ? eval
     //                  : -eval)};
 
