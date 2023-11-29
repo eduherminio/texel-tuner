@@ -518,10 +518,11 @@ static void parse_fen(const bool side_to_move_wdl, const parameters_t& parameter
         auto fen = board.getFen();
         eval_result = TuneEval::get_fen_eval_result(fen);
 
-        if constexpr (print_eval)
-        {
-            std::cout << fen << ": " << TuneEval::NormalizeScore(eval_result.score) << std::endl;
-        }
+    }
+
+    if constexpr (print_eval)
+    {
+        std::cout << original_fen << ": " << TuneEval::NormalizeScore(eval_result.score) << std::endl;
     }
 
 
@@ -803,11 +804,11 @@ void Tuner::run(const std::vector<DataSource>& sources)
     auto parameters = TuneEval::get_initial_parameters();
     cout << "Got " << parameters.size() << " parameters" << endl;
 
-if constexpr (!print_eval)
-{
-    cout << "Initial parameters:" << endl;
-    TuneEval::print_parameters(parameters);
-}
+    if constexpr (!print_eval)
+    {
+        cout << "Initial parameters:" << endl;
+        TuneEval::print_parameters(parameters);
+    }
 
     vector<Entry> entries;
 
@@ -828,10 +829,12 @@ if constexpr (!print_eval)
     cout << "Data loading complete" << endl << endl;
 
     print_statistics(parameters, entries);
+
     if constexpr (print_eval)
     {
         return;
     }
+
     if constexpr (retune_from_zero)
     {
         for (auto& parameter : parameters)

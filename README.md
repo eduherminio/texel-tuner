@@ -17,6 +17,10 @@ Links to some training datasets:
 
 - ['lichess-big3.resolved'](https://discord.com/channels/1132289356011405342/1137454121876721755/1153433610527981598c)
 
+- ['Stash data'](https://drive.google.com/file/d/1LaaW7bNHBnyEdt51MP6SAZCbSdPzlk8d/view) transformed into a format comptatible with this tuner by [cj5716](https://github.com/cj5716)
+
+- [Ethereal data dump](https://www.talkchess.com/forum3/viewtopic.php?f=7&t=75350)
+
 ## Additions to the original tuner
 
 ### Build and run instructions

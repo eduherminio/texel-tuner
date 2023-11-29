@@ -11,51 +11,51 @@ using u64 = uint64_t;
 
 const int base = 64 * 6 - 16; // Removing pawns from 1 and 8 rank
 
-const int DoubledPawnPenalty_MG = -3;
-const int DoubledPawnPenalty_EG = -11;
+const int DoubledPawnPenalty_MG = -5;
+const int DoubledPawnPenalty_EG = -14;
 const int DoubledPawnPenaltyIndex = base + 0;
 
-const int IsolatedPawnPenalty_MG = -13;
-const int IsolatedPawnPenalty_EG = -10;
+const int IsolatedPawnPenalty_MG = -17;
+const int IsolatedPawnPenalty_EG = -14;
 const int IsolatedPawnPenaltyIndex = base + 1;
 
-const int OpenFileRookBonus_MG = 42;
-const int OpenFileRookBonus_EG = 22;
+const int OpenFileRookBonus_MG = 60;
+const int OpenFileRookBonus_EG = 28;
 const int OpenFileRookBonusIndex = base + 2;
 
-const int SemiOpenFileRookBonus_MG = 18;
-const int SemiOpenFileRookBonus_EG = 16;
+const int SemiOpenFileRookBonus_MG = 25;
+const int SemiOpenFileRookBonus_EG = 23;
 const int SemiOpenFileRookBonusIndex = base + 3;
 
-const int BishopMobilityBonus_MG = 8;
-const int BishopMobilityBonus_EG = 7;
+const int BishopMobilityBonus_MG = 10;
+const int BishopMobilityBonus_EG = 10;
 const int BishopMobilityBonusIndex = base + 4;
 
-const int QueenMobilityBonus_MG = 2;
-const int QueenMobilityBonus_EG = 7;
+const int QueenMobilityBonus_MG = 3;
+const int QueenMobilityBonus_EG = 9;
 const int QueenMobilityBonusIndex = base + 5;
 
-const int SemiOpenFileKingPenalty_MG = -29;
-const int SemiOpenFileKingPenalty_EG = 19;
+const int SemiOpenFileKingPenalty_MG = -38;
+const int SemiOpenFileKingPenalty_EG = 25;
 const int SemiOpenFileKingPenaltyIndex = base + 6;
 
-const int OpenFileKingPenalty_MG = -80;
-const int OpenFileKingPenalty_EG = 3;
+const int OpenFileKingPenalty_MG = -107;
+const int OpenFileKingPenalty_EG = 4;
 const int OpenFileKingPenaltyIndex = base + 7;
 
-const int KingShieldBonus_MG = 15;
-const int KingShieldBonus_EG = -5;
+const int KingShieldBonus_MG = 19;
+const int KingShieldBonus_EG = -6;
 const int KingShieldBonusIndex = base + 8;
 
-const int BishopPairBonus_MG = 22;
-const int BishopPairBonus_EG = 65;
+const int BishopPairBonus_MG = 30;
+const int BishopPairBonus_EG = 88;
 const int BishopPairMaxBonusIndex = base + 9;
 
 constexpr static std::array<int, 8> PassedPawnBonus_MG = {
-    0, -2, -13, -12, 13, 38, 53, 0};
+    0, -2, -16, -16, 20, 61, 92, 0};
 
 constexpr static std::array<int, 8> PassedPawnBonus_EG = {
-    0, 5, 10, 32, 62, 132, 191, 0};
+    0, 7, 13, 44, 83, 175, 257, 0};
 
 const int PassedPawnBonusStartIndex = base + 10;
 
