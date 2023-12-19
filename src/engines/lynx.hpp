@@ -39,21 +39,25 @@ const int QueenMobilityBonus_MG = 3;
 const int QueenMobilityBonus_EG = 9;
 const int QueenMobilityBonusIndex = base + 6;
 
+const int KingMobilityBonus_MG = -5;
+const int KingMobilityBonus_EG = 5;
+const int KingMobilityBonusIndex = base + 7;
+
 const int SemiOpenFileKingPenalty_MG = -38;
 const int SemiOpenFileKingPenalty_EG = 25;
-const int SemiOpenFileKingPenaltyIndex = base + 7;
+const int SemiOpenFileKingPenaltyIndex = base + 8;
 
 const int OpenFileKingPenalty_MG = -107;
 const int OpenFileKingPenalty_EG = 4;
-const int OpenFileKingPenaltyIndex = base + 8;
+const int OpenFileKingPenaltyIndex = base + 9;
 
 const int KingShieldBonus_MG = 19;
 const int KingShieldBonus_EG = -6;
-const int KingShieldBonusIndex = base + 9;
+const int KingShieldBonusIndex = base + 10;
 
 const int BishopPairBonus_MG = 30;
 const int BishopPairBonus_EG = 88;
-const int BishopPairMaxBonusIndex = base + 10;
+const int BishopPairMaxBonusIndex = base + 11;
 
 constexpr static std::array<int, 8> PassedPawnBonus_MG = {
     0, -2, -16, -16, 20, 61, 92, 0};
@@ -71,6 +75,7 @@ static constexpr int numParameters = base +
                                      1 + // BishopMobilityBonus
                                      1 + // RookMobilityBonus
                                      1 + // QueenMobilityBonus
+                                     1 + // KingMobilityBonus
                                      1 + // SemiOpenFileKingPenalty
                                      1 + // OpenFileKingPenalty
                                      1 + // BishopPairMaxBonus
@@ -293,6 +298,10 @@ public:
         std::cout << "\t\"MG\": " << round(parameters[QueenMobilityBonusIndex][0]) << ",\n";
         std::cout << "\t\"EG\": " << round(parameters[QueenMobilityBonusIndex][1]) << "\n}," << std::endl;
 
+        std::cout << "\"KingMobilityBonus\": {" << std::endl;
+        std::cout << "\t\"MG\": " << round(parameters[KingMobilityBonusIndex][0]) << ",\n";
+        std::cout << "\t\"EG\": " << round(parameters[KingMobilityBonusIndex][1]) << "\n}," << std::endl;
+
         std::cout << "\"SemiOpenFileKingPenalty\": {" << std::endl;
         std::cout << "\t\"MG\": " << round(parameters[SemiOpenFileKingPenaltyIndex][0]) << ",\n";
         std::cout << "\t\"EG\": " << round(parameters[SemiOpenFileKingPenaltyIndex][1]) << "\n}," << std::endl;
@@ -472,8 +481,11 @@ std::pair<int, int> QueenAdditionalEvaluation(int squareIndex, const chess::Boar
 std::pair<int, int> KingAdditionalEvaluation(int squareIndex, chess::Color kingSide, const chess::Board &board, const int pieceCount[], coefficients_t &coefficients)
 {
     int middleGameBonus = 0, endGameBonus = 0;
-    auto kingSideOffset = kingSide == chess::Color::WHITE ? 0 : 6;
 
+    auto mobilityCount = chess::builtin::popcount(chess::attacks::king(static_cast<chess::Square>(squareIndex)));
+    IncrementCoefficients(coefficients, KingMobilityBonusIndex, kingSide, mobilityCount);
+
+    auto kingSideOffset = kingSide == chess::Color::WHITE ? 0 : 6;
     if (pieceCount[9 - kingSideOffset] + pieceCount[10 - kingSideOffset] != 0) // areThereOppositeSideRooksOrQueens
     {
         if (((GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE) | GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK)) & FileMasks[squareIndex]) == 0) // isOpenFile
@@ -502,8 +514,10 @@ std::pair<int, int> KingAdditionalEvaluation(int squareIndex, chess::Color kingS
     auto ownPiecesAroundCount = chess::builtin::popcount(chess::attacks::king(static_cast<chess::Square>(squareIndex)) & __builtin_bswap64(board.us(kingSide)));
     IncrementCoefficients(coefficients, KingShieldBonusIndex, kingSide, ownPiecesAroundCount);
 
-    return std::make_pair(middleGameBonus + KingShieldBonus_MG * ownPiecesAroundCount,
-                          endGameBonus + KingShieldBonus_EG * ownPiecesAroundCount);
+    middleGameBonus += KingShieldBonus_MG * ownPiecesAroundCount;
+    endGameBonus += KingShieldBonus_EG * ownPiecesAroundCount;
+
+    return std::make_pair(middleGameBonus, endGameBonus);
 }
 
 std::pair<int, int> AdditionalPieceEvaluation(int pieceSquareIndex, int pieceIndex, const int pieceCount[], const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
