@@ -12,11 +12,11 @@
 //using TuneEval = Toy::ToyEvalTapered;
 //using TuneEval = Fourku::FourkuEval;
 using TuneEval = Lynx;
-constexpr int32_t data_load_thread_count = 4;
-constexpr int32_t thread_count = 8;
+constexpr int32_t data_load_thread_count = 8;
+constexpr int32_t thread_count = 16;
 constexpr tune_t preferred_k = 0;
-constexpr int32_t max_epoch = 10001;
-constexpr bool retune_from_zero = false;
+constexpr int32_t max_epoch = 50001;
+constexpr bool retune_from_zero = true;
 constexpr bool enable_qsearch = false;
 constexpr tune_t initial_learning_rate = 1;
 constexpr int32_t learning_rate_drop_interval = 10000;
