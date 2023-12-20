@@ -65,7 +65,7 @@ constexpr static std::array<int, 8> PassedPawnBonus_MG = {
 constexpr static std::array<int, 8> PassedPawnBonus_EG = {
     0, 7, 13, 44, 83, 175, 257, 0};
 
-const int PassedPawnBonusStartIndex = base + 11;
+const int PassedPawnBonusStartIndex = base + 12;
 
 static constexpr int numParameters = base +
                                      1 + // DoubledPawnPenalty
@@ -136,6 +136,7 @@ public:
         result.push_back({(double)BishopMobilityBonus_MG, (double)BishopMobilityBonus_EG});
         result.push_back({(double)RookMobilityBonus_MG, (double)RookMobilityBonus_EG});
         result.push_back({(double)QueenMobilityBonus_MG, (double)QueenMobilityBonus_EG});
+        result.push_back({(double)KingMobilityBonus_MG, (double)KingMobilityBonus_EG});
         result.push_back({(double)SemiOpenFileKingPenalty_MG, (double)SemiOpenFileKingPenalty_EG});
         result.push_back({(double)OpenFileKingPenalty_MG, (double)OpenFileKingPenalty_EG});
         result.push_back({(double)KingShieldBonus_MG, (double)KingShieldBonus_EG});
