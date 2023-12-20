@@ -453,13 +453,11 @@ std::pair<int, int> RookAdditonalEvaluation(int squareIndex, int pieceIndex, con
 
 std::pair<int, int> BishopAdditionalEvaluation(int squareIndex, int pieceIndex, const int pieceCount[], const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
 {
-    int middleGameBonus = 0, endGameBonus = 0;
-
     auto mobilityCount = chess::builtin::popcount(chess::attacks::bishop(static_cast<chess::Square>(squareIndex), __builtin_bswap64(board.occ())));
     IncrementCoefficients(coefficients, BishopMobilityBonusIndex, color, mobilityCount);
 
-    middleGameBonus += BishopMobilityBonus_MG * mobilityCount;
-    endGameBonus += BishopMobilityBonus_EG * mobilityCount;
+    auto middleGameBonus = BishopMobilityBonus_MG * mobilityCount;
+    auto endGameBonus = BishopMobilityBonus_EG * mobilityCount;
 
     if (pieceCount[pieceIndex] == 2)
     {
@@ -481,9 +479,9 @@ std::pair<int, int> QueenAdditionalEvaluation(int squareIndex, const chess::Boar
 
 std::pair<int, int> KingAdditionalEvaluation(int squareIndex, chess::Color kingSide, const chess::Board &board, const int pieceCount[], coefficients_t &coefficients)
 {
-    int middleGameBonus = 0, endGameBonus = 0;
-
     auto mobilityCount = chess::builtin::popcount(chess::attacks::king(static_cast<chess::Square>(squareIndex)));
+    auto middleGameBonus = mobilityCount * KingMobilityBonus_MG;
+    auto endGameBonus = mobilityCount * KingMobilityBonus_EG;
     IncrementCoefficients(coefficients, KingMobilityBonusIndex, kingSide, mobilityCount);
 
     auto kingSideOffset = kingSide == chess::Color::WHITE ? 0 : 6;
