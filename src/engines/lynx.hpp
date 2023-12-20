@@ -15,28 +15,28 @@ const int DoubledPawnPenalty_MG = -5;
 const int DoubledPawnPenalty_EG = -14;
 const int DoubledPawnPenaltyIndex = base + 0;
 
-const int IsolatedPawnPenalty_MG = -17;
+const int IsolatedPawnPenalty_MG = -18;
 const int IsolatedPawnPenalty_EG = -14;
 const int IsolatedPawnPenaltyIndex = base + 1;
 
-const int OpenFileRookBonus_MG = 60;
-const int OpenFileRookBonus_EG = 28;
+const int OpenFileRookBonus_MG = 46;
+const int OpenFileRookBonus_EG = 13;
 const int OpenFileRookBonusIndex = base + 2;
 
-const int SemiOpenFileRookBonus_MG = 25;
-const int SemiOpenFileRookBonus_EG = 23;
+const int SemiOpenFileRookBonus_MG = 17;
+const int SemiOpenFileRookBonus_EG = 19;
 const int SemiOpenFileRookBonusIndex = base + 3;
 
 const int BishopMobilityBonus_MG = 10;
 const int BishopMobilityBonus_EG = 10;
 const int BishopMobilityBonusIndex = base + 4;
 
-const int RookMobilityBonus_MG = 2;
-const int RookMobilityBonus_EG = 2;
+const int RookMobilityBonus_MG = 5;
+const int RookMobilityBonus_EG = 5;
 const int RookMobilityBonusIndex = base + 5;
 
-const int QueenMobilityBonus_MG = 3;
-const int QueenMobilityBonus_EG = 9;
+const int QueenMobilityBonus_MG = 4;
+const int QueenMobilityBonus_EG = 8;
 const int QueenMobilityBonusIndex = base + 6;
 
 const int KingMobilityBonus_MG = -5;
@@ -47,12 +47,12 @@ const int SemiOpenFileKingPenalty_MG = -38;
 const int SemiOpenFileKingPenalty_EG = 25;
 const int SemiOpenFileKingPenaltyIndex = base + 8;
 
-const int OpenFileKingPenalty_MG = -107;
-const int OpenFileKingPenalty_EG = 4;
+const int OpenFileKingPenalty_MG = -109;
+const int OpenFileKingPenalty_EG = 6;
 const int OpenFileKingPenaltyIndex = base + 9;
 
-const int KingShieldBonus_MG = 19;
-const int KingShieldBonus_EG = -6;
+const int KingShieldBonus_MG = 17;
+const int KingShieldBonus_EG = -5;
 const int KingShieldBonusIndex = base + 10;
 
 const int BishopPairBonus_MG = 30;
@@ -60,10 +60,10 @@ const int BishopPairBonus_EG = 88;
 const int BishopPairMaxBonusIndex = base + 11;
 
 constexpr static std::array<int, 8> PassedPawnBonus_MG = {
-    0, -2, -16, -16, 20, 61, 92, 0};
+    0, -1, -15, -15, 19, 53, 74, 0};
 
 constexpr static std::array<int, 8> PassedPawnBonus_EG = {
-    0, 7, 13, 44, 83, 175, 257, 0};
+    0, 5, 12, 43, 84, 176, 260, 0};
 
 const int PassedPawnBonusStartIndex = base + 12;
 
