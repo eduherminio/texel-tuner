@@ -399,7 +399,7 @@ std::pair<int, int> PawnAdditionalEvaluation(int squareIndex, int pieceIndex, co
 
 std::pair<int, int> RookAdditonalEvaluation(int squareIndex, int pieceIndex, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
 {
-    auto mobilityCount = chess::builtin::popcount(chess::attacks::rook(static_cast<chess::Square>(squareIndex), __builtin_bswap64(board.occ())));
+    auto mobilityCount = (chess::builtin::popcount(chess::attacks::rook(static_cast<chess::Square>(squareIndex), __builtin_bswap64(board.occ())) & ~__builtin_bswap64(board.us(color))));
     IncrementCoefficients(coefficients, RookMobilityBonusIndex, color, mobilityCount);
 
     int middleGameBonus = RookMobilityBonus_MG * mobilityCount;
@@ -445,7 +445,7 @@ std::pair<int, int> BishopAdditionalEvaluation(int squareIndex, int pieceIndex, 
 {
     int middleGameBonus = 0, endGameBonus = 0;
 
-    auto mobilityCount = chess::builtin::popcount(chess::attacks::bishop(static_cast<chess::Square>(squareIndex), __builtin_bswap64(board.occ())));
+    auto mobilityCount = (chess::builtin::popcount(chess::attacks::bishop(static_cast<chess::Square>(squareIndex), __builtin_bswap64(board.occ())) & ~__builtin_bswap64(board.us(color))));
     IncrementCoefficients(coefficients, BishopMobilityBonusIndex, color, mobilityCount);
 
     middleGameBonus += BishopMobilityBonus_MG * mobilityCount;
@@ -463,7 +463,7 @@ std::pair<int, int> BishopAdditionalEvaluation(int squareIndex, int pieceIndex, 
 
 std::pair<int, int> QueenAdditionalEvaluation(int squareIndex, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
 {
-    auto mobilityCount = chess::builtin::popcount(chess::attacks::queen(static_cast<chess::Square>(squareIndex), __builtin_bswap64(board.occ())));
+    auto mobilityCount = (chess::builtin::popcount(chess::attacks::queen(static_cast<chess::Square>(squareIndex), __builtin_bswap64(board.occ())) & ~__builtin_bswap64(board.us(color))));
     IncrementCoefficients(coefficients, QueenMobilityBonusIndex, color, mobilityCount);
 
     return std::make_pair(QueenMobilityBonus_MG * mobilityCount, QueenMobilityBonus_EG * mobilityCount);
