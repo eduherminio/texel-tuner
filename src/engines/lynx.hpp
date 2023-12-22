@@ -1,5 +1,6 @@
 #include "../base.h"
 #include "./lynx_constants.hpp"
+#include "./lynx_utils.hpp"
 #include "../external/chess.hpp"
 #include <cassert>
 #include <array>
@@ -397,9 +398,9 @@ std::pair<int, int> PawnAdditionalEvaluation(int squareIndex, int pieceIndex, co
     return std::make_pair(middleGameBonus, endGameBonus);
 }
 
-std::pair<int, int> RookAdditonalEvaluation(int squareIndex, int pieceIndex, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
+std::pair<int, int> RookAdditonalEvaluation(int squareIndex, int pieceIndex, const chess::Board &board, const chess::Color &color, const u64 opponentPawnAttacks,  coefficients_t &coefficients)
 {
-    auto mobilityCount = (chess::builtin::popcount(chess::attacks::rook(static_cast<chess::Square>(squareIndex), __builtin_bswap64(board.occ())) & ~__builtin_bswap64(board.us(color))));
+    auto mobilityCount = (chess::builtin::popcount(chess::attacks::rook(static_cast<chess::Square>(squareIndex), __builtin_bswap64(board.occ())) & ~__builtin_bswap64(board.us(color))  & ~opponentPawnAttacks));
     IncrementCoefficients(coefficients, RookMobilityBonusIndex, color, mobilityCount);
 
     int middleGameBonus = RookMobilityBonus_MG * mobilityCount;
@@ -441,11 +442,11 @@ std::pair<int, int> RookAdditonalEvaluation(int squareIndex, int pieceIndex, con
     return std::make_pair(middleGameBonus, endGameBonus);
 }
 
-std::pair<int, int> BishopAdditionalEvaluation(int squareIndex, int pieceIndex, const int pieceCount[], const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
+std::pair<int, int> BishopAdditionalEvaluation(int squareIndex, int pieceIndex, const int pieceCount[], const chess::Board &board, const chess::Color &color, const u64 opponentPawnAttacks,  coefficients_t &coefficients)
 {
     int middleGameBonus = 0, endGameBonus = 0;
 
-    auto mobilityCount = (chess::builtin::popcount(chess::attacks::bishop(static_cast<chess::Square>(squareIndex), __builtin_bswap64(board.occ())) & ~__builtin_bswap64(board.us(color))));
+    auto mobilityCount = (chess::builtin::popcount(chess::attacks::bishop(static_cast<chess::Square>(squareIndex), __builtin_bswap64(board.occ())) & ~__builtin_bswap64(board.us(color)) & ~opponentPawnAttacks));
     IncrementCoefficients(coefficients, BishopMobilityBonusIndex, color, mobilityCount);
 
     middleGameBonus += BishopMobilityBonus_MG * mobilityCount;
@@ -461,9 +462,9 @@ std::pair<int, int> BishopAdditionalEvaluation(int squareIndex, int pieceIndex, 
     return std::make_pair(middleGameBonus, endGameBonus);
 }
 
-std::pair<int, int> QueenAdditionalEvaluation(int squareIndex, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
+std::pair<int, int> QueenAdditionalEvaluation(int squareIndex, const chess::Board &board, const chess::Color &color, const u64 opponentPawnAttacks,  coefficients_t &coefficients)
 {
-    auto mobilityCount = (chess::builtin::popcount(chess::attacks::queen(static_cast<chess::Square>(squareIndex), __builtin_bswap64(board.occ())) & ~__builtin_bswap64(board.us(color))));
+    auto mobilityCount = (chess::builtin::popcount(chess::attacks::queen(static_cast<chess::Square>(squareIndex), __builtin_bswap64(board.occ())) & ~__builtin_bswap64(board.us(color)) & ~opponentPawnAttacks));
     IncrementCoefficients(coefficients, QueenMobilityBonusIndex, color, mobilityCount);
 
     return std::make_pair(QueenMobilityBonus_MG * mobilityCount, QueenMobilityBonus_EG * mobilityCount);
@@ -506,7 +507,7 @@ std::pair<int, int> KingAdditionalEvaluation(int squareIndex, chess::Color kingS
                           endGameBonus + KingShieldBonus_EG * ownPiecesAroundCount);
 }
 
-std::pair<int, int> AdditionalPieceEvaluation(int pieceSquareIndex, int pieceIndex, const int pieceCount[], const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
+std::pair<int, int> AdditionalPieceEvaluation(int pieceSquareIndex, int pieceIndex, const int pieceCount[], const chess::Board &board, const chess::Color &color, const u64 opponentPawnAttacks, coefficients_t &coefficients)
 {
     switch (pieceIndex)
     {
@@ -515,14 +516,14 @@ std::pair<int, int> AdditionalPieceEvaluation(int pieceSquareIndex, int pieceInd
         return PawnAdditionalEvaluation(pieceSquareIndex, pieceIndex, board, color, coefficients);
     case 3:
     case 9:
-        return RookAdditonalEvaluation(pieceSquareIndex, pieceIndex, board, color, coefficients);
+        return RookAdditonalEvaluation(pieceSquareIndex, pieceIndex, board, color, opponentPawnAttacks, coefficients);
     case 2:
     case 8:
-        return BishopAdditionalEvaluation(pieceSquareIndex, pieceIndex, pieceCount, board, color, coefficients);
+        return BishopAdditionalEvaluation(pieceSquareIndex, pieceIndex, pieceCount, board, color, opponentPawnAttacks, coefficients);
 
     case 4:
     case 10:
-        return QueenAdditionalEvaluation(pieceSquareIndex, board, color, coefficients);
+        return QueenAdditionalEvaluation(pieceSquareIndex, board, color, opponentPawnAttacks, coefficients);
 
     default:
         return std::make_pair(0, 0);
@@ -547,11 +548,18 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
     int endGameScore = 0;
     int gamePhase = 0;
 
+    const auto whitePawns = GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE);
+    const auto whitePawnAttacks = WhitePawnAttacks(whitePawns);
+
+    const auto blackPawns = GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK);
+    const auto blackPawnAttacks = BlackPawnAttacks(blackPawns);
+
     for (int pieceIndex = 0; pieceIndex < 5; ++pieceIndex)
     {
         // Bitboard copy that we 'empty'
         auto bitboard = GetPieceSwappingEndianness(board, (chess::PieceType)pieceIndex, chess::Color::WHITE);
         // std::cout << pieceIndex << "bb: " << bitboard << std::endl;
+
         while (bitboard != 0)
         {
             auto pieceSquareIndex = chess::builtin::lsb(bitboard);
@@ -563,7 +571,7 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
 
             ++pieceCount[pieceIndex];
 
-            auto pair = AdditionalPieceEvaluation(pieceSquareIndex, pieceIndex, pieceCount, board, chess::Color::WHITE, coefficients);
+            auto pair = AdditionalPieceEvaluation(pieceSquareIndex, pieceIndex, pieceCount, board, chess::Color::WHITE, blackPawnAttacks, coefficients);
             middleGameScore += pair.first;
             endGameScore += pair.second;
 
@@ -591,7 +599,7 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
 
             ++pieceCount[pieceIndex];
 
-            auto pair = AdditionalPieceEvaluation(pieceSquareIndex, pieceIndex, pieceCount, board, chess::Color::BLACK, coefficients);
+            auto pair = AdditionalPieceEvaluation(pieceSquareIndex, pieceIndex, pieceCount, board, chess::Color::BLACK, whitePawnAttacks, coefficients);
             middleGameScore -= pair.first;
             endGameScore -= pair.second;
 
