@@ -52,9 +52,9 @@ In sort:
   cmake --build .
   ```
 
-- Run the executable passing the path of `sources.csv` to it:
+- Run the executable passing the path of `lynx-sources.csv` to it:
   ```
-  ./tuner ../sources.csv
+  ./tuner ../lynx-sources.csv
   ```
 
 ### Checking evaluation code correctness

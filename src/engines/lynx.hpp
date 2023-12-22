@@ -49,11 +49,11 @@ const int SemiOpenFileKingPenaltyIndex = base + 8;
 
 const int OpenFileKingPenalty_MG = -109;
 const int OpenFileKingPenalty_EG = 6;
-const int OpenFileKingPenaltyIndex = base + 9;
+const int OpenFileKingPenaltyIndex = base + 8;
 
 const int KingShieldBonus_MG = 17;
 const int KingShieldBonus_EG = -5;
-const int KingShieldBonusIndex = base + 10;
+const int KingShieldBonusIndex = base + 9;
 
 const int BishopPairBonus_MG = 30;
 const int BishopPairBonus_EG = 88;
