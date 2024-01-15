@@ -8,7 +8,7 @@ constexpr std::array<int, 12> PieceValue = {
 
 std::array<int, 6> phaseValues = {0, 1, 1, 2, 4, 0};
 
-constexpr static int EvalNormalizationCoefficient = 138;
+constexpr static int EvalNormalizationCoefficient = 90;
 
 constexpr static std::array<int, 64> MiddleGamePawnTable =
     {
