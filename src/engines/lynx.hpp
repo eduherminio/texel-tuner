@@ -55,13 +55,17 @@ const int BishopPairBonus_MG = 30;
 const int BishopPairBonus_EG = 88;
 const int BishopPairMaxBonusIndex = base + 10;
 
+const int KnightOutpostBonus_MG = 5;
+const int KnightOutpostBonus_EG = 5;
+const int KnightOutpostBonusIndex = base + 11;
+
 constexpr static std::array<int, 8> PassedPawnBonus_MG = {
     0, -1, -15, -15, 19, 53, 74, 0};
 
 constexpr static std::array<int, 8> PassedPawnBonus_EG = {
     0, 5, 12, 43, 84, 176, 260, 0};
 
-const int PassedPawnBonusStartIndex = base + 11;
+const int PassedPawnBonusStartIndex = base + 12;
 
 static constexpr int numParameters = base +
                                      1 + // DoubledPawnPenalty
@@ -74,6 +78,7 @@ static constexpr int numParameters = base +
                                      1 + // SemiOpenFileKingPenalty
                                      1 + // OpenFileKingPenalty
                                      1 + // BishopPairMaxBonus
+                                     1 + // KnightOutpostBonus
                                      1 + // KingShieldBonus
                                      6   // PassedPawnBonus - removing 1 and 8 rank values
     ;
@@ -135,6 +140,7 @@ public:
         result.push_back({(double)OpenFileKingPenalty_MG, (double)OpenFileKingPenalty_EG});
         result.push_back({(double)KingShieldBonus_MG, (double)KingShieldBonus_EG});
         result.push_back({(double)BishopPairBonus_MG, (double)BishopPairBonus_EG});
+        result.push_back({(double)KnightOutpostBonus_MG, (double)KnightOutpostBonus_EG});
 
         for (int rank = 1; rank < 7; ++rank)
         {
@@ -309,6 +315,10 @@ public:
         std::cout << "\t\"MG\": " << round(parameters[BishopPairMaxBonusIndex][0]) << ",\n";
         std::cout << "\t\"EG\": " << round(parameters[BishopPairMaxBonusIndex][1]) << "\n}," << std::endl;
 
+        std::cout << "\"KnightOutpostBonus\": {" << std::endl;
+        std::cout << "\t\"MG\": " << round(parameters[KnightOutpostBonusIndex][0]) << ",\n";
+        std::cout << "\t\"EG\": " << round(parameters[KnightOutpostBonusIndex][1]) << "\n}," << std::endl;
+
         std::cout << "\"PassedPawnBonus\": {" << std::endl;
         std::cout << "\t\"Rank" << 0 << "\": {" << std::endl;
         std::cout << "\t\t\"MG\": " << 0 << ",\n";
@@ -363,7 +373,6 @@ std::pair<int, int> PawnAdditionalEvaluation(int squareIndex, int pieceIndex, co
 
     if (color == chess::Color::WHITE)
     {
-
         if ((GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK) & WhitePassedPawnMasks[squareIndex]) == 0) // isPassedPawn
         {
             // std::cout << "Piece: " << GetPiece(board, chess::PieceType::PAWN, chess::Color::BLACK) << std::endl;
@@ -381,7 +390,6 @@ std::pair<int, int> PawnAdditionalEvaluation(int squareIndex, int pieceIndex, co
     }
     else
     {
-
         if ((GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE) & BlackPassedPawnMasks[squareIndex]) == 0) // isPassedPawn
         {
             auto rank = Rank[squareIndex];
@@ -397,6 +405,44 @@ std::pair<int, int> PawnAdditionalEvaluation(int squareIndex, int pieceIndex, co
     return std::make_pair(middleGameBonus, endGameBonus);
 }
 
+std::pair<int, int> WhiteKnightAdditionalEvaluation(int squareIndex, int pieceIndex, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
+{
+    int middleGameBonus = 0;
+    int endGameBonus = 0;
+
+    if ((GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK) & WhiteSidePassedPawnMasks[squareIndex]) == 0) // Knight has no potential opponent pawn attackers
+    {
+        int ownPawnProtectersCount = chess::builtin::popcount(
+            GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE) &
+            __builtin_bswap64(chess::attacks::pawn(chess::Color::BLACK, static_cast<chess::Square>(squareIndex ^ 56))));
+
+        IncrementCoefficients(coefficients, KnightOutpostBonusIndex, color, ownPawnProtectersCount);
+        middleGameBonus += KnightOutpostBonus_MG * ownPawnProtectersCount;
+        endGameBonus += KnightOutpostBonus_EG * ownPawnProtectersCount;
+    }
+
+    return std::make_pair(middleGameBonus, endGameBonus);
+}
+
+std::pair<int, int> BlackKnightAdditionalEvaluation(int squareIndex, int pieceIndex, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
+{
+    int middleGameBonus = 0;
+    int endGameBonus = 0;
+
+    if ((GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE) & BlackSidePassedPawnMasks[squareIndex]) == 0) // Knight has no potential opponent pawn attackers
+    {
+        int ownPawnProtectersCount = chess::builtin::popcount(
+            GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK) &
+            __builtin_bswap64(chess::attacks::pawn(chess::Color::WHITE, static_cast<chess::Square>(squareIndex ^ 56))));
+
+        IncrementCoefficients(coefficients, KnightOutpostBonusIndex, color, ownPawnProtectersCount);
+        middleGameBonus += KnightOutpostBonus_MG * ownPawnProtectersCount;
+        endGameBonus += KnightOutpostBonus_EG * ownPawnProtectersCount;
+    }
+
+    return std::make_pair(middleGameBonus, endGameBonus);
+}
+
 std::pair<int, int> RookAdditonalEvaluation(int squareIndex, int pieceIndex, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
 {
     auto mobilityCount = chess::builtin::popcount(chess::attacks::rook(static_cast<chess::Square>(squareIndex), __builtin_bswap64(board.occ())));
@@ -407,7 +453,6 @@ std::pair<int, int> RookAdditonalEvaluation(int squareIndex, int pieceIndex, con
 
     if (((GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE) | GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK)) & FileMasks[squareIndex]) == 0) // isOpenFile
     {
-        // std::cout << "OpenFileRookBonus" << std::endl;
         IncrementCoefficients(coefficients, OpenFileRookBonusIndex, color);
         middleGameBonus += OpenFileRookBonus_MG;
         endGameBonus += OpenFileRookBonus_EG;
@@ -513,6 +558,10 @@ std::pair<int, int> AdditionalPieceEvaluation(int pieceSquareIndex, int pieceInd
     case 0:
     case 6:
         return PawnAdditionalEvaluation(pieceSquareIndex, pieceIndex, board, color, coefficients);
+    case 1:
+        return WhiteKnightAdditionalEvaluation(pieceSquareIndex, pieceIndex, board, color, coefficients);
+    case 7:
+        return BlackKnightAdditionalEvaluation(pieceSquareIndex, pieceIndex, board, color, coefficients);
     case 3:
     case 9:
         return RookAdditonalEvaluation(pieceSquareIndex, pieceIndex, board, color, coefficients);
