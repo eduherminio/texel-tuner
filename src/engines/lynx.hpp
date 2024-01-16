@@ -427,7 +427,8 @@ std::pair<int, int> WhiteKnightAdditionalEvaluation(int squareIndex, int pieceIn
 
     if (GetBit(WhiteKnightOutpostMask, squareIndex) &&
         (GetPieceSwappingEndianness(board, chess::PieceType::KNIGHT, chess::Color::BLACK) == 0) &&
-        (GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK) & WhiteSidePassedPawnMasks[squareIndex]) == 0) // Knight has no potential opponent pawn attackers
+        (GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK) & WhiteSidePassedPawnMasks[squareIndex]) == 0 && // Knight has no potential opponent pawn attackers
+        (GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE) & __builtin_bswap64(chess::attacks::pawn(chess::Color::BLACK, static_cast<chess::Square>(squareIndex ^ 56)))) > 0)
     {
         auto oppositeBishops = GetPieceSwappingEndianness(board, chess::PieceType::BISHOP, chess::Color::BLACK);
         auto oppositeBishopCount = chess::builtin::popcount(oppositeBishops);
@@ -436,13 +437,9 @@ std::pair<int, int> WhiteKnightAdditionalEvaluation(int squareIndex, int pieceIn
             (oppositeBishopCount == 1 &&
              DifferentColor(chess::builtin::lsb(oppositeBishops), squareIndex)))
         {
-            auto ownPawnProtectersCount = chess::builtin::popcount(
-                GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE) &
-                __builtin_bswap64(chess::attacks::pawn(chess::Color::BLACK, static_cast<chess::Square>(squareIndex ^ 56))));
-
-            IncrementCoefficients(coefficients, KnightOutpostBonusIndex, color, ownPawnProtectersCount);
-            middleGameBonus += KnightOutpostBonus_MG * ownPawnProtectersCount;
-            endGameBonus += KnightOutpostBonus_EG * ownPawnProtectersCount;
+            IncrementCoefficients(coefficients, KnightOutpostBonusIndex, color);
+            middleGameBonus += KnightOutpostBonus_MG;
+            endGameBonus += KnightOutpostBonus_EG;
         }
     }
 
@@ -456,7 +453,8 @@ std::pair<int, int> BlackKnightAdditionalEvaluation(int squareIndex, int pieceIn
 
     if (GetBit(BlackKnightOutpostMask, squareIndex) &&
         (GetPieceSwappingEndianness(board, chess::PieceType::KNIGHT, chess::Color::WHITE) == 0) &&
-        (GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE) & BlackSidePassedPawnMasks[squareIndex]) == 0) // Knight has no potential opponent pawn attackers
+        (GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE) & BlackSidePassedPawnMasks[squareIndex]) == 0 &&   // Knight has no potential opponent pawn attackers
+        (GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK) & __builtin_bswap64(chess::attacks::pawn(chess::Color::WHITE, static_cast<chess::Square>(squareIndex ^ 56)))) > 0)
     {
         auto oppositeBishops = GetPieceSwappingEndianness(board, chess::PieceType::BISHOP, chess::Color::WHITE);
         auto oppositeBishopCount = chess::builtin::popcount(oppositeBishops);
@@ -465,13 +463,9 @@ std::pair<int, int> BlackKnightAdditionalEvaluation(int squareIndex, int pieceIn
             (oppositeBishopCount == 1 &&
              DifferentColor(chess::builtin::lsb(oppositeBishops), squareIndex)))
         {
-            int ownPawnProtectersCount = chess::builtin::popcount(
-                GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK) &
-                __builtin_bswap64(chess::attacks::pawn(chess::Color::WHITE, static_cast<chess::Square>(squareIndex ^ 56))));
-
-            IncrementCoefficients(coefficients, KnightOutpostBonusIndex, color, ownPawnProtectersCount);
-            middleGameBonus += KnightOutpostBonus_MG * ownPawnProtectersCount;
-            endGameBonus += KnightOutpostBonus_EG * ownPawnProtectersCount;
+            IncrementCoefficients(coefficients, KnightOutpostBonusIndex, color);
+            middleGameBonus += KnightOutpostBonus_MG;
+            endGameBonus += KnightOutpostBonus_EG;
         }
     }
 
