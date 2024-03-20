@@ -221,50 +221,50 @@ struct Trace
 };
 
 const i32 phases[] = {0, 1, 1, 2, 4, 0};
-const i32 max_material[] = {139, 450, 453, 849, 1685, 0, 0};
-const i32 material[] = {S(95, 139), S(339, 450), S(348, 453), S(461, 849), S(832, 1685), 0};
+const i32 max_material[] = {147, 521, 521, 956, 1782, 0, 0};
+const i32 material[] = {S(89, 147), S(350, 521), S(361, 521), S(479, 956), S(1046, 1782), 0};
 const i32 pst_rank[] = {
-    0,         S(-3, 0),  S(-3, -1), S(-1, -1), S(1, 0),  S(5, 2), 0,        0,          // Pawn
-    S(-3, -5), S(-1, -3), S(0, -1),  S(2, 2),   S(3, 4),  S(6, 1), S(4, 0),  S(-12, 1),  // Knight
-    S(-1, -2), S(2, -1),  S(2, 0),   S(2, 0),   S(2, 1),  S(3, 0), 0,        S(-8, 2),   // Bishop
-    S(0, -3),  S(-1, -3), S(-2, -2), S(-3, 1),  S(0, 2),  S(2, 2), S(1, 3),  S(3, 1),    // Rook
-    S(2, -11), S(2, -9),  S(1, -4),  S(-1, 1),  S(-1, 5), S(0, 5), S(-3, 7), S(-1, 5),   // Queen
-    S(-1, -5), S(1, -2),  0,         S(-2, 2),  S(0, 4),  S(6, 4), S(4, 2),  S(3, -4)    // King
+    0,         S(-3, 0),  S(-3, -1), S(-1, -1), S(1, 0),  S(5, 3),  0,        0,          // Pawn
+    S(-2, -5), S(0, -3),  S(1, -1),  S(3, 3),   S(4, 4),  S(5, 1),  S(2, 0),  S(-15, 1),  // Knight
+    S(0, -2),  S(2, -1),  S(2, 0),   S(2, 0),   S(2, 0),  S(2, 0),  S(-1, 0), S(-10, 2),  // Bishop
+    S(0, -3),  S(-1, -3), S(-2, -2), S(-2, 0),  S(0, 2),  S(2, 2),  S(1, 3),  S(2, 1),    // Rook
+    S(2, -11), S(3, -8),  S(2, -3),  S(0, 2),   S(0, 5),  S(-1, 5), S(-4, 7), S(-2, 4),   // Queen
+    S(-1, -6), S(1, -2),  S(-1, 0),  S(-4, 3),  S(-1, 5), S(5, 4),  S(5, 2),  S(5, -6),   // King
 };
 const i32 pst_file[] = {
-    S(-1, 1),  S(-2, 1),  S(-1, 0), S(0, -1), S(1, 0),  S(2, 0),  S(2, 0),  S(-1, -1),  // Pawn
-    S(-5, -3), S(-2, -1), S(0, 1),  S(2, 3),  S(2, 2),  S(2, 0),  S(1, 0),  S(-1, -3),  // Knight
-    S(-2, 0),  0,         S(1, 0),  S(0, 1),  S(1, 1),  S(-1, 1), S(2, 0),  S(0, -1),   // Bishop
-    S(-2, 0),  S(-1, 1),  S(0, 1),  S(1, 0),  S(2, -1), S(1, 0),  S(1, 0),  S(-2, 0),   // Rook
-    S(-2, -4), S(-1, -2), S(-1, 0), S(0, 1),  S(0, 2),  S(1, 2),  S(2, 1),  S(2, -1),   // Queen
-    S(-3, -5), S(2, -2),  S(-1, 1), S(-2, 2), S(-3, 2), S(-1, 1), S(2, -1), S(0, -5)    // King
+    S(-1, 1),  S(-2, 1),  S(-1, 0), S(0, -1), S(1, 0),  S(2, 0),  S(2, 0),  S(-1, 0),   // Pawn
+    S(-4, -3), S(-1, -1), S(0, 1),  S(2, 3),  S(2, 3),  S(2, 0),  S(1, -1), S(-1, -3),  // Knight
+    S(-2, -1), 0,         S(1, 0),  S(0, 1),  S(1, 1),  S(0, 1),  S(2, 0),  S(-1, -1),  // Bishop
+    S(-2, 0),  S(-1, 1),  S(0, 1),  S(1, 0),  S(2, -1), S(1, 0),  S(1, 0),  S(-1, -1),  // Rook
+    S(-2, -3), S(-1, -1), S(-1, 0), S(0, 1),  S(0, 2),  S(1, 2),  S(2, 0),  S(1, -1),   // Queen
+    S(-2, -5), S(2, -1),  S(-1, 1), S(-4, 2), S(-4, 2), S(-2, 2), S(2, -1), S(0, -5),   // King
 };
 const i32 open_files[] = {
     // Semi open files
-    S(2, 4),
-    S(-5, 20),
-    S(18, 15),
+    S(2, 3),
+    S(-6, 20),
+    S(19, 16),
     S(3, 18),
-    S(-22, 10),
+    S(-19, 8),
     // Open files
-    S(-3, -12),
-    S(-11, -1),
-    S(46, 0),
-    S(-14, 37),
-    S(-60, 1),
+    S(-4, -14),
+    S(-10, -2),
+    S(47, -1),
+    S(-15, 35),
+    S(-61, 0),
 };
-const i32 mobilities[] = {S(9, 5), S(8, 7), S(3, 4), S(4, 2), S(-5, 0)};
-const i32 king_attacks[] = {S(10, -5), S(18, -5), S(26, -10), S(19, 3), 0};
-const i32 pawn_protection[] = {S(22, 14), S(2, 15), S(7, 17), S(8, 10), S(-5, 20), S(-31, 25)};
-const i32 pawn_threat_penalty[] = {S(-4, 1), S(21, 1), S(12, 5), S(11, 17), S(9, 17), S(6, 5)};
-const i32 passers[] = {S(4, 14), S(35, 50), S(68, 124), S(220, 207)};
-const i32 pawn_passed_protected = S(11, 20);
-const i32 pawn_doubled_penalty = S(11, 37);
-const i32 pawn_phalanx = S(12, 11);
-const i32 pawn_passed_blocked_penalty[] = {S(9, 14), S(-7, 43), S(-9, 85), S(4, 97)};
-const i32 pawn_passed_king_distance[] = {S(1, -6), S(-4, 11)};
-const i32 bishop_pair = S(32, 72);
-const i32 king_shield[] = {S(36, -12), S(27, -7)};
+const i32 mobilities[] = {S(8, 5), S(7, 7), S(3, 5), S(3, 2), S(-5, -1)};
+const i32 king_attacks[] = {S(12, -5), S(18, -4), S(27, -9), S(18, 12), 0};
+const i32 pawn_protection[] = {S(23, 17), S(2, 18), S(6, 19), S(8, 10), S(-8, 22), S(-29, 25)};
+const i32 pawn_threat_penalty[] = {S(-4, 0), S(21, 0), S(12, 7), S(10, 20), S(9, 17), S(4, 8)};
+const i32 passers[] = {S(11, 12), S(51, 47), S(97, 115), S(289, 201)};
+const i32 pawn_passed_protected = S(13, 23);
+const i32 pawn_doubled_penalty = S(11, 38);
+const i32 pawn_phalanx = S(12, 16);
+const i32 pawn_passed_blocked_penalty[] = {S(5, 19), S(-6, 45), S(-8, 87), S(54, 88)};
+const i32 pawn_passed_king_distance[] = {S(-1, -6), S(-3, 12)};
+const i32 bishop_pair = S(29, 84);
+const i32 king_shield[] = {S(33, -10), S(25, -7)};
 const i32 pawn_attacked_penalty[] = {S(63, 14), S(156, 140)};
 
 #define TraceIncr(parameter) trace.parameter[color]++
@@ -428,7 +428,8 @@ static Trace eval(Position& pos) {
     auto stronger_colour_pieces = pos.colour[stronger_colour];
     auto stronger_colour_pawns = stronger_colour_pieces & pos.pieces[Pawn];
     auto stronger_colour_pawn_count = count(stronger_colour_pawns);
-    auto scale = (16 + stronger_colour_pawn_count) / static_cast<tune_t>(24);
+    auto stronger_colour_pawns_missing = 8 - stronger_colour_pawn_count;
+    auto scale = (128 - stronger_colour_pawns_missing * stronger_colour_pawns_missing) / static_cast<tune_t>(128);
         
     trace.endgame_scale = scale;
     trace.score = ((short)score * phase + ((score + 0x8000) >> 16) * scale * (24 - phase)) / 24;
@@ -440,12 +441,12 @@ static Trace eval(Position& pos) {
     return trace;
 }
 
-#if TAPERED
-
 static int32_t round_value(tune_t value)
 {
     return static_cast<int32_t>(round(value));
 }
+
+#if TAPERED
 
 static void print_parameter(std::stringstream& ss, const pair_t parameter)
 {
@@ -463,7 +464,7 @@ static void print_parameter(std::stringstream& ss, const pair_t parameter)
 #else
 static void print_parameter(std::stringstream& ss, const tune_t parameter)
 {
-    ss << round_value(std::round(parameter);
+    ss << round_value(std::round(parameter));
 }
 #endif
 
@@ -500,10 +501,7 @@ static void print_pst(std::stringstream& ss, const parameters_t& parameters, int
         print_parameter(ss, parameters[index]);
         index++;
 
-        if (i != 47)
-        {
-            ss << ", ";
-        }
+        ss << ", ";
 
         if (i % 8 == 7)
         {
@@ -659,22 +657,22 @@ Position get_position_from_external(const chess::Board& board)
 
     position.flipped = false;
 
-    position.colour[0] = board.us(chess::Color::WHITE);
-    position.colour[1] = board.them(chess::Color::WHITE);
+    position.colour[0] = board.us(chess::Color::WHITE).getBits();
+    position.colour[1] = board.them(chess::Color::WHITE).getBits();
 
-    position.pieces[Pawn] = board.pieces(chess::PieceType::PAWN, chess::Color::WHITE) | board.pieces(chess::PieceType::PAWN, chess::Color::BLACK);
-    position.pieces[Knight] = board.pieces(chess::PieceType::KNIGHT, chess::Color::WHITE) | board.pieces(chess::PieceType::KNIGHT, chess::Color::BLACK);
-    position.pieces[Bishop] = board.pieces(chess::PieceType::BISHOP, chess::Color::WHITE) | board.pieces(chess::PieceType::BISHOP, chess::Color::BLACK);
-    position.pieces[Rook] = board.pieces(chess::PieceType::ROOK, chess::Color::WHITE) | board.pieces(chess::PieceType::ROOK, chess::Color::BLACK);
-    position.pieces[Queen] = board.pieces(chess::PieceType::QUEEN, chess::Color::WHITE) | board.pieces(chess::PieceType::QUEEN, chess::Color::BLACK);
-    position.pieces[King] = board.pieces(chess::PieceType::KING, chess::Color::WHITE) | board.pieces(chess::PieceType::KING, chess::Color::BLACK);
+    position.pieces[Pawn] = board.pieces(chess::PieceType::PAWN, chess::Color::WHITE).getBits() | board.pieces(chess::PieceType::PAWN, chess::Color::BLACK).getBits();
+    position.pieces[Knight] = board.pieces(chess::PieceType::KNIGHT, chess::Color::WHITE).getBits() | board.pieces(chess::PieceType::KNIGHT, chess::Color::BLACK).getBits();
+    position.pieces[Bishop] = board.pieces(chess::PieceType::BISHOP, chess::Color::WHITE).getBits() | board.pieces(chess::PieceType::BISHOP, chess::Color::BLACK).getBits();
+    position.pieces[Rook] = board.pieces(chess::PieceType::ROOK, chess::Color::WHITE).getBits() | board.pieces(chess::PieceType::ROOK, chess::Color::BLACK).getBits();
+    position.pieces[Queen] = board.pieces(chess::PieceType::QUEEN, chess::Color::WHITE).getBits() | board.pieces(chess::PieceType::QUEEN, chess::Color::BLACK).getBits();
+    position.pieces[King] = board.pieces(chess::PieceType::KING, chess::Color::WHITE).getBits() | board.pieces(chess::PieceType::KING, chess::Color::BLACK).getBits();
 
-    position.castling[0] = board.castlingRights().hasCastlingRight(chess::Color::WHITE, chess::CastleSide::KING_SIDE);
-    position.castling[1] = board.castlingRights().hasCastlingRight(chess::Color::WHITE, chess::CastleSide::QUEEN_SIDE);
-    position.castling[2] = board.castlingRights().hasCastlingRight(chess::Color::BLACK, chess::CastleSide::KING_SIDE);
-    position.castling[3] = board.castlingRights().hasCastlingRight(chess::Color::BLACK, chess::CastleSide::QUEEN_SIDE);
+    position.castling[0] = board.castlingRights().has(chess::Color::WHITE, chess::Board::CastlingRights::Side::KING_SIDE);
+    position.castling[1] = board.castlingRights().has(chess::Color::WHITE, chess::Board::CastlingRights::Side::QUEEN_SIDE);
+    position.castling[2] = board.castlingRights().has(chess::Color::BLACK, chess::Board::CastlingRights::Side::KING_SIDE);
+    position.castling[3] = board.castlingRights().has(chess::Color::BLACK, chess::Board::CastlingRights::Side::QUEEN_SIDE);
 
-    position.ep = board.enpassantSq();
+    position.ep = board.enpassantSq().index();
     if(position.ep == 64)
     {
         position.ep = 0;

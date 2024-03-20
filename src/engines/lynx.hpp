@@ -1,6 +1,7 @@
 #include "../base.h"
 #include "./lynx_constants.hpp"
 #include "../external/chess.hpp"
+#include "../external/builtin.hpp"
 #include <cassert>
 #include <array>
 #include <bit>
@@ -361,7 +362,12 @@ void IncrementCoefficients(coefficients_t &coefficients, int index, const chess:
 
 chess::U64 GetPieceSwappingEndianness(const chess::Board &board, const chess::PieceType &piece, const chess::Color &color)
 {
-    return __builtin_bswap64(board.pieces(piece, color));
+    return __builtin_bswap64(board.pieces(piece, color).getBits());
+}
+
+void ResetLS1B(std::uint64_t &board)
+{
+    board &= (board - 1);
 }
 
 int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
@@ -416,7 +422,7 @@ int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, const chess::Board
 
 int RookAdditonalEvaluation(int squareIndex, int pieceIndex, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
 {
-    auto mobilityCount = chess::builtin::popcount(chess::attacks::rook(static_cast<chess::Square>(squareIndex), __builtin_bswap64(board.occ())));
+    auto mobilityCount = chess::attacks::rook(static_cast<chess::Square>(squareIndex), __builtin_bswap64(board.occ().getBits())).count();
     IncrementCoefficients(coefficients, RookMobilityBonusIndex, color, mobilityCount);
 
     int packedBonus = RookMobilityBonus_Packed * mobilityCount;
@@ -458,7 +464,7 @@ int BishopAdditionalEvaluation(int squareIndex, int pieceIndex, const int pieceC
 {
     int packedBonus = 0;
 
-    auto mobilityCount = chess::builtin::popcount(chess::attacks::bishop(static_cast<chess::Square>(squareIndex), __builtin_bswap64(board.occ())));
+    auto mobilityCount = chess::attacks::bishop(static_cast<chess::Square>(squareIndex), __builtin_bswap64(board.occ().getBits())).count();
     IncrementCoefficients(coefficients, BishopMobilityBonusIndex, color, mobilityCount);
 
     packedBonus += BishopMobilityBonus_Packed * mobilityCount;
@@ -474,7 +480,7 @@ int BishopAdditionalEvaluation(int squareIndex, int pieceIndex, const int pieceC
 
 int QueenAdditionalEvaluation(int squareIndex, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
 {
-    auto mobilityCount = chess::builtin::popcount(chess::attacks::queen(static_cast<chess::Square>(squareIndex), __builtin_bswap64(board.occ())));
+    auto mobilityCount = chess::attacks::queen(static_cast<chess::Square>(squareIndex), __builtin_bswap64(board.occ().getBits())).count();
     IncrementCoefficients(coefficients, QueenMobilityBonusIndex, color, mobilityCount);
 
     return QueenMobilityBonus_Packed * mobilityCount;
@@ -507,7 +513,7 @@ int KingAdditionalEvaluation(int squareIndex, chess::Color kingSide, const chess
         }
     }
 
-    auto ownPiecesAroundCount = chess::builtin::popcount(chess::attacks::king(static_cast<chess::Square>(squareIndex)) & __builtin_bswap64(board.us(kingSide)));
+    auto ownPiecesAroundCount = chess::builtin::popcount(chess::attacks::king(static_cast<chess::Square>(squareIndex)).getBits() & __builtin_bswap64(board.us(kingSide).getBits()));
     IncrementCoefficients(coefficients, KingShieldBonusIndex, kingSide, ownPiecesAroundCount);
 
     return packedBonus + KingShieldBonus_Packed * ownPiecesAroundCount;
@@ -556,12 +562,12 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
     for (int pieceIndex = 0; pieceIndex < 5; ++pieceIndex)
     {
         // Bitboard copy that we 'empty'
-        auto bitboard = GetPieceSwappingEndianness(board, (chess::PieceType)pieceIndex, chess::Color::WHITE);
+        auto bitboard = GetPieceSwappingEndianness(board, chess::PieceType(static_cast<chess::PieceType::underlying>(pieceIndex)), chess::Color::WHITE);
         // std::cout << pieceIndex << "bb: " << bitboard << std::endl;
         while (bitboard != 0)
         {
-            auto pieceSquareIndex = chess::builtin::lsb(bitboard);
-            chess::builtin::poplsb(bitboard);
+            auto pieceSquareIndex = chess::builtin::lsb(bitboard).index();
+            ResetLS1B(bitboard);
 
             packedScore += PackedPositionalTables(pieceIndex, pieceSquareIndex) + PackedPieceValue[pieceIndex];
             gamePhase += phaseValues[pieceIndex];
@@ -581,12 +587,12 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
     {
         auto tunerPieceIndex = (pieceIndex - 6); // [0, 5]
         // Bitboard copy that we 'empty'
-        auto bitboard = GetPieceSwappingEndianness(board, (chess::PieceType)tunerPieceIndex, chess::Color::BLACK);
+        auto bitboard = GetPieceSwappingEndianness(board, chess::PieceType(static_cast<chess::PieceType::underlying>(tunerPieceIndex)), chess::Color::BLACK);
 
         while (bitboard != 0)
         {
-            auto pieceSquareIndex = chess::builtin::lsb(bitboard);
-            chess::builtin::poplsb(bitboard);
+            auto pieceSquareIndex = chess::builtin::lsb(bitboard).index();
+            ResetLS1B(bitboard);
 
             packedScore += PackedPositionalTables(pieceIndex, pieceSquareIndex) - PackedPieceValue[tunerPieceIndex];
             gamePhase += phaseValues[tunerPieceIndex];
@@ -602,8 +608,8 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
         }
     }
 
-    auto whiteKing = chess::builtin::lsb(GetPieceSwappingEndianness(board, chess::PieceType::KING, chess::Color::WHITE));
-    auto blackKing = chess::builtin::lsb(GetPieceSwappingEndianness(board, chess::PieceType::KING, chess::Color::BLACK));
+    auto whiteKing = chess::builtin::lsb(GetPieceSwappingEndianness(board, chess::PieceType::KING, chess::Color::WHITE)).index();
+    auto blackKing = chess::builtin::lsb(GetPieceSwappingEndianness(board, chess::PieceType::KING, chess::Color::BLACK)).index();
     packedScore += PackedPositionalTables(5, whiteKing) +
                    PackedPositionalTables(11, blackKing) +
                    KingAdditionalEvaluation(whiteKing, chess::Color::WHITE, board, pieceCount, coefficients) -

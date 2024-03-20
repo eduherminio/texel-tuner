@@ -216,18 +216,18 @@ static int32_t get_phase(const chess::Board& board)
         const auto piece = board.at(square);
         switch (piece)
         {
-        case chess::Piece::WHITEKNIGHT:
-        case chess::Piece::WHITEBISHOP:
-        case chess::Piece::BLACKKNIGHT:
-        case chess::Piece::BLACKBISHOP:
+        case chess::Piece(chess::Piece::WHITEKNIGHT):
+        case chess::Piece(chess::Piece::WHITEBISHOP):
+        case chess::Piece(chess::Piece::BLACKKNIGHT):
+        case chess::Piece(chess::Piece::BLACKBISHOP):
             phase += 1;
             break;
-        case chess::Piece::WHITEROOK:
-        case chess::Piece::BLACKROOK:
+        case chess::Piece(chess::Piece::WHITEROOK):
+        case chess::Piece(chess::Piece::BLACKROOK):
             phase += 2;
             break;
-        case chess::Piece::WHITEQUEEN:
-        case chess::Piece::BLACKQUEEN:
+        case chess::Piece(chess::Piece::WHITEQUEEN):
+        case chess::Piece(chess::Piece::BLACKQUEEN):
             phase += 4;
             break;
         }
@@ -243,6 +243,10 @@ static void print_statistics(const parameters_t& parameters, const vector<Entry>
     array<size_t, 2> losses{};
     array<size_t, 2> total{};
     array<tune_t, 2> wdls{};
+
+    size_t min_parameters = std::numeric_limits<uint64_t>::max();
+    size_t max_parameters = 0;
+    size_t total_parameters = 0;
 
     for(auto& entry : entries)
     {
@@ -260,6 +264,18 @@ static void print_statistics(const parameters_t& parameters, const vector<Entry>
         }
         total[entry.white_to_move]++;
         wdls[entry.white_to_move] += entry.wdl;
+
+        if(entry.coefficients.size() < min_parameters)
+        {
+            min_parameters = entry.coefficients.size();
+        }
+
+        if (entry.coefficients.size() > max_parameters)
+        {
+            max_parameters = entry.coefficients.size();
+        }
+
+        total_parameters += entry.coefficients.size();
     }
 
     cout << "Dataset statistics:" << endl;
@@ -273,6 +289,12 @@ static void print_statistics(const parameters_t& parameters, const vector<Entry>
         cout << color_name << " 0.0: " << losses[color] << " (" << (losses[color] * 100.0 / entries.size()) << "%)" << endl;
         cout << color_name << " avg: " << wdls[color] / total[color] << endl;
     }
+
+    auto avg_parameters = static_cast<tune_t>(total_parameters) / entries.size();
+    cout << "Parameters total: " << parameters.size() << endl;
+    cout << "Parameters min: " << min_parameters << endl;
+    cout << "Parameters max: " << max_parameters << endl;
+    cout << "Parameters avg: " << avg_parameters << endl;
 
     cout << endl;
 }
@@ -289,24 +311,24 @@ static int32_t get_piece_value(const chess::Piece piece)
 {
     switch (piece)
     {
-    case chess::Piece::WHITEPAWN:
-    case chess::Piece::BLACKPAWN:
+    case chess::Piece(chess::Piece::WHITEPAWN):
+    case chess::Piece(chess::Piece::BLACKPAWN):
         return 100;
-    case chess::Piece::WHITEKNIGHT:
-    case chess::Piece::BLACKKNIGHT:
+    case chess::Piece(chess::Piece::WHITEKNIGHT):
+    case chess::Piece(chess::Piece::BLACKKNIGHT):
         return 300;
-    case chess::Piece::WHITEBISHOP:
-    case chess::Piece::BLACKBISHOP:
+    case chess::Piece(chess::Piece::WHITEBISHOP):
+    case chess::Piece(chess::Piece::BLACKBISHOP):
         return 300;
-    case chess::Piece::WHITEROOK:
-    case chess::Piece::BLACKROOK:
+    case chess::Piece(chess::Piece::WHITEROOK):
+    case chess::Piece(chess::Piece::BLACKROOK):
         return 500;
-    case chess::Piece::WHITEQUEEN:
-    case chess::Piece::BLACKQUEEN:
+    case chess::Piece(chess::Piece::WHITEQUEEN):
+    case chess::Piece(chess::Piece::BLACKQUEEN):
         return 900;
-    case chess::Piece::WHITEKING:
-    case chess::Piece::BLACKKING:
-    case chess::Piece::NONE:
+    case chess::Piece(chess::Piece::WHITEKING):
+    case chess::Piece(chess::Piece::BLACKKING):
+    case chess::Piece(chess::Piece::NONE):
         return 0;
         //throw std::runtime_error("Invalid piece for value");
     }
@@ -376,7 +398,7 @@ static tune_t quiescence(chess::Board& board, const parameters_t& parameters, pv
     }
 
     chess::Movelist moves;
-    chess::movegen::legalmoves<chess::MoveGenType::CAPTURE>(moves, board);
+    chess::movegen::legalmoves<chess::movegen::MoveGenType::CAPTURE>(moves, board);
     array<int32_t, 64> move_scores;
     for (int32_t move_index = 0; move_index < moves.size(); move_index++)
     {
@@ -458,11 +480,9 @@ string cleanup_fen(const string& initial_fen)
     return clean_fen;
 }
 
-chess::Board quiescence_root(const parameters_t& parameters, const string& initial_fen)
+chess::Board quiescence_root(const parameters_t& parameters, chess::Board board)
 {
     pv_table_t pv_table {};
-    const auto clean_fen = cleanup_fen(initial_fen);
-    auto board = chess::Board(clean_fen);
     auto score = quiescence(board, parameters, pv_table, -inf, inf, 0);
     if(board.sideToMove() == chess::Color::BLACK)
     {
@@ -497,15 +517,18 @@ static void parse_fen(const bool side_to_move_wdl, const parameters_t& parameter
     }
 
     //string fen;
-    chess::Board board;
+    const auto clean_fen = cleanup_fen(original_fen);
+    chess::Board board = chess::Board(clean_fen);
+
+    if constexpr (filter_in_check)
+    {
+        if (board.inCheck())
+            return;
+    }
+
     if constexpr (enable_qsearch)
     {
-        board = quiescence_root(parameters, original_fen);
-    }
-    else
-    {
-        const auto clean_fen = cleanup_fen(original_fen);
-        board = chess::Board(clean_fen);
+        board = quiescence_root(parameters, board);
     }
 
     EvalResult eval_result;
