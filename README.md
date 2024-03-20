@@ -53,7 +53,7 @@ In sort:
   ```
 
 - Run the executable passing the path of `lynx-sources.csv` to it:
-  ```
+  ```bash
   ./tuner ../lynx-sources.csv
   ```
 
