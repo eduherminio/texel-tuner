@@ -461,7 +461,7 @@ int BishopAdditionalEvaluation(int squareIndex, int pieceIndex, const int pieceC
     auto mobilityCount = chess::builtin::popcount(chess::attacks::bishop(static_cast<chess::Square>(squareIndex), __builtin_bswap64(board.occ())));
     IncrementCoefficients(coefficients, BishopMobilityBonusIndex, color, mobilityCount);
 
-    packedBonus += BishopMobilityBonus_Packed* mobilityCount;
+    packedBonus += BishopMobilityBonus_Packed * mobilityCount;
 
     if (pieceCount[pieceIndex] == 2)
     {
@@ -620,32 +620,60 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
     //                  : -eval)};
 
     // Check if drawn position due to lack of material
-    if (UnpackEG(packedScore) >= 0)
+
+    if (gamePhase <= 3 && pieceCount[0] == 0 && pieceCount[6] == 0)
     {
-        bool whiteCannotWin = pieceCount[0] == 0 && pieceCount[4] == 0 && pieceCount[3] == 0 &&
-                              (pieceCount[2] + pieceCount[1] == 1              // B or N
-                               || (pieceCount[2] == 0 && pieceCount[1] == 2)); // N+N
-
-        if (whiteCannotWin)
+        switch (gamePhase)
         {
+        // case 5:
+        //     {
+        //         // RB vs R, RN vs R - escale it down due to the chances of it being a draw
+        //         if (pieceCount[(int)Piece.R] == 1 && pieceCount[(int)Piece.r] == 1)
+        //         {
+        //             packedScore >>= 1; // /2
+        //         }
 
+        //        break;
+        //    }
+        case 3:
+        {
+            auto winningSideOffset = PieceOffset(packedScore >= 0);
+
+            if (pieceCount[1 + winningSideOffset] == 2) // NN vs N, NN vs B
+            {
+                return EvalResult{
+                    std::move(coefficients),
+                    (double)0};
+            }
+
+            // Without rooks, only BB vs N is a win and BN vs N can have some chances
+            // Not taking that into account here though, we would need this to rule them out: `pieceCount[(int)Piece.b - winningSideOffset] == 1 || pieceCount[(int)Piece.B + winningSideOffset] <= 1`
+            // if (pieceCount[(int)Piece.R + winningSideOffset] == 0)  // BN vs B, NN vs B, BB vs B, BN vs N, NN vs N
+            //{
+            //    packedScore >>= 1; // /2
+            //}
+
+            break;
+        }
+        case 2:
+        {
+            if (pieceCount[1] + pieceCount[7] == 2     // NN vs -, N vs N
+                || pieceCount[1] + pieceCount[2] == 1) // B vs N, B vs B
+            {
+                return EvalResult{
+                    std::move(coefficients),
+                    (double)0};
+            }
+
+            break;
+        }
+        case 1:
+        case 0:
+        {
             return EvalResult{
                 std::move(coefficients),
                 (double)0};
         }
-    }
-    else
-    {
-        bool blackCannotWin = pieceCount[6] == 0 && pieceCount[10] == 0 && pieceCount[9] == 0 &&
-                              (pieceCount[8] + pieceCount[7] == 1              // B or N
-                               || (pieceCount[8] == 0 && pieceCount[7] == 2)); // N+N
-
-        if (blackCannotWin)
-        {
-
-            return EvalResult{
-                std::move(coefficients),
-                (double)0};
         }
     }
 

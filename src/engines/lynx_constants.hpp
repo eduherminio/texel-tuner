@@ -13,6 +13,11 @@ constexpr int16_t UnpackEG(const int32_t packed) {
     return (int16_t) ((packed + 0x8000) >> 16);
 }
 
+constexpr int PieceOffset(bool isWhite)
+{
+    return 6 - (6 * isWhite);
+}
+
 constexpr std::array<int, 12> PieceValue = {
     +103, +386, +357, +475, +1084, // 0,
     +149, +485, +434, +843, +1560, // 0,
@@ -28,7 +33,7 @@ constexpr std::array<int, 10> PackedPieceValue = {
 
 std::array<int, 6> phaseValues = {0, 1, 1, 2, 4, 0};
 
-constexpr static int EvalNormalizationCoefficient = 90;
+constexpr static int EvalNormalizationCoefficient = 142;
 
 constexpr static std::array<int, 64> MiddleGamePawnTable =
     {
