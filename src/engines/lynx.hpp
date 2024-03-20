@@ -13,46 +13,57 @@ const int base = 64 * 6 - 16; // Removing pawns from 1 and 8 rank
 
 const int DoubledPawnPenalty_MG = -5;
 const int DoubledPawnPenalty_EG = -14;
+const int DoubledPawnPenalty_Packed = Pack(DoubledPawnPenalty_MG, DoubledPawnPenalty_EG);
 const int DoubledPawnPenaltyIndex = base + 0;
 
 const int IsolatedPawnPenalty_MG = -18;
 const int IsolatedPawnPenalty_EG = -14;
+const int IsolatedPawnPenalty_Packed = Pack(IsolatedPawnPenalty_MG, IsolatedPawnPenalty_EG);
 const int IsolatedPawnPenaltyIndex = base + 1;
 
 const int OpenFileRookBonus_MG = 46;
 const int OpenFileRookBonus_EG = 13;
+const int OpenFileRookBonus_Packed = Pack(OpenFileRookBonus_MG, OpenFileRookBonus_EG);
 const int OpenFileRookBonusIndex = base + 2;
 
 const int SemiOpenFileRookBonus_MG = 17;
 const int SemiOpenFileRookBonus_EG = 19;
+const int SemiOpenFileRookBonus_Packed = Pack(SemiOpenFileRookBonus_MG, SemiOpenFileRookBonus_EG);
 const int SemiOpenFileRookBonusIndex = base + 3;
 
 const int BishopMobilityBonus_MG = 10;
 const int BishopMobilityBonus_EG = 10;
+const int BishopMobilityBonus_Packed = Pack(BishopMobilityBonus_MG, BishopMobilityBonus_EG);
 const int BishopMobilityBonusIndex = base + 4;
 
 const int RookMobilityBonus_MG = 5;
 const int RookMobilityBonus_EG = 5;
+const int RookMobilityBonus_Packed = Pack(RookMobilityBonus_MG, RookMobilityBonus_EG);
 const int RookMobilityBonusIndex = base + 5;
 
 const int QueenMobilityBonus_MG = 4;
 const int QueenMobilityBonus_EG = 8;
+const int QueenMobilityBonus_Packed = Pack(QueenMobilityBonus_MG, QueenMobilityBonus_EG);
 const int QueenMobilityBonusIndex = base + 6;
 
 const int SemiOpenFileKingPenalty_MG = -38;
 const int SemiOpenFileKingPenalty_EG = 25;
+const int SemiOpenFileKingPenalty_Packed = Pack(SemiOpenFileKingPenalty_MG, SemiOpenFileKingPenalty_EG);
 const int SemiOpenFileKingPenaltyIndex = base + 7;
 
 const int OpenFileKingPenalty_MG = -109;
 const int OpenFileKingPenalty_EG = 6;
+const int OpenFileKingPenalty_Packed = Pack(OpenFileKingPenalty_MG, OpenFileKingPenalty_EG);
 const int OpenFileKingPenaltyIndex = base + 8;
 
 const int KingShieldBonus_MG = 17;
 const int KingShieldBonus_EG = -5;
+const int KingShieldBonus_Packed = Pack(KingShieldBonus_MG, KingShieldBonus_EG);
 const int KingShieldBonusIndex = base + 9;
 
 const int BishopPairBonus_MG = 30;
 const int BishopPairBonus_EG = 88;
+const int BishopPairBonus_Packed = Pack(BishopPairBonus_MG, BishopPairBonus_EG);
 const int BishopPairMaxBonusIndex = base + 10;
 
 constexpr static std::array<int, 8> PassedPawnBonus_MG = {
@@ -60,6 +71,16 @@ constexpr static std::array<int, 8> PassedPawnBonus_MG = {
 
 constexpr static std::array<int, 8> PassedPawnBonus_EG = {
     0, 5, 12, 43, 84, 176, 260, 0};
+
+constexpr static std::array<int, 8> PassedPawnBonus_Packed = {
+    Pack(PassedPawnBonus_MG[0], PassedPawnBonus_EG[0]),
+    Pack(PassedPawnBonus_MG[1], PassedPawnBonus_EG[1]),
+    Pack(PassedPawnBonus_MG[2], PassedPawnBonus_EG[2]),
+    Pack(PassedPawnBonus_MG[3], PassedPawnBonus_EG[3]),
+    Pack(PassedPawnBonus_MG[4], PassedPawnBonus_EG[4]),
+    Pack(PassedPawnBonus_MG[5], PassedPawnBonus_EG[5]),
+    Pack(PassedPawnBonus_MG[6], PassedPawnBonus_EG[6]),
+    Pack(PassedPawnBonus_MG[7], PassedPawnBonus_EG[7])};
 
 const int PassedPawnBonusStartIndex = base + 11;
 
@@ -343,21 +364,19 @@ chess::U64 GetPieceSwappingEndianness(const chess::Board &board, const chess::Pi
     return __builtin_bswap64(board.pieces(piece, color));
 }
 
-std::pair<int, int> PawnAdditionalEvaluation(int squareIndex, int pieceIndex, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
+int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
 {
-    int middleGameBonus = 0, endGameBonus = 0;
+    int packedBonus = 0;
     auto doublePawnsCount = chess::builtin::popcount(GetPieceSwappingEndianness(board, chess::PieceType::PAWN, color) & (FileMasks[squareIndex]));
     if (doublePawnsCount > 1)
     {
-        middleGameBonus += doublePawnsCount * DoubledPawnPenalty_MG;
-        endGameBonus += doublePawnsCount * DoubledPawnPenalty_EG;
+        packedBonus += doublePawnsCount * DoubledPawnPenalty_Packed;
         IncrementCoefficients(coefficients, DoubledPawnPenaltyIndex, color);
     }
 
     if ((GetPieceSwappingEndianness(board, chess::PieceType::PAWN, color) & IsolatedPawnMasks[squareIndex]) == 0) // isIsolatedPawn
     {
-        middleGameBonus += IsolatedPawnPenalty_MG;
-        endGameBonus += IsolatedPawnPenalty_EG;
+        packedBonus += IsolatedPawnPenalty_Packed;
         IncrementCoefficients(coefficients, IsolatedPawnPenaltyIndex, color);
     }
 
@@ -373,8 +392,7 @@ std::pair<int, int> PawnAdditionalEvaluation(int squareIndex, int pieceIndex, co
             {
                 rank = 7 - rank;
             }
-            middleGameBonus += PassedPawnBonus_MG[rank];
-            endGameBonus += PassedPawnBonus_EG[rank];
+            packedBonus += PassedPawnBonus_Packed[rank];
             IncrementCoefficients(coefficients, PassedPawnBonusStartIndex + rank - 1, color); // There's no coefficient for rank 0
             // std::cout << "White pawn on " << squareIndex << " is passed, bonus " << PassedPawnBonus[rank] << std::endl;
         }
@@ -387,30 +405,27 @@ std::pair<int, int> PawnAdditionalEvaluation(int squareIndex, int pieceIndex, co
             auto rank = Rank[squareIndex];
             rank = 7 - rank;
 
-            middleGameBonus += PassedPawnBonus_MG[rank];
-            endGameBonus += PassedPawnBonus_EG[rank];
+            packedBonus += PassedPawnBonus_Packed[rank];
             IncrementCoefficients(coefficients, PassedPawnBonusStartIndex + rank - 1, color); // There's no coefficient for rank 0
             // std::cout << "Black pawn on " << squareIndex << " is passed, bonus " << -PassedPawnBonus[rank] << std::endl;
         }
     }
 
-    return std::make_pair(middleGameBonus, endGameBonus);
+    return packedBonus;
 }
 
-std::pair<int, int> RookAdditonalEvaluation(int squareIndex, int pieceIndex, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
+int RookAdditonalEvaluation(int squareIndex, int pieceIndex, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
 {
     auto mobilityCount = chess::builtin::popcount(chess::attacks::rook(static_cast<chess::Square>(squareIndex), __builtin_bswap64(board.occ())));
     IncrementCoefficients(coefficients, RookMobilityBonusIndex, color, mobilityCount);
 
-    int middleGameBonus = RookMobilityBonus_MG * mobilityCount;
-    int endGameBonus = RookMobilityBonus_EG * mobilityCount;
+    int packedBonus = RookMobilityBonus_Packed * mobilityCount;
 
     if (((GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE) | GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK)) & FileMasks[squareIndex]) == 0) // isOpenFile
     {
         // std::cout << "OpenFileRookBonus" << std::endl;
         IncrementCoefficients(coefficients, OpenFileRookBonusIndex, color);
-        middleGameBonus += OpenFileRookBonus_MG;
-        endGameBonus += OpenFileRookBonus_EG;
+        packedBonus += OpenFileRookBonus_Packed;
     }
     else
     {
@@ -422,8 +437,7 @@ std::pair<int, int> RookAdditonalEvaluation(int squareIndex, int pieceIndex, con
                 // std::cout << "Mask: " << FileMasks[squareIndex] << std::endl;
                 // std::cout << "SemiOpenFileRookBonus white" << std::endl;
                 IncrementCoefficients(coefficients, SemiOpenFileRookBonusIndex, color);
-                middleGameBonus += SemiOpenFileRookBonus_MG;
-                endGameBonus += SemiOpenFileRookBonus_EG;
+                packedBonus += SemiOpenFileRookBonus_Packed;
             }
         }
         else
@@ -432,46 +446,43 @@ std::pair<int, int> RookAdditonalEvaluation(int squareIndex, int pieceIndex, con
             {
                 // std::cout << "SemiOpenFileRookBonus black" << std::endl;
                 IncrementCoefficients(coefficients, SemiOpenFileRookBonusIndex, color);
-                middleGameBonus += SemiOpenFileRookBonus_MG;
-                endGameBonus += SemiOpenFileRookBonus_EG;
+                packedBonus += SemiOpenFileRookBonus_Packed;
             }
         }
     }
 
-    return std::make_pair(middleGameBonus, endGameBonus);
+    return packedBonus;
 }
 
-std::pair<int, int> BishopAdditionalEvaluation(int squareIndex, int pieceIndex, const int pieceCount[], const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
+int BishopAdditionalEvaluation(int squareIndex, int pieceIndex, const int pieceCount[], const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
 {
-    int middleGameBonus = 0, endGameBonus = 0;
+    int packedBonus = 0;
 
     auto mobilityCount = chess::builtin::popcount(chess::attacks::bishop(static_cast<chess::Square>(squareIndex), __builtin_bswap64(board.occ())));
     IncrementCoefficients(coefficients, BishopMobilityBonusIndex, color, mobilityCount);
 
-    middleGameBonus += BishopMobilityBonus_MG * mobilityCount;
-    endGameBonus += BishopMobilityBonus_EG * mobilityCount;
+    packedBonus += BishopMobilityBonus_Packed * mobilityCount;
 
     if (pieceCount[pieceIndex] == 2)
     {
-        middleGameBonus += BishopPairBonus_MG;
-        endGameBonus += BishopPairBonus_EG;
+        packedBonus += BishopPairBonus_Packed;
         IncrementCoefficients(coefficients, BishopPairMaxBonusIndex, color);
     }
 
-    return std::make_pair(middleGameBonus, endGameBonus);
+    return packedBonus;
 }
 
-std::pair<int, int> QueenAdditionalEvaluation(int squareIndex, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
+int QueenAdditionalEvaluation(int squareIndex, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
 {
     auto mobilityCount = chess::builtin::popcount(chess::attacks::queen(static_cast<chess::Square>(squareIndex), __builtin_bswap64(board.occ())));
     IncrementCoefficients(coefficients, QueenMobilityBonusIndex, color, mobilityCount);
 
-    return std::make_pair(QueenMobilityBonus_MG * mobilityCount, QueenMobilityBonus_EG * mobilityCount);
+    return QueenMobilityBonus_Packed * mobilityCount;
 }
 
-std::pair<int, int> KingAdditionalEvaluation(int squareIndex, chess::Color kingSide, const chess::Board &board, const int pieceCount[], coefficients_t &coefficients)
+int KingAdditionalEvaluation(int squareIndex, chess::Color kingSide, const chess::Board &board, const int pieceCount[], coefficients_t &coefficients)
 {
-    int middleGameBonus = 0, endGameBonus = 0;
+    int packedBonus = 0;
     auto kingSideOffset = kingSide == chess::Color::WHITE ? 0 : 6;
 
     if (pieceCount[9 - kingSideOffset] + pieceCount[10 - kingSideOffset] != 0) // areThereOppositeSideRooksOrQueens
@@ -479,22 +490,19 @@ std::pair<int, int> KingAdditionalEvaluation(int squareIndex, chess::Color kingS
         if (((GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE) | GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK)) & FileMasks[squareIndex]) == 0) // isOpenFile
         {
             // std::cout << "Open: " << (kingSide == chess::Color::WHITE ? "White" : "Black") << std::endl;
-            middleGameBonus += OpenFileKingPenalty_MG;
-            endGameBonus += OpenFileKingPenalty_EG;
+            packedBonus += OpenFileKingPenalty_Packed;
             IncrementCoefficients(coefficients, OpenFileKingPenaltyIndex, kingSide);
         }
         else if (kingSide == chess::Color::WHITE && (GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE) & FileMasks[squareIndex]) == 0) // isSemiOpenFile
         {
             // std::cout << "Semiopen: " << (kingSide == chess::Color::WHITE ? "White" : "Black") << std::endl;
-            middleGameBonus += SemiOpenFileKingPenalty_MG;
-            endGameBonus += SemiOpenFileKingPenalty_EG;
+            packedBonus += SemiOpenFileKingPenalty_Packed;
             IncrementCoefficients(coefficients, SemiOpenFileKingPenaltyIndex, kingSide);
         }
         else if (kingSide == chess::Color::BLACK && (GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK) & FileMasks[squareIndex]) == 0) // isSemiOpenFile
         {
             // std::cout << "Semiopen: "  << (kingSide == chess::Color::WHITE ? "White" : "Black") << std::endl;
-            middleGameBonus += SemiOpenFileKingPenalty_MG;
-            endGameBonus += SemiOpenFileKingPenalty_EG;
+            packedBonus += SemiOpenFileKingPenalty_Packed;
             IncrementCoefficients(coefficients, SemiOpenFileKingPenaltyIndex, kingSide);
         }
     }
@@ -502,11 +510,10 @@ std::pair<int, int> KingAdditionalEvaluation(int squareIndex, chess::Color kingS
     auto ownPiecesAroundCount = chess::builtin::popcount(chess::attacks::king(static_cast<chess::Square>(squareIndex)) & __builtin_bswap64(board.us(kingSide)));
     IncrementCoefficients(coefficients, KingShieldBonusIndex, kingSide, ownPiecesAroundCount);
 
-    return std::make_pair(middleGameBonus + KingShieldBonus_MG * ownPiecesAroundCount,
-                          endGameBonus + KingShieldBonus_EG * ownPiecesAroundCount);
+    return packedBonus + KingShieldBonus_Packed * ownPiecesAroundCount;
 }
 
-std::pair<int, int> AdditionalPieceEvaluation(int pieceSquareIndex, int pieceIndex, const int pieceCount[], const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
+int AdditionalPieceEvaluation(int pieceSquareIndex, int pieceIndex, const int pieceCount[], const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
 {
     switch (pieceIndex)
     {
@@ -525,7 +532,7 @@ std::pair<int, int> AdditionalPieceEvaluation(int pieceSquareIndex, int pieceInd
         return QueenAdditionalEvaluation(pieceSquareIndex, board, color, coefficients);
 
     default:
-        return std::make_pair(0, 0);
+        return 0;
     }
 }
 
@@ -543,8 +550,7 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
 
     int pieceCount[12] = {}; // Init to zeros
 
-    int middleGameScore = 0;
-    int endGameScore = 0;
+    int packedScore = 0;
     int gamePhase = 0;
 
     for (int pieceIndex = 0; pieceIndex < 5; ++pieceIndex)
@@ -557,15 +563,12 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
             auto pieceSquareIndex = chess::builtin::lsb(bitboard);
             chess::builtin::poplsb(bitboard);
 
-            middleGameScore += MiddleGamePositionalTables(pieceIndex, pieceSquareIndex) + PieceValue[pieceIndex];
-            endGameScore += EndGamePositionalTables(pieceIndex, pieceSquareIndex) + PieceValue[pieceIndex + 5];
+            packedScore += PackedPositionalTables(pieceIndex, pieceSquareIndex) + PackedPieceValue[pieceIndex];
             gamePhase += phaseValues[pieceIndex];
 
             ++pieceCount[pieceIndex];
 
-            auto pair = AdditionalPieceEvaluation(pieceSquareIndex, pieceIndex, pieceCount, board, chess::Color::WHITE, coefficients);
-            middleGameScore += pair.first;
-            endGameScore += pair.second;
+            packedScore += AdditionalPieceEvaluation(pieceSquareIndex, pieceIndex, pieceCount, board, chess::Color::WHITE, coefficients);
 
             if (pieceIndex == 0)
                 IncrementCoefficients(coefficients, pieceSquareIndex - 8, chess::Color::WHITE);
@@ -585,15 +588,12 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
             auto pieceSquareIndex = chess::builtin::lsb(bitboard);
             chess::builtin::poplsb(bitboard);
 
-            middleGameScore += MiddleGamePositionalTables(pieceIndex, pieceSquareIndex) - PieceValue[tunerPieceIndex];
-            endGameScore += EndGamePositionalTables(pieceIndex, pieceSquareIndex) - PieceValue[tunerPieceIndex + 5];
+            packedScore += PackedPositionalTables(pieceIndex, pieceSquareIndex) - PackedPieceValue[tunerPieceIndex];
             gamePhase += phaseValues[tunerPieceIndex];
 
             ++pieceCount[pieceIndex];
 
-            auto pair = AdditionalPieceEvaluation(pieceSquareIndex, pieceIndex, pieceCount, board, chess::Color::BLACK, coefficients);
-            middleGameScore -= pair.first;
-            endGameScore -= pair.second;
+            packedScore -= AdditionalPieceEvaluation(pieceSquareIndex, pieceIndex, pieceCount, board, chess::Color::BLACK, coefficients);
 
             if (pieceIndex == 6)
                 IncrementCoefficients(coefficients, pieceSquareIndex - 8, chess::Color::BLACK);
@@ -603,15 +603,13 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
     }
 
     auto whiteKing = chess::builtin::lsb(GetPieceSwappingEndianness(board, chess::PieceType::KING, chess::Color::WHITE));
-    auto kingPair = KingAdditionalEvaluation(whiteKing, chess::Color::WHITE, board, pieceCount, coefficients);
-    middleGameScore += MiddleGamePositionalTables(5, whiteKing) + kingPair.first;
-    endGameScore += EndGamePositionalTables(5, whiteKing) + kingPair.second;
-    IncrementCoefficients(coefficients, 64 * 5 + whiteKing - 16, chess::Color::WHITE);
-
     auto blackKing = chess::builtin::lsb(GetPieceSwappingEndianness(board, chess::PieceType::KING, chess::Color::BLACK));
-    kingPair = KingAdditionalEvaluation(blackKing, chess::Color::BLACK, board, pieceCount, coefficients);
-    middleGameScore += MiddleGamePositionalTables(11, blackKing) - kingPair.first;
-    endGameScore += EndGamePositionalTables(11, blackKing) - kingPair.second;
+    packedScore += PackedPositionalTables(5, whiteKing) +
+                   PackedPositionalTables(11, blackKing) +
+                   KingAdditionalEvaluation(whiteKing, chess::Color::WHITE, board, pieceCount, coefficients) -
+                   KingAdditionalEvaluation(blackKing, chess::Color::BLACK, board, pieceCount, coefficients);
+
+    IncrementCoefficients(coefficients, 64 * 5 + whiteKing - 16, chess::Color::WHITE);
     IncrementCoefficients(coefficients, 64 * 5 + blackKing - 16, chess::Color::BLACK);
 
     // Debugging eval
@@ -622,32 +620,60 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
     //                  : -eval)};
 
     // Check if drawn position due to lack of material
-    if (endGameScore >= 0)
+
+    if (gamePhase <= 3 && pieceCount[0] == 0 && pieceCount[6] == 0)
     {
-        bool whiteCannotWin = pieceCount[0] == 0 && pieceCount[4] == 0 && pieceCount[3] == 0 &&
-                              (pieceCount[2] + pieceCount[1] == 1              // B or N
-                               || (pieceCount[2] == 0 && pieceCount[1] == 2)); // N+N
-
-        if (whiteCannotWin)
+        switch (gamePhase)
         {
+        // case 5:
+        //     {
+        //         // RB vs R, RN vs R - escale it down due to the chances of it being a draw
+        //         if (pieceCount[(int)Piece.R] == 1 && pieceCount[(int)Piece.r] == 1)
+        //         {
+        //             packedScore >>= 1; // /2
+        //         }
 
+        //        break;
+        //    }
+        case 3:
+        {
+            auto winningSideOffset = PieceOffset(packedScore >= 0);
+
+            if (pieceCount[1 + winningSideOffset] == 2) // NN vs N, NN vs B
+            {
+                return EvalResult{
+                    std::move(coefficients),
+                    (double)0};
+            }
+
+            // Without rooks, only BB vs N is a win and BN vs N can have some chances
+            // Not taking that into account here though, we would need this to rule them out: `pieceCount[(int)Piece.b - winningSideOffset] == 1 || pieceCount[(int)Piece.B + winningSideOffset] <= 1`
+            // if (pieceCount[(int)Piece.R + winningSideOffset] == 0)  // BN vs B, NN vs B, BB vs B, BN vs N, NN vs N
+            //{
+            //    packedScore >>= 1; // /2
+            //}
+
+            break;
+        }
+        case 2:
+        {
+            if (pieceCount[1] + pieceCount[7] == 2     // NN vs -, N vs N
+                || pieceCount[1] + pieceCount[2] == 1) // B vs N, B vs B
+            {
+                return EvalResult{
+                    std::move(coefficients),
+                    (double)0};
+            }
+
+            break;
+        }
+        case 1:
+        case 0:
+        {
             return EvalResult{
                 std::move(coefficients),
                 (double)0};
         }
-    }
-    else
-    {
-        bool blackCannotWin = pieceCount[6] == 0 && pieceCount[10] == 0 && pieceCount[9] == 0 &&
-                              (pieceCount[8] + pieceCount[7] == 1              // B or N
-                               || (pieceCount[8] == 0 && pieceCount[7] == 2)); // N+N
-
-        if (blackCannotWin)
-        {
-
-            return EvalResult{
-                std::move(coefficients),
-                (double)0};
         }
     }
 
@@ -660,6 +686,8 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
 
     int endGamePhase = maxPhase - gamePhase;
 
+    auto middleGameScore = UnpackMG(packedScore);
+    auto endGameScore = UnpackEG(packedScore);
     int eval = ((middleGameScore * gamePhase) + (endGameScore * endGamePhase)) / maxPhase;
     // eval = ((middleGameScore * gamePhase) + (endGameScore * endGamePhase));
 

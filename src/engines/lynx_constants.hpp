@@ -1,14 +1,39 @@
 #include <array>
 using u64 = uint64_t;
 
+constexpr int32_t Pack(const int16_t mg, const int16_t eg) {
+    return ((int32_t) eg << 16) + (int32_t) mg;
+}
+
+constexpr int16_t UnpackMG(const int32_t packed) {
+    return (int16_t) packed;
+}
+
+constexpr int16_t UnpackEG(const int32_t packed) {
+    return (int16_t) ((packed + 0x8000) >> 16);
+}
+
+constexpr int PieceOffset(bool isWhite)
+{
+    return 6 - (6 * isWhite);
+}
+
 constexpr std::array<int, 12> PieceValue = {
     +103, +386, +357, +475, +1084, // 0,
     +149, +485, +434, +843, +1560, // 0,
 };
 
+constexpr std::array<int, 10> PackedPieceValue = {
+    Pack(PieceValue[0], PieceValue[5]),
+    Pack(PieceValue[1], PieceValue[6]),
+    Pack(PieceValue[2], PieceValue[7]),
+    Pack(PieceValue[3], PieceValue[8]),
+    Pack(PieceValue[4], PieceValue[9])
+};
+
 std::array<int, 6> phaseValues = {0, 1, 1, 2, 4, 0};
 
-constexpr static int EvalNormalizationCoefficient = 90;
+constexpr static int EvalNormalizationCoefficient = 142;
 
 constexpr static std::array<int, 64> MiddleGamePawnTable =
     {
@@ -195,6 +220,21 @@ int EndGamePositionalTables(int piece, int square)
     }
 
     return EndGamePositionalWhiteTables[piece][square] * coefficient;
+}
+
+int PackedPositionalTables(int piece, int square)
+{
+    int coefficient = 1;
+    if (piece >= 6)
+    {
+        piece -= 6;
+        square ^= 56;
+        coefficient = -1;
+    }
+
+    return Pack(
+        MiddleGamePositionalWhiteTables[piece][square] * coefficient,
+        EndGamePositionalWhiteTables[piece][square] * coefficient);
 }
 
 constexpr static std::array<u64, 64> FileMasks = {
