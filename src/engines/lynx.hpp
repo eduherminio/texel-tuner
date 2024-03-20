@@ -192,10 +192,10 @@ public:
         for (int phase = 0; phase <= 1; ++phase)
         {
             if (phase == 0)
-                std::cout << "public static readonly int[] MiddleGamePieceValues =\n[\n\t";
+                std::cout << "internal static readonly short[] MiddleGamePieceValues =\n[\n\t";
 
             else
-                std::cout << "\npublic static readonly int[] EndGamePieceValues =\n[\n\t";
+                std::cout << "\ninternal static readonly short[] EndGamePieceValues =\n[\n\t";
 
             // Pawns
             {
@@ -252,7 +252,7 @@ public:
             const int piece = 0;
             for (int phase = 0; phase <= 1; ++phase)
             {
-                std::cout << "\npublic static readonly int[] " << (phase == 0 ? "MiddleGame" : "EndGame") << names[piece] << "Table =\n[\n\t";
+                std::cout << "\ninternal static readonly short[] " << (phase == 0 ? "MiddleGame" : "EndGame") << names[piece] << "Table =\n[\n\t";
 
                 std::cout << "0,\t0,\t0,\t0,\t0,\t0,\t0,\t0,\n\t";
                 for (int square = 0; square < 48; ++square)
@@ -273,7 +273,7 @@ public:
         {
             for (int phase = 0; phase <= 1; ++phase)
             {
-                std::cout << "\npublic static readonly int[] " << (phase == 0 ? "MiddleGame" : "EndGame") << names[piece] << "Table =\n[\n\t";
+                std::cout << "\ninternal static readonly short[] " << (phase == 0 ? "MiddleGame" : "EndGame") << names[piece] << "Table =\n[\n\t";
                 for (int square = 0; square < 64; ++square)
                 {
                     std::cout << round(parameters[piece * 64 - 16 + square][phase] - pieceValues[piece + phase * 6]) << ", "; // We substract the 16 non-tuned pawn valeus
