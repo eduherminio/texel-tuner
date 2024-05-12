@@ -67,6 +67,11 @@ const int BishopPairBonus_EG = 80;
 const int BishopPairBonus_Packed = Pack(BishopPairBonus_MG, BishopPairBonus_EG);
 const int BishopPairMaxBonusIndex = base + 10;
 
+const int KingPseudoAttacksPenalty_MG = -5;
+const int KingPseudoAttacksPenalty_EG = -5;
+const int KingPseudoAttacksPenalty_Packed = Pack(KingPseudoAttacksPenalty_MG, KingPseudoAttacksPenalty_EG);
+const int KingPseudoAttacksPenaltyIndex = base + 11;
+
 constexpr static std::array<int, 8> PassedPawnBonus_MG = {
     0, -2, -15, -14, 20, 60, 98, 0};
 
@@ -83,7 +88,7 @@ constexpr static std::array<int, 8> PassedPawnBonus_Packed = {
     Pack(PassedPawnBonus_MG[6], PassedPawnBonus_EG[6]),
     Pack(PassedPawnBonus_MG[7], PassedPawnBonus_EG[7])};
 
-const int PassedPawnBonusStartIndex = base + 11;
+const int PassedPawnBonusStartIndex = base + 12;
 
 static constexpr int numParameters = base +
                                      1 + // DoubledPawnPenalty
@@ -97,6 +102,7 @@ static constexpr int numParameters = base +
                                      1 + // OpenFileKingPenalty
                                      1 + // BishopPairMaxBonus
                                      1 + // KingShieldBonus
+                                     1 + // KingPseudoAttacksPenalty
                                      6   // PassedPawnBonus - removing 1 and 8 rank values
     ;
 class Lynx
@@ -157,6 +163,7 @@ public:
         result.push_back({(double)OpenFileKingPenalty_MG, (double)OpenFileKingPenalty_EG});
         result.push_back({(double)KingShieldBonus_MG, (double)KingShieldBonus_EG});
         result.push_back({(double)BishopPairBonus_MG, (double)BishopPairBonus_EG});
+        result.push_back({(double)KingPseudoAttacksPenalty_MG, (double)KingPseudoAttacksPenalty_EG});
 
         for (int rank = 1; rank < 7; ++rank)
         {
@@ -330,6 +337,10 @@ public:
         std::cout << "\"BishopPairBonus\": {" << std::endl;
         std::cout << "\t\"MG\": " << round(parameters[BishopPairMaxBonusIndex][0]) << ",\n";
         std::cout << "\t\"EG\": " << round(parameters[BishopPairMaxBonusIndex][1]) << "\n}," << std::endl;
+
+        std::cout << "\"KingPseudoAttacksPenalty\": {" << std::endl;
+        std::cout << "\t\"MG\": " << round(parameters[KingPseudoAttacksPenaltyIndex][0]) << ",\n";
+        std::cout << "\t\"EG\": " << round(parameters[KingPseudoAttacksPenaltyIndex][1]) << "\n}," << std::endl;
 
         std::cout << "\"PassedPawnBonus\": {" << std::endl;
         std::cout << "\t\"Rank" << 0 << "\": {" << std::endl;
@@ -516,7 +527,12 @@ int KingAdditionalEvaluation(int squareIndex, chess::Color kingSide, const chess
     auto ownPiecesAroundCount = chess::builtin::popcount(chess::attacks::king(static_cast<chess::Square>(squareIndex)).getBits() & __builtin_bswap64(board.us(kingSide).getBits()));
     IncrementCoefficients(coefficients, KingShieldBonusIndex, kingSide, ownPiecesAroundCount);
 
-    return packedBonus + KingShieldBonus_Packed * ownPiecesAroundCount;
+    auto enemyPiecesAttackedIfKingWasAQueen = chess::builtin::popcount(chess::attacks::queen(static_cast<chess::Square>(squareIndex), __builtin_bswap64(board.occ().getBits())).getBits());
+    IncrementCoefficients(coefficients, KingPseudoAttacksPenaltyIndex, kingSide, enemyPiecesAttackedIfKingWasAQueen);
+
+    return packedBonus +
+           KingShieldBonus_Packed * ownPiecesAroundCount +
+           KingPseudoAttacksPenalty_Packed * enemyPiecesAttackedIfKingWasAQueen;
 }
 
 int AdditionalPieceEvaluation(int pieceSquareIndex, int pieceIndex, const int pieceCount[], const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
