@@ -527,7 +527,9 @@ int KingAdditionalEvaluation(int squareIndex, chess::Color kingSide, const chess
     auto ownPiecesAroundCount = chess::builtin::popcount(chess::attacks::king(static_cast<chess::Square>(squareIndex)).getBits() & __builtin_bswap64(board.us(kingSide).getBits()));
     IncrementCoefficients(coefficients, KingShieldBonusIndex, kingSide, ownPiecesAroundCount);
 
-    auto enemyPiecesAttackedIfKingWasAQueen = chess::builtin::popcount(chess::attacks::queen(static_cast<chess::Square>(squareIndex), __builtin_bswap64(board.occ().getBits())).getBits());
+    auto enemyPiecesAttackedIfKingWasAQueen = chess::builtin::popcount(
+        chess::attacks::queen(static_cast<chess::Square>(squareIndex), __builtin_bswap64(board.occ().getBits())).getBits()
+        & __builtin_bswap64(board.them(kingSide).getBits()));
     IncrementCoefficients(coefficients, KingPseudoAttacksPenaltyIndex, kingSide, enemyPiecesAttackedIfKingWasAQueen);
 
     return packedBonus +
