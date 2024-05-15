@@ -86,10 +86,10 @@ constexpr static std::array<int, 8> PassedPawnBonus_Packed = {
 const int PassedPawnBonus_StartIndex = base + 11;
 
 constexpr static std::array<int, 8> ProtectedPawnBonus_MG = {
-    0, 5, 5, 5, 5, 5, 5, 0};
+    0, 0, 5, 5, 5, 5, 5, 0};
 
 constexpr static std::array<int, 8> ProtectedPawnBonus_EG = {
-    0, 5, 5, 5, 5, 5, 5, 0};
+    0, 0, 5, 5, 5, 5, 5, 0};
 
 constexpr static std::array<int, 8> ProtectedPawnBonus_Packed = {
     Pack(ProtectedPawnBonus_MG[0], ProtectedPawnBonus_EG[0]),
@@ -116,7 +116,7 @@ static constexpr int numParameters = base +
                                      1 + // BishopPairMaxBonus
                                      1 + // KingShieldBonus
                                      6 + // PassedPawnBonus - removing 1 and 8 rank values
-                                     6   // ProtectedPawnBonus - removing 1 and 8 rank values
+                                     5   // ProtectedPawnBonus - removing 1, 2 and 8 rank values
     ;
 class Lynx
 {
@@ -182,7 +182,7 @@ public:
             result.push_back({(double)PassedPawnBonus_MG[rank], (double)PassedPawnBonus_EG[rank]});
         }
 
-        for (int rank = 1; rank < 7; ++rank)
+        for (int rank = 2; rank < 7; ++rank)
         {
             result.push_back({(double)ProtectedPawnBonus_MG[rank], (double)ProtectedPawnBonus_EG[rank]});
         }
@@ -377,9 +377,12 @@ public:
         std::cout << "\t\"Rank" << 0 << "\": {" << std::endl;
         std::cout << "\t\t\"MG\": " << 0 << ",\n";
         std::cout << "\t\t\"EG\": " << 0 << "\n\t}," << std::endl;
-        for (int rank = 0; rank < 6; ++rank)
+        std::cout << "\t\"Rank" << 1 << "\": {" << std::endl;
+        std::cout << "\t\t\"MG\": " << 0 << ",\n";
+        std::cout << "\t\t\"EG\": " << 0 << "\n\t}," << std::endl;
+        for (int rank = 0; rank < 5; ++rank)
         {
-            std::cout << "\t\"Rank" << rank + 1 << "\": {" << std::endl;
+            std::cout << "\t\"Rank" << rank + 2 << "\": {" << std::endl;
             std::cout << "\t\t\"MG\": " << round(parameters[ProtectedPawnBonus_StartIndex + rank][0]) << ",\n";
             std::cout << "\t\t\"EG\": " << round(parameters[ProtectedPawnBonus_StartIndex + rank][1]) << "\n\t}," << std::endl;
         }
@@ -445,7 +448,7 @@ int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, const chess::Board
         if ((__builtin_bswap64(chess::attacks::pawn(chess::Color::BLACK, squareIndex ^ 56).getBits()) & pawnBitBoard) != 0)
         {
             packedBonus += ProtectedPawnBonus_Packed[rank];
-            IncrementCoefficients(coefficients, ProtectedPawnBonus_StartIndex + rank - 1, color);
+            IncrementCoefficients(coefficients, ProtectedPawnBonus_StartIndex + rank - 2, color);    // There's no coefficient for ranks 0 and 1
         }
     }
     else
@@ -462,7 +465,7 @@ int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, const chess::Board
         if ((__builtin_bswap64(chess::attacks::pawn(chess::Color::WHITE, squareIndex ^ 56).getBits()) & pawnBitBoard) != 0)
         {
             packedBonus += ProtectedPawnBonus_Packed[rank];
-            IncrementCoefficients(coefficients, ProtectedPawnBonus_StartIndex + rank - 1, color);
+            IncrementCoefficients(coefficients, ProtectedPawnBonus_StartIndex + rank - 2, color);    // There's no coefficient for ranks 0 and 1
         }
     }
 
