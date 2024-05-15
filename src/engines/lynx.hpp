@@ -22,55 +22,50 @@ const int IsolatedPawnPenalty_EG = -13;
 const int IsolatedPawnPenalty_Packed = Pack(IsolatedPawnPenalty_MG, IsolatedPawnPenalty_EG);
 const int IsolatedPawnPenaltyIndex = base + 1;
 
-const int ProtectedPawnBonus_MG = 10;
-const int ProtectedPawnBonus_EG = 10;
-const int ProtectedPawnBonus_Packed = Pack(ProtectedPawnBonus_MG, ProtectedPawnBonus_EG);
-const int ProtectedPawnBonusIndex = base + 2;
-
 const int OpenFileRookBonus_MG = 47;
 const int OpenFileRookBonus_EG = 10;
 const int OpenFileRookBonus_Packed = Pack(OpenFileRookBonus_MG, OpenFileRookBonus_EG);
-const int OpenFileRookBonusIndex = base + 3;
+const int OpenFileRookBonusIndex = base + 2;
 
 const int SemiOpenFileRookBonus_MG = 18;
 const int SemiOpenFileRookBonus_EG = 17;
 const int SemiOpenFileRookBonus_Packed = Pack(SemiOpenFileRookBonus_MG, SemiOpenFileRookBonus_EG);
-const int SemiOpenFileRookBonusIndex = base + 4;
+const int SemiOpenFileRookBonusIndex = base + 3;
 
 const int BishopMobilityBonus_MG = 10;
 const int BishopMobilityBonus_EG = 9;
 const int BishopMobilityBonus_Packed = Pack(BishopMobilityBonus_MG, BishopMobilityBonus_EG);
-const int BishopMobilityBonusIndex = base + 5;
+const int BishopMobilityBonusIndex = base + 4;
 
 const int RookMobilityBonus_MG = 5;
 const int RookMobilityBonus_EG = 5;
 const int RookMobilityBonus_Packed = Pack(RookMobilityBonus_MG, RookMobilityBonus_EG);
-const int RookMobilityBonusIndex = base + 6;
+const int RookMobilityBonusIndex = base + 5;
 
 const int QueenMobilityBonus_MG = 4;
 const int QueenMobilityBonus_EG = 7;
 const int QueenMobilityBonus_Packed = Pack(QueenMobilityBonus_MG, QueenMobilityBonus_EG);
-const int QueenMobilityBonusIndex = base + 7;
+const int QueenMobilityBonusIndex = base + 6;
 
 const int SemiOpenFileKingPenalty_MG = -36;
 const int SemiOpenFileKingPenalty_EG = 24;
 const int SemiOpenFileKingPenalty_Packed = Pack(SemiOpenFileKingPenalty_MG, SemiOpenFileKingPenalty_EG);
-const int SemiOpenFileKingPenaltyIndex = base + 8;
+const int SemiOpenFileKingPenaltyIndex = base + 7;
 
 const int OpenFileKingPenalty_MG = -105;
 const int OpenFileKingPenalty_EG = 8;
 const int OpenFileKingPenalty_Packed = Pack(OpenFileKingPenalty_MG, OpenFileKingPenalty_EG);
-const int OpenFileKingPenaltyIndex = base + 9;
+const int OpenFileKingPenaltyIndex = base + 8;
 
 const int KingShieldBonus_MG = 16;
 const int KingShieldBonus_EG = -6;
 const int KingShieldBonus_Packed = Pack(KingShieldBonus_MG, KingShieldBonus_EG);
-const int KingShieldBonusIndex = base + 10;
+const int KingShieldBonusIndex = base + 9;
 
 const int BishopPairBonus_MG = 31;
 const int BishopPairBonus_EG = 80;
 const int BishopPairBonus_Packed = Pack(BishopPairBonus_MG, BishopPairBonus_EG);
-const int BishopPairMaxBonusIndex = base + 11;
+const int BishopPairMaxBonusIndex = base + 10;
 
 constexpr static std::array<int, 8> PassedPawnBonus_MG = {
     0, -2, -15, -14, 20, 60, 98, 0};
@@ -88,12 +83,29 @@ constexpr static std::array<int, 8> PassedPawnBonus_Packed = {
     Pack(PassedPawnBonus_MG[6], PassedPawnBonus_EG[6]),
     Pack(PassedPawnBonus_MG[7], PassedPawnBonus_EG[7])};
 
-const int PassedPawnBonusStartIndex = base + 12;
+const int PassedPawnBonus_StartIndex = base + 11;
+
+constexpr static std::array<int, 8> ProtectedPawnBonus_MG = {
+    0, 5, 5, 5, 5, 5, 5, 0};
+
+constexpr static std::array<int, 8> ProtectedPawnBonus_EG = {
+    0, 5, 5, 5, 5, 5, 5, 0};
+
+constexpr static std::array<int, 8> ProtectedPawnBonus_Packed = {
+    Pack(ProtectedPawnBonus_MG[0], ProtectedPawnBonus_EG[0]),
+    Pack(ProtectedPawnBonus_MG[1], ProtectedPawnBonus_EG[1]),
+    Pack(ProtectedPawnBonus_MG[2], ProtectedPawnBonus_EG[2]),
+    Pack(ProtectedPawnBonus_MG[3], ProtectedPawnBonus_EG[3]),
+    Pack(ProtectedPawnBonus_MG[4], ProtectedPawnBonus_EG[4]),
+    Pack(ProtectedPawnBonus_MG[5], ProtectedPawnBonus_EG[5]),
+    Pack(ProtectedPawnBonus_MG[6], ProtectedPawnBonus_EG[6]),
+    Pack(ProtectedPawnBonus_MG[7], ProtectedPawnBonus_EG[7])};
+
+const int ProtectedPawnBonus_StartIndex = base + 12 + 5;
 
 static constexpr int numParameters = base +
                                      1 + // DoubledPawnPenalty
                                      1 + // IsolatedPawnPenalty
-                                     1 + // ProtectedPawnBonus
                                      1 + // OpenFileRookBonus
                                      1 + // SemiOpenFileRookBonus
                                      1 + // BishopMobilityBonus
@@ -103,7 +115,8 @@ static constexpr int numParameters = base +
                                      1 + // OpenFileKingPenalty
                                      1 + // BishopPairMaxBonus
                                      1 + // KingShieldBonus
-                                     6   // PassedPawnBonus - removing 1 and 8 rank values
+                                     6 + // PassedPawnBonus - removing 1 and 8 rank values
+                                     6   // ProtectedPawnBonus - removing 1 and 8 rank values
     ;
 class Lynx
 {
@@ -154,7 +167,6 @@ public:
 
         result.push_back({(double)DoubledPawnPenalty_MG, (double)DoubledPawnPenalty_EG});
         result.push_back({(double)IsolatedPawnPenalty_MG, (double)IsolatedPawnPenalty_EG});
-        result.push_back({(double)ProtectedPawnBonus_MG, (double)ProtectedPawnBonus_EG});
         result.push_back({(double)OpenFileRookBonus_MG, (double)OpenFileRookBonus_EG});
         result.push_back({(double)SemiOpenFileRookBonus_MG, (double)SemiOpenFileRookBonus_EG});
         result.push_back({(double)BishopMobilityBonus_MG, (double)BishopMobilityBonus_EG});
@@ -168,6 +180,11 @@ public:
         for (int rank = 1; rank < 7; ++rank)
         {
             result.push_back({(double)PassedPawnBonus_MG[rank], (double)PassedPawnBonus_EG[rank]});
+        }
+
+        for (int rank = 1; rank < 7; ++rank)
+        {
+            result.push_back({(double)ProtectedPawnBonus_MG[rank], (double)ProtectedPawnBonus_EG[rank]});
         }
 
         std::cout << result.size() << " == " << numParameters << std::endl;
@@ -302,10 +319,6 @@ public:
         std::cout << "\t\"MG\": " << round(parameters[IsolatedPawnPenaltyIndex][0]) << ",\n";
         std::cout << "\t\"EG\": " << round(parameters[IsolatedPawnPenaltyIndex][1]) << "\n}," << std::endl;
 
-        std::cout << "\"ProtectedPawnBonus\": {" << std::endl;
-        std::cout << "\t\"MG\": " << round(parameters[ProtectedPawnBonusIndex][0]) << ",\n";
-        std::cout << "\t\"EG\": " << round(parameters[ProtectedPawnBonusIndex][1]) << "\n}," << std::endl;
-
         std::cout << "\"OpenFileRookBonus\": {" << std::endl;
         std::cout << "\t\"MG\": " << round(parameters[OpenFileRookBonusIndex][0]) << ",\n";
         std::cout << "\t\"EG\": " << round(parameters[OpenFileRookBonusIndex][1]) << "\n}," << std::endl;
@@ -349,8 +362,26 @@ public:
         for (int rank = 0; rank < 6; ++rank)
         {
             std::cout << "\t\"Rank" << rank + 1 << "\": {" << std::endl;
-            std::cout << "\t\t\"MG\": " << round(parameters[PassedPawnBonusStartIndex + rank][0]) << ",\n";
-            std::cout << "\t\t\"EG\": " << round(parameters[PassedPawnBonusStartIndex + rank][1]) << "\n\t}," << std::endl;
+            std::cout << "\t\t\"MG\": " << round(parameters[PassedPawnBonus_StartIndex + rank][0]) << ",\n";
+            std::cout << "\t\t\"EG\": " << round(parameters[PassedPawnBonus_StartIndex + rank][1]) << "\n\t}," << std::endl;
+        }
+        std::cout << "\t\"Rank" << 7 << "\": {" << std::endl;
+        std::cout << "\t\t\"MG\": " << 0 << ",\n";
+        std::cout << "\t\t\"EG\": " << 0 << "\n\t}," << std::endl;
+        std::cout << "}";
+
+        std::cout << '\n'
+                  << std::endl;
+
+        std::cout << "\"ProtectedPawnBonus\": {" << std::endl;
+        std::cout << "\t\"Rank" << 0 << "\": {" << std::endl;
+        std::cout << "\t\t\"MG\": " << 0 << ",\n";
+        std::cout << "\t\t\"EG\": " << 0 << "\n\t}," << std::endl;
+        for (int rank = 0; rank < 6; ++rank)
+        {
+            std::cout << "\t\"Rank" << rank + 1 << "\": {" << std::endl;
+            std::cout << "\t\t\"MG\": " << round(parameters[ProtectedPawnBonus_StartIndex + rank][0]) << ",\n";
+            std::cout << "\t\t\"EG\": " << round(parameters[ProtectedPawnBonus_StartIndex + rank][1]) << "\n\t}," << std::endl;
         }
         std::cout << "\t\"Rank" << 7 << "\": {" << std::endl;
         std::cout << "\t\t\"MG\": " << 0 << ",\n";
@@ -398,44 +429,40 @@ int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, const chess::Board
         IncrementCoefficients(coefficients, IsolatedPawnPenaltyIndex, color);
     }
 
+    auto rank = Rank[squareIndex];
+
     if (color == chess::Color::WHITE)
     {
         if ((GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK) & WhitePassedPawnMasks[squareIndex]) == 0) // isPassedPawn
         {
             // std::cout << "Piece: " << GetPiece(board, chess::PieceType::PAWN, chess::Color::BLACK) << std::endl;
             // std::cout << "Mask: " << WhitePassedPawnMasks[squareIndex] << std::endl;
-            auto rank = Rank[squareIndex];
-            if (pieceIndex == 6)
-            {
-                rank = 7 - rank;
-            }
             packedBonus += PassedPawnBonus_Packed[rank];
-            IncrementCoefficients(coefficients, PassedPawnBonusStartIndex + rank - 1, color); // There's no coefficient for rank 0
+            IncrementCoefficients(coefficients, PassedPawnBonus_StartIndex + rank - 1, color); // There's no coefficient for rank 0
             // std::cout << "White pawn on " << squareIndex << " is passed, bonus " << PassedPawnBonus[rank] << std::endl;
         }
 
         if ((__builtin_bswap64(chess::attacks::pawn(chess::Color::BLACK, squareIndex ^ 56).getBits()) & pawnBitBoard) != 0)
         {
-            packedBonus += ProtectedPawnBonus_Packed;
-            IncrementCoefficients(coefficients, ProtectedPawnBonusIndex, color);
+            packedBonus += ProtectedPawnBonus_Packed[rank];
+            IncrementCoefficients(coefficients, ProtectedPawnBonus_StartIndex + rank - 1, color);
         }
     }
     else
     {
+        rank = 7 - rank;
+
         if ((GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE) & BlackPassedPawnMasks[squareIndex]) == 0) // isPassedPawn
         {
-            auto rank = Rank[squareIndex];
-            rank = 7 - rank;
-
             packedBonus += PassedPawnBonus_Packed[rank];
-            IncrementCoefficients(coefficients, PassedPawnBonusStartIndex + rank - 1, color); // There's no coefficient for rank 0
+            IncrementCoefficients(coefficients, PassedPawnBonus_StartIndex + rank - 1, color); // There's no coefficient for rank 0
             // std::cout << "Black pawn on " << squareIndex << " is passed, bonus " << -PassedPawnBonus[rank] << std::endl;
         }
 
         if ((__builtin_bswap64(chess::attacks::pawn(chess::Color::WHITE, squareIndex ^ 56).getBits()) & pawnBitBoard) != 0)
         {
-            packedBonus += ProtectedPawnBonus_Packed;
-            IncrementCoefficients(coefficients, ProtectedPawnBonusIndex, color);
+            packedBonus += ProtectedPawnBonus_Packed[rank];
+            IncrementCoefficients(coefficients, ProtectedPawnBonus_StartIndex + rank - 1, color);
         }
     }
 
