@@ -20,52 +20,52 @@ const int DoubledPawnPenaltyIndex = base + 0;
 const int IsolatedPawnPenalty_MG = -21;
 const int IsolatedPawnPenalty_EG = -17;
 const int IsolatedPawnPenalty_Packed = Pack(IsolatedPawnPenalty_MG, IsolatedPawnPenalty_EG);
-const int IsolatedPawnPenaltyIndex = base + 0;
+const int IsolatedPawnPenaltyIndex = base + 1;
 
 const int OpenFileRookBonus_MG = 46;
 const int OpenFileRookBonus_EG = 9;
 const int OpenFileRookBonus_Packed = Pack(OpenFileRookBonus_MG, OpenFileRookBonus_EG);
-const int OpenFileRookBonusIndex = base + 1;
+const int OpenFileRookBonusIndex = base + 2;
 
 const int SemiOpenFileRookBonus_MG = 15;
 const int SemiOpenFileRookBonus_EG = 15;
 const int SemiOpenFileRookBonus_Packed = Pack(SemiOpenFileRookBonus_MG, SemiOpenFileRookBonus_EG);
-const int SemiOpenFileRookBonusIndex = base + 2;
+const int SemiOpenFileRookBonusIndex = base + 3;
 
 const int BishopMobilityBonus_MG = 10;
 const int BishopMobilityBonus_EG = 9;
 const int BishopMobilityBonus_Packed = Pack(BishopMobilityBonus_MG, BishopMobilityBonus_EG);
-const int BishopMobilityBonusIndex = base + 3;
+const int BishopMobilityBonusIndex = base + 4;
 
 const int RookMobilityBonus_MG = 5;
 const int RookMobilityBonus_EG = 5;
 const int RookMobilityBonus_Packed = Pack(RookMobilityBonus_MG, RookMobilityBonus_EG);
-const int RookMobilityBonusIndex = base + 4;
+const int RookMobilityBonusIndex = base + 5;
 
 const int QueenMobilityBonus_MG = 4;
 const int QueenMobilityBonus_EG = 8;
 const int QueenMobilityBonus_Packed = Pack(QueenMobilityBonus_MG, QueenMobilityBonus_EG);
-const int QueenMobilityBonusIndex = base + 5;
+const int QueenMobilityBonusIndex = base + 6;
 
 const int SemiOpenFileKingPenalty_MG = -41;
 const int SemiOpenFileKingPenalty_EG = 21;
 const int SemiOpenFileKingPenalty_Packed = Pack(SemiOpenFileKingPenalty_MG, SemiOpenFileKingPenalty_EG);
-const int SemiOpenFileKingPenaltyIndex = base + 6;
+const int SemiOpenFileKingPenaltyIndex = base + 7;
 
 const int OpenFileKingPenalty_MG = -110;
 const int OpenFileKingPenalty_EG = 10;
 const int OpenFileKingPenalty_Packed = Pack(OpenFileKingPenalty_MG, OpenFileKingPenalty_EG);
-const int OpenFileKingPenaltyIndex = base + 7;
+const int OpenFileKingPenaltyIndex = base + 8;
 
 const int KingShieldBonus_MG = 17;
 const int KingShieldBonus_EG = -5;
 const int KingShieldBonus_Packed = Pack(KingShieldBonus_MG, KingShieldBonus_EG);
-const int KingShieldBonusIndex = base + 8;
+const int KingShieldBonusIndex = base + 9;
 
 const int BishopPairBonus_MG = 33;
 const int BishopPairBonus_EG = 80;
 const int BishopPairBonus_Packed = Pack(BishopPairBonus_MG, BishopPairBonus_EG);
-const int BishopPairMaxBonusIndex = base + 9;
+const int BishopPairMaxBonusIndex = base + 10;
 
 constexpr static std::array<int, 8> PassedPawnBonus_MG = {
     0, 4, -11, -11, 21, 62, 104, 0};
@@ -83,7 +83,7 @@ constexpr static std::array<int, 8> PassedPawnBonus_Packed = {
     Pack(PassedPawnBonus_MG[6], PassedPawnBonus_EG[6]),
     Pack(PassedPawnBonus_MG[7], PassedPawnBonus_EG[7])};
 
-const int PassedPawnBonusStartIndex = base + 10;
+const int PassedPawnBonusStartIndex = base + 11;
 
 static constexpr int numParameters = base +
                                      1 + // DoubledPawnPenalty
