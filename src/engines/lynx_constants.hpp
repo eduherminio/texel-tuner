@@ -349,42 +349,42 @@ const u64 NotAFile = 0xFEFEFEFEFEFEFEFE;
 
 const u64 NotHFile = 0x7F7F7F7F7F7F7F7F;
 
-[[nodiscard]] static chess::U64 ShiftUp(const chess::U64 board)
+[[nodiscard]] static u64 ShiftUp(const u64 board)
 {
     return board >> 8;
 }
 
-[[nodiscard]] static chess::U64 ShiftDown(const chess::U64 board)
+[[nodiscard]] static u64 ShiftDown(const u64 board)
 {
     return board << 8;
 }
 
-[[nodiscard]] static chess::U64 ShiftLeft(const chess::U64 board)
+[[nodiscard]] static u64 ShiftLeft(const u64 board)
 {
     return (board >> 1) & NotHFile;
 }
 
-[[nodiscard]] static chess::U64 ShiftRight(const chess::U64 board)
+[[nodiscard]] static u64 ShiftRight(const u64 board)
 {
     return (board << 1) & NotAFile;
 }
 
-[[nodiscard]] static chess::U64 ShiftUpRight(const chess::U64 board)
+[[nodiscard]] static u64 ShiftUpRight(const u64 board)
 {
     return ShiftRight(ShiftUp(board));
 }
 
-[[nodiscard]] static chess::U64 ShiftUpLeft(const chess::U64 board)
+[[nodiscard]] static u64 ShiftUpLeft(const u64 board)
 {
     return ShiftLeft(ShiftUp(board));
 }
 
-[[nodiscard]] static chess::U64 ShiftDownRight(const chess::U64 board)
+[[nodiscard]] static u64 ShiftDownRight(const u64 board)
 {
     return ShiftRight(ShiftDown(board));
 }
 
-[[nodiscard]] static chess::U64 ShiftDownLeft(const chess::U64 board)
+[[nodiscard]] static u64 ShiftDownLeft(const u64 board)
 {
     return ShiftLeft(ShiftDown(board));
 }
