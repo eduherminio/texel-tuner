@@ -543,8 +543,8 @@ int DoublePawnPenalty(const chess::Board &board, coefficients_t &coefficients)
     auto whitePawnsCount = chess::builtin::popcount(whitePawns & ShiftUp(whitePawns));
     auto blackPawnsCount = chess::builtin::popcount(blackPawns & ShiftUp(blackPawns));
 
-    IncrementCoefficients(coefficients, whitePawnsCount, chess::Color::WHITE);
-    IncrementCoefficients(coefficients, blackPawnsCount, chess::Color::BLACK);
+    IncrementCoefficients(coefficients, DoubledPawnPenaltyIndex, chess::Color::WHITE, whitePawnsCount);
+    IncrementCoefficients(coefficients, DoubledPawnPenaltyIndex, chess::Color::BLACK, blackPawnsCount);
 
     return DoubledPawnPenalty_Packed * (whitePawnsCount - blackPawnsCount);
 }
