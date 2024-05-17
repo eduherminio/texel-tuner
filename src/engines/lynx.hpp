@@ -373,12 +373,6 @@ void ResetLS1B(std::uint64_t &board)
 int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
 {
     int packedBonus = 0;
-    // auto doublePawnsCount = chess::builtin::popcount(GetPieceSwappingEndianness(board, chess::PieceType::PAWN, color) & (FileMasks[squareIndex]));
-    // if (doublePawnsCount > 1)
-    // {
-    //     packedBonus += doublePawnsCount * DoubledPawnPenalty_Packed;
-    //     IncrementCoefficients(coefficients, DoubledPawnPenaltyIndex, color);
-    // }
 
     if ((GetPieceSwappingEndianness(board, chess::PieceType::PAWN, color) & IsolatedPawnMasks[squareIndex]) == 0) // isIsolatedPawn
     {
@@ -405,7 +399,6 @@ int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, const chess::Board
     }
     else
     {
-
         if ((GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE) & BlackPassedPawnMasks[squareIndex]) == 0) // isPassedPawn
         {
             auto rank = Rank[squareIndex];
@@ -542,14 +535,18 @@ int AdditionalPieceEvaluation(int pieceSquareIndex, int pieceIndex, const int pi
     }
 }
 
-int DoublePawnPenalty(const chess::Board &board)
+int DoublePawnPenalty(const chess::Board &board, coefficients_t &coefficients)
 {
-    const auto whitePawns = GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE);
-    const auto blackPawns = GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK);
+    auto whitePawns = GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE);
+    auto blackPawns = GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK);
 
-    return DoubledPawnPenalty_Packed *
-           (chess::builtin::popcount(whitePawns & ShiftUp(whitePawns)) -
-            chess::builtin::popcount(blackPawns & ShiftUp(blackPawns)));
+    auto whitePawnsCount = chess::builtin::popcount(whitePawns & ShiftUp(whitePawns));
+    auto blackPawnsCount = chess::builtin::popcount(blackPawns & ShiftUp(blackPawns));
+
+    IncrementCoefficients(coefficients, whitePawnsCount, chess::Color::WHITE);
+    IncrementCoefficients(coefficients, blackPawnsCount, chess::Color::BLACK);
+
+    return DoubledPawnPenalty_Packed * (whitePawnsCount - blackPawnsCount);
 }
 
 int Lynx::NormalizeScore(int score)
@@ -618,7 +615,7 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
         }
     }
 
-    packedScore += DoublePawnPenalty(board);
+    packedScore += DoublePawnPenalty(board, coefficients);
 
     auto whiteKing = chess::builtin::lsb(GetPieceSwappingEndianness(board, chess::PieceType::KING, chess::Color::WHITE)).index();
     auto blackKing = chess::builtin::lsb(GetPieceSwappingEndianness(board, chess::PieceType::KING, chess::Color::BLACK)).index();
