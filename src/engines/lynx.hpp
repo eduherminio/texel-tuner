@@ -12,10 +12,10 @@ using u64 = uint64_t;
 
 const int base = 64 * 6 - 16; // Removing pawns from 1 and 8 rank
 
-// const int DoubledPawnPenalty_MG = -6;
-// const int DoubledPawnPenalty_EG = -12;
-// const int DoubledPawnPenalty_Packed = Pack(DoubledPawnPenalty_MG, DoubledPawnPenalty_EG);
-// const int DoubledPawnPenaltyIndex = base + 0;
+const int DoubledPawnPenalty_MG = -5;
+const int DoubledPawnPenalty_EG = -5;
+const int DoubledPawnPenalty_Packed = Pack(DoubledPawnPenalty_MG, DoubledPawnPenalty_EG);
+const int DoubledPawnPenaltyIndex = base + 0;
 
 const int IsolatedPawnPenalty_MG = -21;
 const int IsolatedPawnPenalty_EG = -17;
@@ -86,7 +86,7 @@ constexpr static std::array<int, 8> PassedPawnBonus_Packed = {
 const int PassedPawnBonusStartIndex = base + 10;
 
 static constexpr int numParameters = base +
-                                    //  1 + // DoubledPawnPenalty
+                                     1 + // DoubledPawnPenalty
                                      1 + // IsolatedPawnPenalty
                                      1 + // OpenFileRookBonus
                                      1 + // SemiOpenFileRookBonus
@@ -146,7 +146,7 @@ public:
                 result.push_back({(double)MiddleGamePositionalTables(piece, square), (double)EndGamePositionalTables(piece, square)});
         }
 
-        // result.push_back({(double)DoubledPawnPenalty_MG, (double)DoubledPawnPenalty_EG});
+        result.push_back({(double)DoubledPawnPenalty_MG, (double)DoubledPawnPenalty_EG});
         result.push_back({(double)IsolatedPawnPenalty_MG, (double)IsolatedPawnPenalty_EG});
         result.push_back({(double)OpenFileRookBonus_MG, (double)OpenFileRookBonus_EG});
         result.push_back({(double)SemiOpenFileRookBonus_MG, (double)SemiOpenFileRookBonus_EG});
@@ -287,9 +287,9 @@ public:
         }
         std::cout << std::endl;
 
-        // std::cout << "\"DoubledPawnPenalty\": {" << std::endl;
-        // std::cout << "\t\"MG\": " << round(parameters[DoubledPawnPenaltyIndex][0]) << ",\n";
-        // std::cout << "\t\"EG\": " << round(parameters[DoubledPawnPenaltyIndex][1]) << "\n}," << std::endl;
+        std::cout << "\"DoubledPawnPenalty\": {" << std::endl;
+        std::cout << "\t\"MG\": " << round(parameters[DoubledPawnPenaltyIndex][0]) << ",\n";
+        std::cout << "\t\"EG\": " << round(parameters[DoubledPawnPenaltyIndex][1]) << "\n}," << std::endl;
 
         std::cout << "\"IsolatedPawnPenalty\": {" << std::endl;
         std::cout << "\t\"MG\": " << round(parameters[IsolatedPawnPenaltyIndex][0]) << ",\n";
@@ -542,6 +542,16 @@ int AdditionalPieceEvaluation(int pieceSquareIndex, int pieceIndex, const int pi
     }
 }
 
+int DoublePawnPenalty(const chess::Board &board)
+{
+    const auto whitePawns = GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE);
+    const auto blackPawns = GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK);
+
+    return DoubledPawnPenalty_Packed *
+           (chess::builtin::popcount(whitePawns & ShiftUp(whitePawns)) -
+            chess::builtin::popcount(blackPawns & ShiftUp(blackPawns)));
+}
+
 int Lynx::NormalizeScore(int score)
 {
     return (score == 0 || score > 27000 || score < -27000)
@@ -607,6 +617,8 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
                 IncrementCoefficients(coefficients, 64 * tunerPieceIndex + pieceSquareIndex - 16, chess::Color::BLACK);
         }
     }
+
+    packedScore += DoublePawnPenalty(board);
 
     auto whiteKing = chess::builtin::lsb(GetPieceSwappingEndianness(board, chess::PieceType::KING, chess::Color::WHITE)).index();
     auto blackKing = chess::builtin::lsb(GetPieceSwappingEndianness(board, chess::PieceType::KING, chess::Color::BLACK)).index();

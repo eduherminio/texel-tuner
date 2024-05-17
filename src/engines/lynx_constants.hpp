@@ -345,3 +345,46 @@ constexpr static std::array<int, 64> Rank =
         1UL, 1UL, 1UL, 1UL, 1UL, 1UL, 1UL, 1UL,
         0UL, 0UL, 0UL, 0UL, 0UL, 0UL, 0UL, 0UL};
 
+const u64 NotAFile = 0xFEFEFEFEFEFEFEFE;
+
+const u64 NotHFile = 0x7F7F7F7F7F7F7F7F;
+
+[[nodiscard]] static chess::U64 ShiftUp(const chess::U64 board)
+{
+    return board >> 8;
+}
+
+[[nodiscard]] static chess::U64 ShiftDown(const chess::U64 board)
+{
+    return board << 8;
+}
+
+[[nodiscard]] static chess::U64 ShiftLeft(const chess::U64 board)
+{
+    return (board >> 1) & NotHFile;
+}
+
+[[nodiscard]] static chess::U64 ShiftRight(const chess::U64 board)
+{
+    return (board << 1) & NotAFile;
+}
+
+[[nodiscard]] static chess::U64 ShiftUpRight(const chess::U64 board)
+{
+    return ShiftRight(ShiftUp(board));
+}
+
+[[nodiscard]] static chess::U64 ShiftUpLeft(const chess::U64 board)
+{
+    return ShiftLeft(ShiftUp(board));
+}
+
+[[nodiscard]] static chess::U64 ShiftDownRight(const chess::U64 board)
+{
+    return ShiftRight(ShiftDown(board));
+}
+
+[[nodiscard]] static chess::U64 ShiftDownLeft(const chess::U64 board)
+{
+    return ShiftLeft(ShiftDown(board));
+}
