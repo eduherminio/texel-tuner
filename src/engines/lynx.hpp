@@ -414,32 +414,30 @@ int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, const chess::Board
     auto rank = Rank[squareIndex];
     if (color == chess::Color::WHITE)
     {
-        if ((GetPieceSwappingEndianness(board, chess::PieceType::PAWN, color) & IsolatedPawnMasks[squareIndex]) == 0) // isIsolatedPawn
-        {
-            packedBonus += IsolatedPawnPenalty_Packed[rank];
-            IncrementCoefficients(coefficients, IsolatedPawnPenalty_StartIndex + rank - 1, color); // There's no coefficient for rank 0
-        }
-
         if ((GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK) & WhitePassedPawnMasks[squareIndex]) == 0) // isPassedPawn
         {
             packedBonus += PassedPawnBonus_Packed[rank];
             IncrementCoefficients(coefficients, PassedPawnBonus_StartIndex + rank - 1, color); // There's no coefficient for rank 0
+        }
+        else if ((GetPieceSwappingEndianness(board, chess::PieceType::PAWN, color) & IsolatedPawnMasks[squareIndex]) == 0) // isIsolatedPawn
+        {
+            packedBonus += IsolatedPawnPenalty_Packed[rank];
+            IncrementCoefficients(coefficients, IsolatedPawnPenalty_StartIndex + rank - 1, color); // There's no coefficient for rank 0
         }
     }
     else
     {
         rank = 7 - rank;
 
-        if ((GetPieceSwappingEndianness(board, chess::PieceType::PAWN, color) & IsolatedPawnMasks[squareIndex]) == 0) // isIsolatedPawn
-        {
-            packedBonus += IsolatedPawnPenalty_Packed[rank];
-            IncrementCoefficients(coefficients, IsolatedPawnPenalty_StartIndex + rank - 1, color); // There's no coefficient for rank 7
-        }
-
         if ((GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE) & BlackPassedPawnMasks[squareIndex]) == 0) // isPassedPawn
         {
             packedBonus += PassedPawnBonus_Packed[rank];
             IncrementCoefficients(coefficients, PassedPawnBonus_StartIndex + rank - 1, color); // There's no coefficient for rank 7
+        }
+        else if ((GetPieceSwappingEndianness(board, chess::PieceType::PAWN, color) & IsolatedPawnMasks[squareIndex]) == 0) // isIsolatedPawn
+        {
+            packedBonus += IsolatedPawnPenalty_Packed[rank];
+            IncrementCoefficients(coefficients, IsolatedPawnPenalty_StartIndex + rank - 1, color); // There's no coefficient for rank 7
         }
     }
 
