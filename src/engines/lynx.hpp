@@ -86,7 +86,7 @@ constexpr static std::array<int, 8> PassedPawnBonus_Packed = {
 const int PassedPawnBonusStartIndex = base + 10;
 
 static constexpr int numParameters = base +
-                                    //  1 + // DoubledPawnPenalty
+                                     //  1 + // DoubledPawnPenalty
                                      1 + // IsolatedPawnPenalty
                                      1 + // OpenFileRookBonus
                                      1 + // SemiOpenFileRookBonus
@@ -379,13 +379,7 @@ int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, const chess::Board
     //     packedBonus += doublePawnsCount * DoubledPawnPenalty_Packed;
     //     IncrementCoefficients(coefficients, DoubledPawnPenaltyIndex, color);
     // }
-
-    if ((GetPieceSwappingEndianness(board, chess::PieceType::PAWN, color) & IsolatedPawnMasks[squareIndex]) == 0) // isIsolatedPawn
-    {
-        packedBonus += IsolatedPawnPenalty_Packed;
-        IncrementCoefficients(coefficients, IsolatedPawnPenaltyIndex, color);
-    }
-
+    
     if (color == chess::Color::WHITE)
     {
 
@@ -402,6 +396,11 @@ int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, const chess::Board
             IncrementCoefficients(coefficients, PassedPawnBonusStartIndex + rank - 1, color); // There's no coefficient for rank 0
             // std::cout << "White pawn on " << squareIndex << " is passed, bonus " << PassedPawnBonus[rank] << std::endl;
         }
+        else if ((GetPieceSwappingEndianness(board, chess::PieceType::PAWN, color) & IsolatedPawnMasks[squareIndex]) == 0) // isIsolatedPawn
+        {
+            packedBonus += IsolatedPawnPenalty_Packed;
+            IncrementCoefficients(coefficients, IsolatedPawnPenaltyIndex, color);
+        }
     }
     else
     {
@@ -414,6 +413,11 @@ int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, const chess::Board
             packedBonus += PassedPawnBonus_Packed[rank];
             IncrementCoefficients(coefficients, PassedPawnBonusStartIndex + rank - 1, color); // There's no coefficient for rank 0
             // std::cout << "Black pawn on " << squareIndex << " is passed, bonus " << -PassedPawnBonus[rank] << std::endl;
+        }
+        else if ((GetPieceSwappingEndianness(board, chess::PieceType::PAWN, color) & IsolatedPawnMasks[squareIndex]) == 0) // isIsolatedPawn
+        {
+            packedBonus += IsolatedPawnPenalty_Packed;
+            IncrementCoefficients(coefficients, IsolatedPawnPenaltyIndex, color);
         }
     }
 
