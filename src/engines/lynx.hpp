@@ -88,7 +88,7 @@ constexpr static std::array<int, 8> PassedPawnBonus_Packed = {
     Pack(PassedPawnBonus_MG[6], PassedPawnBonus_EG[6]),
     Pack(PassedPawnBonus_MG[7], PassedPawnBonus_EG[7])};
 
-const int PassedPawnBonusStartIndex = base + 1;
+const int PassedPawnBonusStartIndex = base + 11;
 
 static constexpr int numParameters = base +
                                      //  1 + // DoubledPawnPenalty
