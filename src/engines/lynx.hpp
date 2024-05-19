@@ -32,40 +32,45 @@ const int SemiOpenFileRookBonus_EG = 15;
 const int SemiOpenFileRookBonus_Packed = Pack(SemiOpenFileRookBonus_MG, SemiOpenFileRookBonus_EG);
 const int SemiOpenFileRookBonusIndex = base + 2;
 
+const int KnightMobilityBonus_MG = 5;
+const int KnightMobilityBonus_EG = 5;
+const int KnightMobilityBonus_Packed = Pack(KnightMobilityBonus_MG, KnightMobilityBonus_EG);
+const int KnightMobilityBonusIndex = base + 3;
+
 const int BishopMobilityBonus_MG = 10;
 const int BishopMobilityBonus_EG = 9;
 const int BishopMobilityBonus_Packed = Pack(BishopMobilityBonus_MG, BishopMobilityBonus_EG);
-const int BishopMobilityBonusIndex = base + 3;
+const int BishopMobilityBonusIndex = base + 4;
 
 const int RookMobilityBonus_MG = 5;
 const int RookMobilityBonus_EG = 5;
 const int RookMobilityBonus_Packed = Pack(RookMobilityBonus_MG, RookMobilityBonus_EG);
-const int RookMobilityBonusIndex = base + 4;
+const int RookMobilityBonusIndex = base + 5;
 
 const int QueenMobilityBonus_MG = 4;
 const int QueenMobilityBonus_EG = 8;
 const int QueenMobilityBonus_Packed = Pack(QueenMobilityBonus_MG, QueenMobilityBonus_EG);
-const int QueenMobilityBonusIndex = base + 5;
+const int QueenMobilityBonusIndex = base + 6;
 
 const int SemiOpenFileKingPenalty_MG = -41;
 const int SemiOpenFileKingPenalty_EG = 21;
 const int SemiOpenFileKingPenalty_Packed = Pack(SemiOpenFileKingPenalty_MG, SemiOpenFileKingPenalty_EG);
-const int SemiOpenFileKingPenaltyIndex = base + 6;
+const int SemiOpenFileKingPenaltyIndex = base + 7;
 
 const int OpenFileKingPenalty_MG = -110;
 const int OpenFileKingPenalty_EG = 10;
 const int OpenFileKingPenalty_Packed = Pack(OpenFileKingPenalty_MG, OpenFileKingPenalty_EG);
-const int OpenFileKingPenaltyIndex = base + 7;
+const int OpenFileKingPenaltyIndex = base + 8;
 
 const int KingShieldBonus_MG = 17;
 const int KingShieldBonus_EG = -5;
 const int KingShieldBonus_Packed = Pack(KingShieldBonus_MG, KingShieldBonus_EG);
-const int KingShieldBonusIndex = base + 8;
+const int KingShieldBonusIndex = base + 9;
 
 const int BishopPairBonus_MG = 33;
 const int BishopPairBonus_EG = 80;
 const int BishopPairBonus_Packed = Pack(BishopPairBonus_MG, BishopPairBonus_EG);
-const int BishopPairMaxBonusIndex = base + 9;
+const int BishopPairMaxBonusIndex = base + 10;
 
 constexpr static std::array<int, 8> PassedPawnBonus_MG = {
     0, 4, -11, -11, 21, 62, 104, 0};
@@ -83,13 +88,14 @@ constexpr static std::array<int, 8> PassedPawnBonus_Packed = {
     Pack(PassedPawnBonus_MG[6], PassedPawnBonus_EG[6]),
     Pack(PassedPawnBonus_MG[7], PassedPawnBonus_EG[7])};
 
-const int PassedPawnBonusStartIndex = base + 10;
+const int PassedPawnBonusStartIndex = base + 1;
 
 static constexpr int numParameters = base +
-                                    //  1 + // DoubledPawnPenalty
+                                     //  1 + // DoubledPawnPenalty
                                      1 + // IsolatedPawnPenalty
                                      1 + // OpenFileRookBonus
                                      1 + // SemiOpenFileRookBonus
+                                     1 + // KnightMobilityBonus
                                      1 + // BishopMobilityBonus
                                      1 + // RookMobilityBonus
                                      1 + // QueenMobilityBonus
@@ -150,6 +156,7 @@ public:
         result.push_back({(double)IsolatedPawnPenalty_MG, (double)IsolatedPawnPenalty_EG});
         result.push_back({(double)OpenFileRookBonus_MG, (double)OpenFileRookBonus_EG});
         result.push_back({(double)SemiOpenFileRookBonus_MG, (double)SemiOpenFileRookBonus_EG});
+        result.push_back({(double)KnightMobilityBonus_MG, (double)KnightMobilityBonus_EG});
         result.push_back({(double)BishopMobilityBonus_MG, (double)BishopMobilityBonus_EG});
         result.push_back({(double)RookMobilityBonus_MG, (double)RookMobilityBonus_EG});
         result.push_back({(double)QueenMobilityBonus_MG, (double)QueenMobilityBonus_EG});
@@ -302,6 +309,10 @@ public:
         std::cout << "\"SemiOpenFileRookBonus\": {" << std::endl;
         std::cout << "\t\"MG\": " << round(parameters[SemiOpenFileRookBonusIndex][0]) << ",\n";
         std::cout << "\t\"EG\": " << round(parameters[SemiOpenFileRookBonusIndex][1]) << "\n}," << std::endl;
+
+        std::cout << "\"KnightMobilityBonus\": {" << std::endl;
+        std::cout << "\t\"MG\": " << round(parameters[KnightMobilityBonusIndex][0]) << ",\n";
+        std::cout << "\t\"EG\": " << round(parameters[KnightMobilityBonusIndex][1]) << "\n}," << std::endl;
 
         std::cout << "\"BishopMobilityBonus\": {" << std::endl;
         std::cout << "\t\"MG\": " << round(parameters[BishopMobilityBonusIndex][0]) << ",\n";
@@ -486,6 +497,14 @@ int QueenAdditionalEvaluation(int squareIndex, const chess::Board &board, const 
     return QueenMobilityBonus_Packed * mobilityCount;
 }
 
+int KnightAdditionalEvaluation(int squareIndex, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
+{
+    auto mobilityCount = chess::attacks::knight(static_cast<chess::Square>(squareIndex)).count();
+    IncrementCoefficients(coefficients, KnightMobilityBonusIndex, color, mobilityCount);
+
+    return KnightMobilityBonus_Packed * mobilityCount;
+}
+
 int KingAdditionalEvaluation(int squareIndex, chess::Color kingSide, const chess::Board &board, const int pieceCount[], coefficients_t &coefficients)
 {
     int packedBonus = 0;
@@ -526,12 +545,18 @@ int AdditionalPieceEvaluation(int pieceSquareIndex, int pieceIndex, const int pi
     case 0:
     case 6:
         return PawnAdditionalEvaluation(pieceSquareIndex, pieceIndex, board, color, coefficients);
-    case 3:
-    case 9:
-        return RookAdditonalEvaluation(pieceSquareIndex, pieceIndex, board, color, coefficients);
+
+    case 1:
+    case 7:
+        return KnightAdditionalEvaluation(pieceSquareIndex, board, color, coefficients);
+
     case 2:
     case 8:
         return BishopAdditionalEvaluation(pieceSquareIndex, pieceIndex, pieceCount, board, color, coefficients);
+
+    case 3:
+    case 9:
+        return RookAdditonalEvaluation(pieceSquareIndex, pieceIndex, board, color, coefficients);
 
     case 4:
     case 10:
