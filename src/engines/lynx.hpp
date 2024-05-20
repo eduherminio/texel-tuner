@@ -32,40 +32,35 @@ const int SemiOpenFileRookBonus_EG = 15;
 const int SemiOpenFileRookBonus_Packed = Pack(SemiOpenFileRookBonus_MG, SemiOpenFileRookBonus_EG);
 const int SemiOpenFileRookBonusIndex = base + 2;
 
-const int BishopMobilityBonus_MG = 10;
-const int BishopMobilityBonus_EG = 9;
-const int BishopMobilityBonus_Packed = Pack(BishopMobilityBonus_MG, BishopMobilityBonus_EG);
-const int BishopMobilityBonusIndex = base + 3;
-
 const int RookMobilityBonus_MG = 5;
 const int RookMobilityBonus_EG = 5;
 const int RookMobilityBonus_Packed = Pack(RookMobilityBonus_MG, RookMobilityBonus_EG);
-const int RookMobilityBonusIndex = base + 4;
+const int RookMobilityBonusIndex = base + 3;
 
 const int QueenMobilityBonus_MG = 4;
 const int QueenMobilityBonus_EG = 8;
 const int QueenMobilityBonus_Packed = Pack(QueenMobilityBonus_MG, QueenMobilityBonus_EG);
-const int QueenMobilityBonusIndex = base + 5;
+const int QueenMobilityBonusIndex = base + 4;
 
 const int SemiOpenFileKingPenalty_MG = -41;
 const int SemiOpenFileKingPenalty_EG = 21;
 const int SemiOpenFileKingPenalty_Packed = Pack(SemiOpenFileKingPenalty_MG, SemiOpenFileKingPenalty_EG);
-const int SemiOpenFileKingPenaltyIndex = base + 6;
+const int SemiOpenFileKingPenaltyIndex = base + 5;
 
 const int OpenFileKingPenalty_MG = -110;
 const int OpenFileKingPenalty_EG = 10;
 const int OpenFileKingPenalty_Packed = Pack(OpenFileKingPenalty_MG, OpenFileKingPenalty_EG);
-const int OpenFileKingPenaltyIndex = base + 7;
+const int OpenFileKingPenaltyIndex = base + 6;
 
 const int KingShieldBonus_MG = 17;
 const int KingShieldBonus_EG = -5;
 const int KingShieldBonus_Packed = Pack(KingShieldBonus_MG, KingShieldBonus_EG);
-const int KingShieldBonusIndex = base + 8;
+const int KingShieldBonusIndex = base + 7;
 
 const int BishopPairBonus_MG = 33;
 const int BishopPairBonus_EG = 80;
 const int BishopPairBonus_Packed = Pack(BishopPairBonus_MG, BishopPairBonus_EG);
-const int BishopPairMaxBonusIndex = base + 9;
+const int BishopPairMaxBonusIndex = base + 8;
 
 constexpr static std::array<int, 8> PassedPawnBonus_MG = {
     0, 4, -11, -11, 21, 62, 104, 0};
@@ -83,21 +78,50 @@ constexpr static std::array<int, 8> PassedPawnBonus_Packed = {
     Pack(PassedPawnBonus_MG[6], PassedPawnBonus_EG[6]),
     Pack(PassedPawnBonus_MG[7], PassedPawnBonus_EG[7])};
 
-const int PassedPawnBonusStartIndex = base + 10;
+const int PassedPawnBonusStartIndex = base + 9;
+
+constexpr static std::array<int, 15> BishopMobilityBonus_MG = {
+    -1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 2,
+    0};
+
+constexpr static std::array<int, 15> BishopMobilityBonus_EG = {
+    -1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 2,
+    0};
+
+constexpr static std::array<int, 15> BishopMobilityBonus_Packed = {
+    Pack(BishopMobilityBonus_MG[0], BishopMobilityBonus_EG[0]),
+    Pack(BishopMobilityBonus_MG[1], BishopMobilityBonus_EG[1]),
+    Pack(BishopMobilityBonus_MG[2], BishopMobilityBonus_EG[2]),
+    Pack(BishopMobilityBonus_MG[3], BishopMobilityBonus_EG[3]),
+    Pack(BishopMobilityBonus_MG[4], BishopMobilityBonus_EG[4]),
+    Pack(BishopMobilityBonus_MG[5], BishopMobilityBonus_EG[5]),
+    Pack(BishopMobilityBonus_MG[6], BishopMobilityBonus_EG[6]),
+    Pack(BishopMobilityBonus_MG[7], BishopMobilityBonus_EG[7]),
+    Pack(BishopMobilityBonus_MG[8], BishopMobilityBonus_EG[8]),
+    Pack(BishopMobilityBonus_MG[9], BishopMobilityBonus_EG[9]),
+    Pack(BishopMobilityBonus_MG[10], BishopMobilityBonus_EG[10]),
+    Pack(BishopMobilityBonus_MG[11], BishopMobilityBonus_EG[11]),
+    Pack(BishopMobilityBonus_MG[12], BishopMobilityBonus_EG[12]),
+    Pack(BishopMobilityBonus_MG[13], BishopMobilityBonus_EG[13]),
+    Pack(BishopMobilityBonus_MG[14], BishopMobilityBonus_EG[14])};
+
+const int BishopMobilityBonusStartIndex = base + 5 + 10;
 
 static constexpr int numParameters = base +
                                     //  1 + // DoubledPawnPenalty
                                      1 + // IsolatedPawnPenalty
                                      1 + // OpenFileRookBonus
                                      1 + // SemiOpenFileRookBonus
-                                     1 + // BishopMobilityBonus
                                      1 + // RookMobilityBonus
                                      1 + // QueenMobilityBonus
                                      1 + // SemiOpenFileKingPenalty
                                      1 + // OpenFileKingPenalty
                                      1 + // BishopPairMaxBonus
                                      1 + // KingShieldBonus
-                                     6   // PassedPawnBonus - removing 1 and 8 rank values
+                                     6 + // PassedPawnBonus - removing 1 and 8 rank values
+                                     14  // BishopMobilityBonus - removing count 14
     ;
 class Lynx
 {
@@ -150,7 +174,6 @@ public:
         result.push_back({(double)IsolatedPawnPenalty_MG, (double)IsolatedPawnPenalty_EG});
         result.push_back({(double)OpenFileRookBonus_MG, (double)OpenFileRookBonus_EG});
         result.push_back({(double)SemiOpenFileRookBonus_MG, (double)SemiOpenFileRookBonus_EG});
-        result.push_back({(double)BishopMobilityBonus_MG, (double)BishopMobilityBonus_EG});
         result.push_back({(double)RookMobilityBonus_MG, (double)RookMobilityBonus_EG});
         result.push_back({(double)QueenMobilityBonus_MG, (double)QueenMobilityBonus_EG});
         result.push_back({(double)SemiOpenFileKingPenalty_MG, (double)SemiOpenFileKingPenalty_EG});
@@ -161,6 +184,11 @@ public:
         for (int rank = 1; rank < 7; ++rank)
         {
             result.push_back({(double)PassedPawnBonus_MG[rank], (double)PassedPawnBonus_EG[rank]});
+        }
+
+        for (int count = 0; count < 14; ++count)
+        {
+            result.push_back({(double)BishopMobilityBonus_MG[count], (double)BishopMobilityBonus_EG[count]});
         }
 
         std::cout << result.size() << " == " << numParameters << std::endl;
@@ -303,10 +331,6 @@ public:
         std::cout << "\t\"MG\": " << round(parameters[SemiOpenFileRookBonusIndex][0]) << ",\n";
         std::cout << "\t\"EG\": " << round(parameters[SemiOpenFileRookBonusIndex][1]) << "\n}," << std::endl;
 
-        std::cout << "\"BishopMobilityBonus\": {" << std::endl;
-        std::cout << "\t\"MG\": " << round(parameters[BishopMobilityBonusIndex][0]) << ",\n";
-        std::cout << "\t\"EG\": " << round(parameters[BishopMobilityBonusIndex][1]) << "\n}," << std::endl;
-
         std::cout << "\"RookMobilityBonus\": {" << std::endl;
         std::cout << "\t\"MG\": " << round(parameters[RookMobilityBonusIndex][0]) << ",\n";
         std::cout << "\t\"EG\": " << round(parameters[RookMobilityBonusIndex][1]) << "\n}," << std::endl;
@@ -343,7 +367,21 @@ public:
         }
         std::cout << "\t\"Rank" << 7 << "\": {" << std::endl;
         std::cout << "\t\t\"MG\": " << 0 << ",\n";
-        std::cout << "\t\t\"EG\": " << 0 << "\n\t}," << std::endl;
+        std::cout << "\t\t\"EG\": " << 0 << "\n\t}" << std::endl;
+        std::cout << "},";
+
+        std::cout << std::endl;
+
+        std::cout << "\"BishopMobilityBonus\": {" << std::endl;
+        for (int count = 0; count < 14; ++count)
+        {
+            std::cout << "\t\"Count" << count << "\": {" << std::endl;
+            std::cout << "\t\t\"MG\": " << round(parameters[BishopMobilityBonusStartIndex + count][0]) << ",\n";
+            std::cout << "\t\t\"EG\": " << round(parameters[BishopMobilityBonusStartIndex + count][1]) << "\n\t}," << std::endl;
+        }
+        std::cout << "\t\"Count" << 14 << "\": {" << std::endl;
+        std::cout << "\t\t\"MG\": " << 0 << ",\n";
+        std::cout << "\t\t\"EG\": " << 0 << "\n\t}" << std::endl;
         std::cout << "}";
 
         std::cout << '\n'
@@ -465,9 +503,9 @@ int BishopAdditionalEvaluation(int squareIndex, int pieceIndex, const int pieceC
     int packedBonus = 0;
 
     auto mobilityCount = chess::attacks::bishop(static_cast<chess::Square>(squareIndex), __builtin_bswap64(board.occ().getBits())).count();
-    IncrementCoefficients(coefficients, BishopMobilityBonusIndex, color, mobilityCount);
+    IncrementCoefficients(coefficients, BishopMobilityBonusStartIndex + mobilityCount, color);
 
-    packedBonus += BishopMobilityBonus_Packed * mobilityCount;
+    packedBonus += BishopMobilityBonus_Packed[mobilityCount];
 
     if (pieceCount[pieceIndex] == 2)
     {
