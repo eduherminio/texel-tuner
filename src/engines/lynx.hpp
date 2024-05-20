@@ -499,7 +499,10 @@ int QueenAdditionalEvaluation(int squareIndex, const chess::Board &board, const 
 
 int KnightAdditionalEvaluation(int squareIndex, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
 {
-    auto mobilityCount = chess::attacks::knight(static_cast<chess::Square>(squareIndex)).count();
+    auto mobilityCount = chess::builtin::popcount(
+        chess::attacks::knight(static_cast<chess::Square>(squareIndex)).getBits() &
+        (~__builtin_bswap64(board.us(color).getBits())));
+
     IncrementCoefficients(coefficients, KnightMobilityBonusIndex, color, mobilityCount);
 
     return KnightMobilityBonus_Packed * mobilityCount;
