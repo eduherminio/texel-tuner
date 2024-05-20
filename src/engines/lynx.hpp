@@ -110,7 +110,7 @@ constexpr static std::array<int, 15> BishopMobilityBonus_Packed = {
 const int BishopMobilityBonusStartIndex = base + 5 + 10;
 
 static constexpr int numParameters = base +
-                                    //  1 + // DoubledPawnPenalty
+                                     //  1 + // DoubledPawnPenalty
                                      1 + // IsolatedPawnPenalty
                                      1 + // OpenFileRookBonus
                                      1 + // SemiOpenFileRookBonus
@@ -502,7 +502,10 @@ int BishopAdditionalEvaluation(int squareIndex, int pieceIndex, const int pieceC
 {
     int packedBonus = 0;
 
-    auto mobilityCount = chess::attacks::bishop(static_cast<chess::Square>(squareIndex), __builtin_bswap64(board.occ().getBits())).count();
+    auto mobilityCount = chess::builtin::popcount(
+        chess::attacks::bishop(static_cast<chess::Square>(squareIndex), __builtin_bswap64(board.occ().getBits())).getBits() &
+        (~__builtin_bswap64(board.us(color).getBits())));
+
     IncrementCoefficients(coefficients, BishopMobilityBonusStartIndex + mobilityCount, color);
 
     packedBonus += BishopMobilityBonus_Packed[mobilityCount];
