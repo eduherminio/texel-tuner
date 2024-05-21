@@ -502,7 +502,8 @@ int BishopAdditionalEvaluation(int squareIndex, int pieceIndex, const u64 opposi
 {
     auto mobilityCount = chess::builtin::popcount(
         chess::attacks::bishop(static_cast<chess::Square>(squareIndex), __builtin_bswap64(board.occ().getBits())).getBits() &
-        (~opposideSidePawnAttacks));
+        (~opposideSidePawnAttacks) &
+        (~__builtin_bswap64(board.us(color).getBits())));
 
     IncrementCoefficients(coefficients, BishopMobilityBonusStartIndex + mobilityCount, color);
 
