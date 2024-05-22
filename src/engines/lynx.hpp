@@ -496,7 +496,7 @@ int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, const chess::Board
 int RookAdditonalEvaluation(int squareIndex, int pieceIndex, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
 {
     auto mobilityCount = chess::attacks::rook(static_cast<chess::Square>(squareIndex), __builtin_bswap64(board.occ().getBits())).count();
-    IncrementCoefficients(coefficients, RookMobilityBonus_StartIndex + mobilityCount, color, mobilityCount);
+    IncrementCoefficients(coefficients, RookMobilityBonus_StartIndex + mobilityCount, color);
 
     int packedBonus = RookMobilityBonus_Packed[mobilityCount];
 
