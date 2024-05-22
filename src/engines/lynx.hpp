@@ -498,22 +498,12 @@ int RookAdditonalEvaluation(int squareIndex, int pieceIndex, const chess::Board 
     return packedBonus;
 }
 
-int BishopAdditionalEvaluation(int squareIndex, int pieceIndex, const int pieceCount[], const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
+int BishopAdditionalEvaluation(int squareIndex, int pieceIndex, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
 {
-    int packedBonus = 0;
-
     auto mobilityCount = chess::attacks::bishop(static_cast<chess::Square>(squareIndex), __builtin_bswap64(board.occ().getBits())).count();
     IncrementCoefficients(coefficients, BishopMobilityBonusStartIndex + mobilityCount, color, mobilityCount);
 
-    packedBonus += BishopMobilityBonus_Packed[mobilityCount];
-
-    if (pieceCount[pieceIndex] == 2)
-    {
-        packedBonus += BishopPairBonus_Packed;
-        IncrementCoefficients(coefficients, BishopPairMaxBonusIndex, color);
-    }
-
-    return packedBonus;
+    return BishopMobilityBonus_Packed[mobilityCount];
 }
 
 int QueenAdditionalEvaluation(int squareIndex, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
@@ -557,7 +547,7 @@ int KingAdditionalEvaluation(int squareIndex, chess::Color kingSide, const chess
     return packedBonus + KingShieldBonus_Packed * ownPiecesAroundCount;
 }
 
-int AdditionalPieceEvaluation(int pieceSquareIndex, int pieceIndex, const int pieceCount[], const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
+int AdditionalPieceEvaluation(int pieceSquareIndex, int pieceIndex, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
 {
     switch (pieceIndex)
     {
@@ -569,7 +559,7 @@ int AdditionalPieceEvaluation(int pieceSquareIndex, int pieceIndex, const int pi
         return RookAdditonalEvaluation(pieceSquareIndex, pieceIndex, board, color, coefficients);
     case 2:
     case 8:
-        return BishopAdditionalEvaluation(pieceSquareIndex, pieceIndex, pieceCount, board, color, coefficients);
+        return BishopAdditionalEvaluation(pieceSquareIndex, pieceIndex, board, color, coefficients);
 
     case 4:
     case 10:
@@ -612,7 +602,7 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
 
             ++pieceCount[pieceIndex];
 
-            packedScore += AdditionalPieceEvaluation(pieceSquareIndex, pieceIndex, pieceCount, board, chess::Color::WHITE, coefficients);
+            packedScore += AdditionalPieceEvaluation(pieceSquareIndex, pieceIndex, board, chess::Color::WHITE, coefficients);
 
             if (pieceIndex == 0)
                 IncrementCoefficients(coefficients, pieceSquareIndex - 8, chess::Color::WHITE);
@@ -637,13 +627,25 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
 
             ++pieceCount[pieceIndex];
 
-            packedScore -= AdditionalPieceEvaluation(pieceSquareIndex, pieceIndex, pieceCount, board, chess::Color::BLACK, coefficients);
+            packedScore -= AdditionalPieceEvaluation(pieceSquareIndex, pieceIndex, board, chess::Color::BLACK, coefficients);
 
             if (pieceIndex == 6)
                 IncrementCoefficients(coefficients, pieceSquareIndex - 8, chess::Color::BLACK);
             else
                 IncrementCoefficients(coefficients, 64 * tunerPieceIndex + pieceSquareIndex - 16, chess::Color::BLACK);
         }
+    }
+
+    if (board.pieces(chess::PieceType::BISHOP, chess::Color::WHITE).count() >= 2)
+    {
+        packedScore += BishopPairBonus_Packed;
+        IncrementCoefficients(coefficients, BishopPairMaxBonusIndex, chess::Color::WHITE);
+    }
+
+    if (board.pieces(chess::PieceType::BISHOP, chess::Color::BLACK).count() >= 2)
+    {
+        packedScore -= BishopPairBonus_Packed;
+        IncrementCoefficients(coefficients, BishopPairMaxBonusIndex, chess::Color::BLACK);
     }
 
     auto whiteKing = chess::builtin::lsb(GetPieceSwappingEndianness(board, chess::PieceType::KING, chess::Color::WHITE)).index();
