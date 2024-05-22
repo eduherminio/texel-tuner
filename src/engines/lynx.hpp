@@ -503,7 +503,7 @@ int BishopAdditionalEvaluation(int squareIndex, int pieceIndex, const int pieceC
     int packedBonus = 0;
 
     auto mobilityCount = chess::attacks::bishop(static_cast<chess::Square>(squareIndex), __builtin_bswap64(board.occ().getBits())).count();
-    IncrementCoefficients(coefficients, BishopMobilityBonusStartIndex + mobilityCount, color);
+    IncrementCoefficients(coefficients, BishopMobilityBonusStartIndex + mobilityCount, color, mobilityCount);
 
     packedBonus += BishopMobilityBonus_Packed[mobilityCount];
 
