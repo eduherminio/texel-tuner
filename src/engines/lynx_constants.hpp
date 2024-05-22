@@ -19,8 +19,8 @@ constexpr int PieceOffset(bool isWhite)
 }
 
 constexpr std::array<int, 12> PieceValue = {
-        +105, +399, +365, +493, +1129, // 0,
-        +128, +440, +392, +769, +1408, // 0
+        +101, +392, +170, +488, +1114, // 0,
+        +129, +443, +209, +777, +1426, // 0
 };
 
 constexpr std::array<int, 10> PackedPieceValue = {
