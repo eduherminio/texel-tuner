@@ -34,6 +34,11 @@ public:
            << "\t\"MG\": " << round(parameters[index][0]) << ",\n"
            << "\t\"EG\": " << round(parameters[index][1]) << "\n}";
     }
+
+    void to_csharp(const parameters_t &parameters, std::stringstream &ss, const std::string &name)
+    {
+        ss << "\tpublic TaperedEvaluationTerm " << name << " { get; set; } = new(" << round(parameters[index][0]) << "," << round(parameters[index][1]) << ");\n";
+    }
 };
 
 class TunableArray
@@ -101,5 +106,53 @@ public:
             ss << "\t\t\"EG\": " << 0 << "\n\t}\n";
             ss << "}";
         }
+    }
+
+    void to_csharp(const parameters_t &parameters, std::stringstream &ss, const std::string &name)
+    {
+        std::string variable_name;
+
+        if (size == 8)
+        {
+            variable_name = "TaperedEvaluationTermByRank";
+        }
+        else if (size == 15)
+        {
+            variable_name = "TaperedEvaluationTermByCount";
+        }
+        else if (size == 28)
+        {
+            variable_name = "TaperedEvaluationTermByLargeCount";
+        }
+        else
+        {
+            throw std::invalid_argument("wrong size provided: " + size);
+        }
+
+        ss << "\tpublic " << variable_name << " " << name << " { get; set; } = new(\n";
+        for (int rank = 0; rank < start; ++rank)
+        {
+            ss << "\t\tnew(0,0),\n";
+        }
+
+        for (int rank = 0; rank < size - end - start; ++rank)
+        {
+            ss << "\t\tnew(" << round(parameters[index + rank][0]) << "," << round(parameters[index + rank][1]) << ")";
+            if (rank == size - 1)
+                ss << ");";
+            else
+                ss << ",\n";
+        }
+
+        for (int rank = size - end; rank < size; ++rank)
+        {
+            ss << "\t\tnew(0,0)";
+            if (rank == size - 1)
+                ss << ");";
+            else
+                ss << ",\n";
+        }
+
+        ss << "\n\n";
     }
 };

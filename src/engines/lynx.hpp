@@ -38,18 +38,18 @@ TunableArray BishopMobilityBonus(
 
 const int base = 64 * 6 - 16; // PSQT but removing pawns from 1 and 8 rank
 static int numParameters = base +
-                                     // DoubledPawnPenalty.size
-                                     IsolatedPawnPenalty.size +
-                                     OpenFileRookBonus.size +
-                                     SemiOpenFileRookBonus.size +
-                                     RookMobilityBonus.size +
-                                     QueenMobilityBonus.size +
-                                     SemiOpenFileKingPenalty.size +
-                                     OpenFileKingPenalty.size +
-                                     BishopPairBonus.size +
-                                     KingShieldBonus.size +
-                                     (PassedPawnBonus.size - PassedPawnBonus.start - PassedPawnBonus.end) + // 6, removing 1 and 8 rank values
-                                     (BishopMobilityBonus.size - BishopMobilityBonus.start - BishopMobilityBonus.end); // 14, removing count 14
+                           // DoubledPawnPenalty.size
+                           IsolatedPawnPenalty.size +
+                           OpenFileRookBonus.size +
+                           SemiOpenFileRookBonus.size +
+                           RookMobilityBonus.size +
+                           QueenMobilityBonus.size +
+                           SemiOpenFileKingPenalty.size +
+                           OpenFileKingPenalty.size +
+                           BishopPairBonus.size +
+                           KingShieldBonus.size +
+                           (PassedPawnBonus.size - PassedPawnBonus.start - PassedPawnBonus.end) +            // 6, removing 1 and 8 rank values
+                           (BishopMobilityBonus.size - BishopMobilityBonus.start - BishopMobilityBonus.end); // 14, removing count 14
 ;
 
 class Lynx
@@ -135,107 +135,53 @@ public:
         return std::round(value);
     }
 
+    static void print_csharp_parameters(const parameters_t &parameters)
+    {
+        std::stringstream ss;
+        std::string name;
+
+        // name = NAME(DoubledPawnPenalty);
+        // DoubledPawnPenalty.to_json(parameters, ss, name);
+
+        name = NAME(IsolatedPawnPenalty);
+        IsolatedPawnPenalty.to_csharp(parameters, ss, name);
+
+        name = NAME(OpenFileRookBonus);
+        OpenFileRookBonus.to_csharp(parameters, ss, name);
+
+        name = NAME(SemiOpenFileRookBonus);
+        SemiOpenFileRookBonus.to_csharp(parameters, ss, name);
+
+        name = NAME(RookMobilityBonus);
+        RookMobilityBonus.to_csharp(parameters, ss, name);
+
+        name = NAME(QueenMobilityBonus);
+        QueenMobilityBonus.to_csharp(parameters, ss, name);
+
+        name = NAME(SemiOpenFileKingPenalty);
+        SemiOpenFileKingPenalty.to_csharp(parameters, ss, name);
+
+        name = NAME(OpenFileKingPenalty);
+        OpenFileKingPenalty.to_csharp(parameters, ss, name);
+
+        name = NAME(KingShieldBonus);
+        KingShieldBonus.to_csharp(parameters, ss, name);
+
+        name = NAME(BishopPairBonus);
+        BishopPairBonus.to_csharp(parameters, ss, name);
+
+        name = NAME(PassedPawnBonus);
+        PassedPawnBonus.to_csharp(parameters, ss, name);
+
+        name = NAME(BishopMobilityBonus);
+        BishopMobilityBonus.to_csharp(parameters, ss, name);
+
+        std::cout << ss.str() << std::endl;
+    }
+
     static void print_parameters(const parameters_t &parameters)
     {
-        int pieceValues[12];
-
-        for (int phase = 0; phase <= 1; ++phase)
-        {
-            if (phase == 0)
-                std::cout << "internal static readonly short[] MiddleGamePieceValues =\n[\n\t";
-
-            else
-                std::cout << "\ninternal static readonly short[] EndGamePieceValues =\n[\n\t";
-
-            // Pawns
-            {
-                int pawnSum = 0;
-
-                for (int square = 0; square < 48; ++square)
-                {
-                    pawnSum += parameters[square][phase];
-                }
-
-                auto average = (pawnSum / 48.0);
-
-                auto pieceIndex = phase * 6;
-                // pieceValues[pieceIndex] = PieceValue[phase * 5];
-                pieceValues[pieceIndex] = static_cast<int>(std::round(average));
-                std::cout << "+" << pieceValues[pieceIndex] << ", ";
-            }
-
-            for (int piece = 1; piece < 5; ++piece)
-            {
-                int sum = 0;
-
-                for (int square = 0; square < 64; ++square)
-                {
-                    sum += parameters[piece * 64 - 16 + square][phase]; // Substract 16 since we're only tuning 48 pawn values
-                }
-
-                auto average = (sum / 64.0);
-
-                auto pieceIndex = piece + phase * 6;
-                // pieceValues[pieceIndex] = PieceValue[piece + phase * 5];
-                pieceValues[pieceIndex] = static_cast<int>(std::round(average));
-                std::cout << "+" << pieceValues[pieceIndex] << ", ";
-            }
-
-            // Kings
-            auto kingIndex = 5 + phase * 6;
-            pieceValues[kingIndex] = 0;
-            std::cout << pieceValues[kingIndex] << ",\n\t";
-
-            for (int piece = 0; piece < 5; ++piece)
-            {
-                auto pieceIndex = piece + phase * 6;
-                std::cout << "-" << pieceValues[pieceIndex] << ", ";
-            }
-
-            std::cout << pieceValues[kingIndex] << "\n];\n";
-        }
-
-        std::string names[] = {"Pawn", "Knight", "Bishop", "Rook", "Queen", "King"};
-
-        // Pawns
-        {
-            const int piece = 0;
-            for (int phase = 0; phase <= 1; ++phase)
-            {
-                std::cout << "\ninternal static readonly short[] " << (phase == 0 ? "MiddleGame" : "EndGame") << names[piece] << "Table =\n[\n\t";
-
-                std::cout << "0,\t0,\t0,\t0,\t0,\t0,\t0,\t0,\n\t";
-                for (int square = 0; square < 48; ++square)
-                {
-                    std::cout << round(parameters[square][phase] - pieceValues[phase * 6]) << ", ";
-                    if (square % 8 == 7)
-                        std::cout << "\n";
-                    if (square != 63)
-                        std::cout << "\t";
-                }
-                std::cout << "0,\t0,\t0,\t0,\t0,\t0,\t0,\t0," << std::endl;
-
-                std::cout << "];\n";
-            }
-        }
-
-        for (int piece = 1; piece < 6; ++piece)
-        {
-            for (int phase = 0; phase <= 1; ++phase)
-            {
-                std::cout << "\ninternal static readonly short[] " << (phase == 0 ? "MiddleGame" : "EndGame") << names[piece] << "Table =\n[\n\t";
-                for (int square = 0; square < 64; ++square)
-                {
-                    std::cout << round(parameters[piece * 64 - 16 + square][phase] - pieceValues[piece + phase * 6]) << ", "; // We substract the 16 non-tuned pawn valeus
-                    if (square % 8 == 7)
-                        std::cout << "\n";
-                    if (square != 63)
-                        std::cout << "\t";
-                }
-                std::cout << "];\n";
-            }
-        }
-        std::cout << std::endl;
+        print_psqt(parameters);
 
         std::stringstream ss;
         std::string name;
@@ -291,6 +237,7 @@ public:
                   << std::endl;
     }
 };
+
 
 static inline parameters_t initialParameters = Lynx::get_initial_parameters();
 
