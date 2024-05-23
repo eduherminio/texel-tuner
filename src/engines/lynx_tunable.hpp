@@ -39,6 +39,11 @@ public:
     {
         ss << "\tpublic TaperedEvaluationTerm " << name << " { get; set; } = new(" << round(parameters[index][0]) << "," << round(parameters[index][1]) << ");\n";
     }
+
+    void to_cpp(const parameters_t &parameters, std::stringstream &ss, const std::string &name)
+    {
+        ss << "TunableSingle " << name << "(" << round(parameters[index][0]) << ", " << round(parameters[index][1]) << ");\n";
+    }
 };
 
 class TunableArray
@@ -154,5 +159,62 @@ public:
         }
 
         ss << "\n\n";
+    }
+
+    void to_cpp(const parameters_t &parameters, std::stringstream &ss, const std::string &name)
+    {
+        ss << "TunableArray " << name << "(\n";
+        ss << "\tstd::vector<int>{";
+        for (int rank = 0; rank < start; ++rank)
+        {
+            ss << "0, ";
+        }
+
+        for (int rank = 0; rank < size - end - start; ++rank)
+        {
+            ss << round(parameters[index + rank][0]);
+            if (rank == size - 1)
+                ss << "},\n";
+            else
+                ss << ", ";
+        }
+
+        for (int rank = size - end; rank < size; ++rank)
+        {
+            ss << "0";
+            if (rank == size - 1)
+                ss << "},\n";
+            else
+                ss << ", ";
+        }
+
+        ss << "\tstd::vector<int>{";
+
+        for (int rank = 0; rank < start; ++rank)
+        {
+            ss << "0, ";
+        }
+
+        for (int rank = 0; rank < size - end - start; ++rank)
+        {
+            ss << round(parameters[index + rank][1]);
+            if (rank == size - 1)
+                ss << "},\n";
+            else
+                ss << ", ";
+        }
+
+        for (int rank = size - end; rank < size; ++rank)
+        {
+            ss << "0";
+            if (rank == size - 1)
+                ss << "},\n";
+            else
+                ss << ", ";
+        }
+
+        ss << "\t" << size << ",\n";
+        ss << "\t" << start << ",\n";
+        ss << "\t" << end << ");\n\n";
     }
 };

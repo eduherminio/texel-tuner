@@ -135,50 +135,6 @@ public:
         return std::round(value);
     }
 
-    static void print_csharp_parameters(const parameters_t &parameters)
-    {
-        std::stringstream ss;
-        std::string name;
-
-        // name = NAME(DoubledPawnPenalty);
-        // DoubledPawnPenalty.to_json(parameters, ss, name);
-
-        name = NAME(IsolatedPawnPenalty);
-        IsolatedPawnPenalty.to_csharp(parameters, ss, name);
-
-        name = NAME(OpenFileRookBonus);
-        OpenFileRookBonus.to_csharp(parameters, ss, name);
-
-        name = NAME(SemiOpenFileRookBonus);
-        SemiOpenFileRookBonus.to_csharp(parameters, ss, name);
-
-        name = NAME(RookMobilityBonus);
-        RookMobilityBonus.to_csharp(parameters, ss, name);
-
-        name = NAME(QueenMobilityBonus);
-        QueenMobilityBonus.to_csharp(parameters, ss, name);
-
-        name = NAME(SemiOpenFileKingPenalty);
-        SemiOpenFileKingPenalty.to_csharp(parameters, ss, name);
-
-        name = NAME(OpenFileKingPenalty);
-        OpenFileKingPenalty.to_csharp(parameters, ss, name);
-
-        name = NAME(KingShieldBonus);
-        KingShieldBonus.to_csharp(parameters, ss, name);
-
-        name = NAME(BishopPairBonus);
-        BishopPairBonus.to_csharp(parameters, ss, name);
-
-        name = NAME(PassedPawnBonus);
-        PassedPawnBonus.to_csharp(parameters, ss, name);
-
-        name = NAME(BishopMobilityBonus);
-        BishopMobilityBonus.to_csharp(parameters, ss, name);
-
-        std::cout << ss.str() << std::endl;
-    }
-
     static void print_parameters(const parameters_t &parameters)
     {
         print_psqt(parameters);
@@ -235,6 +191,95 @@ public:
 
         std::cout << ss.str() << std::endl
                   << std::endl;
+    }
+
+    static void print_csharp_parameters(const parameters_t &parameters)
+    {
+        std::stringstream ss;
+        std::string name;
+
+        // name = NAME(DoubledPawnPenalty);
+        // DoubledPawnPenalty.to_json(parameters, ss, name);
+
+        name = NAME(IsolatedPawnPenalty);
+        IsolatedPawnPenalty.to_csharp(parameters, ss, name);
+
+        name = NAME(OpenFileRookBonus);
+        OpenFileRookBonus.to_csharp(parameters, ss, name);
+
+        name = NAME(SemiOpenFileRookBonus);
+        SemiOpenFileRookBonus.to_csharp(parameters, ss, name);
+
+        name = NAME(RookMobilityBonus);
+        RookMobilityBonus.to_csharp(parameters, ss, name);
+
+        name = NAME(QueenMobilityBonus);
+        QueenMobilityBonus.to_csharp(parameters, ss, name);
+
+        name = NAME(SemiOpenFileKingPenalty);
+        SemiOpenFileKingPenalty.to_csharp(parameters, ss, name);
+
+        name = NAME(OpenFileKingPenalty);
+        OpenFileKingPenalty.to_csharp(parameters, ss, name);
+
+        name = NAME(KingShieldBonus);
+        KingShieldBonus.to_csharp(parameters, ss, name);
+
+        name = NAME(BishopPairBonus);
+        BishopPairBonus.to_csharp(parameters, ss, name);
+
+        name = NAME(PassedPawnBonus);
+        PassedPawnBonus.to_csharp(parameters, ss, name);
+
+        name = NAME(BishopMobilityBonus);
+        BishopMobilityBonus.to_csharp(parameters, ss, name);
+
+        std::cout << ss.str() << std::endl;
+    }
+
+    static void print_cpp_parameters(const parameters_t &parameters)
+    {
+        std::stringstream ss;
+        std::string name;
+
+        // name = NAME(DoubledPawnPenalty);
+        // DoubledPawnPenalty.to_json(parameters, ss, name);
+
+        name = NAME(IsolatedPawnPenalty);
+        IsolatedPawnPenalty.to_cpp(parameters, ss, name);
+
+        name = NAME(OpenFileRookBonus);
+        OpenFileRookBonus.to_cpp(parameters, ss, name);
+
+        name = NAME(SemiOpenFileRookBonus);
+        SemiOpenFileRookBonus.to_cpp(parameters, ss, name);
+
+        name = NAME(RookMobilityBonus);
+        RookMobilityBonus.to_cpp(parameters, ss, name);
+
+        name = NAME(QueenMobilityBonus);
+        QueenMobilityBonus.to_cpp(parameters, ss, name);
+
+        name = NAME(SemiOpenFileKingPenalty);
+        SemiOpenFileKingPenalty.to_cpp(parameters, ss, name);
+
+        name = NAME(OpenFileKingPenalty);
+        OpenFileKingPenalty.to_cpp(parameters, ss, name);
+
+        name = NAME(KingShieldBonus);
+        KingShieldBonus.to_cpp(parameters, ss, name);
+
+        name = NAME(BishopPairBonus);
+        BishopPairBonus.to_cpp(parameters, ss, name);
+        ss << "\n";
+
+        name = NAME(PassedPawnBonus);
+        PassedPawnBonus.to_cpp(parameters, ss, name);
+
+        name = NAME(BishopMobilityBonus);
+        BishopMobilityBonus.to_cpp(parameters, ss, name);
+
+        std::cout << ss.str() << std::endl;
     }
 };
 
