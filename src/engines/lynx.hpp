@@ -1,5 +1,6 @@
 #include "../base.h"
 #include "./lynx_constants.hpp"
+#include "./lynx_tunable.hpp"
 #include "../external/chess.hpp"
 #include "../external/builtin.hpp"
 #include <cassert>
@@ -8,112 +9,7 @@
 #include <string>
 #include <cmath>
 
-#define NAME(a) #a;
 using u64 = uint64_t;
-using i32 = int32_t;
-
-class TunableSingle
-{
-    i32 _mg;
-    i32 _eg;
-
-public:
-    i32 packed;
-    i32 index;
-
-    TunableSingle(const i32 mg, const i32 eg)
-    {
-        _mg = mg;
-        _eg = eg;
-        packed = S(mg, eg);
-    }
-
-    void Add(parameters_t &parameters)
-    {
-        index = parameters.size();
-        parameters.push_back({(double)_mg, (double)_eg});
-    }
-
-    void to_json(const parameters_t &parameters, std::stringstream &ss, const std::string &name)
-    {
-        ss << "\"" << name << "\": {\n"
-           << "\t\"MG\": " << round(parameters[index][0]) << ",\n"
-           << "\t\"EG\": " << round(parameters[index][1]) << "\n}";
-    }
-};
-
-class TunableArray
-{
-    i32 _size;
-
-    i32 _start;
-    i32 _end;
-    std::vector<i32> _mg;
-    std::vector<i32> _eg;
-
-public:
-    std::vector<i32> packed;
-    i32 index;
-
-    TunableArray(const std::vector<i32> mg, const std::vector<i32> eg, i32 size)
-    {
-        TunableArray(mg, eg, size, 0, 0);
-    }
-
-    TunableArray(const std::vector<i32> mg, const std::vector<i32> eg, i32 size, i32 start, i32 end)
-    {
-        _mg = mg;
-        _eg = eg;
-        _size = size,
-        _start = start;
-        _end = end;
-        packed = std::vector<i32>(_size);
-
-        for (int rank = 0 + _start; rank < _size - _end; ++rank)
-        {
-            packed[rank] = S(mg[rank], eg[rank]);
-        }
-    }
-
-    void Add(parameters_t &parameters)
-    {
-        index = parameters.size();
-        for (int rank = 0 + _start; rank < _size - _end; ++rank)
-        {
-            parameters.push_back({(double)_mg[rank], (double)_eg[rank]});
-        }
-    }
-
-    void to_json(const parameters_t &parameters, std::stringstream &ss, const std::string &name)
-    {
-        const std::string keyword = _size == 8
-                                        ? "Rank"
-                                        : "Count";
-
-        ss << "\"" << name << "\": {\n";
-        for (int rank = 0; rank < _start; ++rank)
-        {
-            ss << "\t\"" << keyword << rank << "\": {\n";
-            ss << "\t\t\"MG\": " << 0 << ",\n";
-            ss << "\t\t\"EG\": " << 0 << "\n\t},\n";
-        }
-
-        for (int rank = 0; rank < _size - _end - _start; ++rank)
-        {
-            ss << "\t\"" << keyword << rank + _start << "\": {\n";
-            ss << "\t\t\"MG\": " << round(parameters[index + rank][0]) << ",\n";
-            ss << "\t\t\"EG\": " << round(parameters[index + rank][1]) << "\n\t},\n";
-        }
-
-        for (int rank = _size - _end; rank < _size; ++rank)
-        {
-            ss << "\t\"" << keyword << rank << "\": {\n";
-            ss << "\t\t\"MG\": " << 0 << ",\n";
-            ss << "\t\t\"EG\": " << 0 << "\n\t}\n";
-            ss << "}";
-        }
-    }
-};
 
 // TunableSingle DoubledPawnPenalty_MG(6, -12);
 TunableSingle IsolatedPawnPenalty(-21, -18);
@@ -140,21 +36,22 @@ TunableArray BishopMobilityBonus(
     0,
     1); // Skipping mobility 14
 
-const int base = 64 * 6 - 16; // Removing pawns from 1 and 8 rank
-static constexpr int numParameters = base +
-                                     //  1 + // DoubledPawnPenalty
-                                     1 + // IsolatedPawnPenalty
-                                     1 + // OpenFileRookBonus
-                                     1 + // SemiOpenFileRookBonus
-                                     1 + // RookMobilityBonus
-                                     1 + // QueenMobilityBonus
-                                     1 + // SemiOpenFileKingPenalty
-                                     1 + // OpenFileKingPenalty
-                                     1 + // BishopPairMaxBonus
-                                     1 + // KingShieldBonus
-                                     6 + // PassedPawnBonus - removing 1 and 8 rank values
-                                     14; // BishopMobilityBonus - removing count 14
+const int base = 64 * 6 - 16; // PSQT but removing pawns from 1 and 8 rank
+static int numParameters = base +
+                                     // DoubledPawnPenalty.size
+                                     IsolatedPawnPenalty.size +
+                                     OpenFileRookBonus.size +
+                                     SemiOpenFileRookBonus.size +
+                                     RookMobilityBonus.size +
+                                     QueenMobilityBonus.size +
+                                     SemiOpenFileKingPenalty.size +
+                                     OpenFileKingPenalty.size +
+                                     BishopPairBonus.size +
+                                     KingShieldBonus.size +
+                                     (PassedPawnBonus.size - PassedPawnBonus.start - PassedPawnBonus.end) + // 6, removing 1 and 8 rank values
+                                     (BishopMobilityBonus.size - BishopMobilityBonus.start - BishopMobilityBonus.end); // 14, removing count 14
 ;
+
 class Lynx
 {
 
