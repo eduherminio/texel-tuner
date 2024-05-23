@@ -22,7 +22,7 @@ public:
         packed = S(_mg, _eg);
     }
 
-    void Add(parameters_t &parameters)
+    void add(parameters_t &parameters)
     {
         index = parameters.size();
         parameters.push_back({(double)_mg, (double)_eg});
@@ -64,7 +64,7 @@ public:
         }
     }
 
-    void Add(parameters_t &parameters)
+    void add(parameters_t &parameters)
     {
         index = parameters.size();
         for (int rank = 0 + start; rank < size - end; ++rank)

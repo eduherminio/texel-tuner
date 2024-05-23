@@ -99,19 +99,19 @@ public:
                 result.push_back({(double)MiddleGamePositionalTables(piece, square), (double)EndGamePositionalTables(piece, square)});
         }
 
-        // DoubledPawnPenalty.Add(result);
-        IsolatedPawnPenalty.Add(result);
-        OpenFileRookBonus.Add(result);
-        SemiOpenFileRookBonus.Add(result);
-        RookMobilityBonus.Add(result);
-        QueenMobilityBonus.Add(result);
-        SemiOpenFileKingPenalty.Add(result);
-        OpenFileKingPenalty.Add(result);
-        KingShieldBonus.Add(result);
-        BishopPairBonus.Add(result);
+        // DoubledPawnPenalty.add(result);
+        IsolatedPawnPenalty.add(result);
+        OpenFileRookBonus.add(result);
+        SemiOpenFileRookBonus.add(result);
+        RookMobilityBonus.add(result);
+        QueenMobilityBonus.add(result);
+        SemiOpenFileKingPenalty.add(result);
+        OpenFileKingPenalty.add(result);
+        KingShieldBonus.add(result);
+        BishopPairBonus.add(result);
 
-        PassedPawnBonus.Add(result);
-        BishopMobilityBonus.Add(result);
+        PassedPawnBonus.add(result);
+        BishopMobilityBonus.add(result);
 
         std::cout << result.size() << " == " << numParameters << std::endl;
         assert(result.size() == numParameters);
