@@ -53,10 +53,10 @@ static int numParameters = base +
                            OpenFileKingPenalty.size +
                            BishopPairBonus.size +
                            KingShieldBonus.size +
-                           (PassedPawnBonus.size - PassedPawnBonus.start - PassedPawnBonus.end) +               // 6, removing 1 and 8 rank values
-                           (BishopMobilityBonus.size - BishopMobilityBonus.start - BishopMobilityBonus.end) +   // 14, removing count 14
-                           (RookMobilityBonus.size - RookMobilityBonus.start - RookMobilityBonus.end)           // 15
-;
+                           (PassedPawnBonus.size - PassedPawnBonus.start - PassedPawnBonus.end) +             // 6, removing 1 and 8 rank values
+                           (BishopMobilityBonus.size - BishopMobilityBonus.start - BishopMobilityBonus.end) + // 14, removing count 14
+                           (RookMobilityBonus.size - RookMobilityBonus.start - RookMobilityBonus.end)         // 15
+    ;
 
 class Lynx
 {
@@ -143,8 +143,17 @@ public:
 
     static void print_parameters(const parameters_t &parameters)
     {
-        print_psqt(parameters);
+        print_psqts(parameters);
+        print_json_parameters(parameters);
+    }
 
+    static void print_psqt(const parameters_t &parameters)
+    {
+        print_psqts(parameters);
+    }
+
+    static void print_json_parameters(const parameters_t &parameters)
+    {
         std::stringstream ss;
         std::string name;
 
