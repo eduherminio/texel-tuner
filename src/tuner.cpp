@@ -947,5 +947,8 @@ void Tuner::run(const std::vector<DataSource>& sources)
         }
     }
 
+    TuneEval::print_csharp_parameters(parameters);
+    TuneEval::print_cpp_parameters(parameters);
+
     thread_pool.stop();
 }

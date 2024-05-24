@@ -1,4 +1,6 @@
 #include <array>
+#include <cmath>
+
 using u64 = uint64_t;
 
 constexpr int32_t Pack(const int16_t mg, const int16_t eg) {
@@ -345,3 +347,105 @@ constexpr static std::array<int, 64> Rank =
         1UL, 1UL, 1UL, 1UL, 1UL, 1UL, 1UL, 1UL,
         0UL, 0UL, 0UL, 0UL, 0UL, 0UL, 0UL, 0UL};
 
+static void print_psqt(const parameters_t &parameters)
+{
+    int pieceValues[12];
+
+    for (int phase = 0; phase <= 1; ++phase)
+    {
+        if (phase == 0)
+            std::cout << "internal static readonly short[] MiddleGamePieceValues =\n[\n\t";
+
+        else
+            std::cout << "\ninternal static readonly short[] EndGamePieceValues =\n[\n\t";
+
+        // Pawns
+        {
+            int pawnSum = 0;
+
+            for (int square = 0; square < 48; ++square)
+            {
+                pawnSum += parameters[square][phase];
+            }
+
+            auto average = (pawnSum / 48.0);
+
+            auto pieceIndex = phase * 6;
+            // pieceValues[pieceIndex] = PieceValue[phase * 5];
+            pieceValues[pieceIndex] = static_cast<int>(std::round(average));
+            std::cout << "+" << pieceValues[pieceIndex] << ", ";
+        }
+
+        for (int piece = 1; piece < 5; ++piece)
+        {
+            int sum = 0;
+
+            for (int square = 0; square < 64; ++square)
+            {
+                sum += parameters[piece * 64 - 16 + square][phase]; // Substract 16 since we're only tuning 48 pawn values
+            }
+
+            auto average = (sum / 64.0);
+
+            auto pieceIndex = piece + phase * 6;
+            // pieceValues[pieceIndex] = PieceValue[piece + phase * 5];
+            pieceValues[pieceIndex] = static_cast<int>(std::round(average));
+            std::cout << "+" << pieceValues[pieceIndex] << ", ";
+        }
+
+        // Kings
+        auto kingIndex = 5 + phase * 6;
+        pieceValues[kingIndex] = 0;
+        std::cout << pieceValues[kingIndex] << ",\n\t";
+
+        for (int piece = 0; piece < 5; ++piece)
+        {
+            auto pieceIndex = piece + phase * 6;
+            std::cout << "-" << pieceValues[pieceIndex] << ", ";
+        }
+
+        std::cout << pieceValues[kingIndex] << "\n];\n";
+    }
+
+    std::string names[] = {"Pawn", "Knight", "Bishop", "Rook", "Queen", "King"};
+
+    // Pawns
+    {
+        const int piece = 0;
+        for (int phase = 0; phase <= 1; ++phase)
+        {
+            std::cout << "\ninternal static readonly short[] " << (phase == 0 ? "MiddleGame" : "EndGame") << names[piece] << "Table =\n[\n\t";
+
+            std::cout << "0,\t0,\t0,\t0,\t0,\t0,\t0,\t0,\n\t";
+            for (int square = 0; square < 48; ++square)
+            {
+                std::cout << round(parameters[square][phase] - pieceValues[phase * 6]) << ", ";
+                if (square % 8 == 7)
+                    std::cout << "\n";
+                if (square != 63)
+                    std::cout << "\t";
+            }
+            std::cout << "0,\t0,\t0,\t0,\t0,\t0,\t0,\t0," << std::endl;
+
+            std::cout << "];\n";
+        }
+    }
+
+    for (int piece = 1; piece < 6; ++piece)
+    {
+        for (int phase = 0; phase <= 1; ++phase)
+        {
+            std::cout << "\ninternal static readonly short[] " << (phase == 0 ? "MiddleGame" : "EndGame") << names[piece] << "Table =\n[\n\t";
+            for (int square = 0; square < 64; ++square)
+            {
+                std::cout << round(parameters[piece * 64 - 16 + square][phase] - pieceValues[piece + phase * 6]) << ", "; // We substract the 16 non-tuned pawn valeus
+                if (square % 8 == 7)
+                    std::cout << "\n";
+                if (square != 63)
+                    std::cout << "\t";
+            }
+            std::cout << "];\n";
+        }
+    }
+    std::cout << std::endl;
+}
