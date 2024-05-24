@@ -137,8 +137,17 @@ public:
 
     static void print_parameters(const parameters_t &parameters)
     {
-        print_psqt(parameters);
+        print_psqts(parameters);
+        print_json_parameters(parameters);
+    }
 
+    static void print_psqt(const parameters_t &parameters)
+    {
+        print_psqts(parameters);
+    }
+
+    static void print_json_parameters(const parameters_t &parameters)
+    {
         std::stringstream ss;
         std::string name;
 

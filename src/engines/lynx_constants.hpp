@@ -347,7 +347,7 @@ constexpr static std::array<int, 64> Rank =
         1UL, 1UL, 1UL, 1UL, 1UL, 1UL, 1UL, 1UL,
         0UL, 0UL, 0UL, 0UL, 0UL, 0UL, 0UL, 0UL};
 
-static void print_psqt(const parameters_t &parameters)
+static void print_psqts(const parameters_t &parameters)
 {
     int pieceValues[12];
 
