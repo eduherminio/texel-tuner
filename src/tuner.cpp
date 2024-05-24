@@ -35,7 +35,7 @@ struct Entry
     vector<CoefficientEntry> coefficients;
     tune_t wdl;
     bool white_to_move;
-    //tune_t initial_eval;
+    // tune_t initial_eval;
     tune_t additional_score;
 #if TAPERED
     int32_t phase;
@@ -43,20 +43,18 @@ struct Entry
 #endif
 };
 
-static const array<WdlMarker, 4> markers
-{
+static const array<WdlMarker, 4> markers{
     WdlMarker{"1.0", 1},
 
     WdlMarker{"1-0", 1},
     WdlMarker{"1/2-1/2", 0.5},
-    WdlMarker{"0-1", 0}
-};
+    WdlMarker{"0-1", 0}};
 
-static tune_t get_fen_wdl(const string& original_fen, const bool original_white_to_move, const bool white_to_move, const bool side_to_move_wdl)
+static tune_t get_fen_wdl(const string &original_fen, const bool original_white_to_move, const bool white_to_move, const bool side_to_move_wdl)
 {
     tune_t wdl;
     bool marker_found = false;
-    for (auto& marker : markers)
+    for (auto &marker : markers)
     {
         if (original_fen.find(marker.marker) != std::string::npos)
         {
@@ -70,7 +68,7 @@ static tune_t get_fen_wdl(const string& original_fen, const bool original_white_
         }
     }
 
-    if(!marker_found)
+    if (!marker_found)
     {
         stringstream ss(original_fen);
         while (!ss.eof())
@@ -96,15 +94,15 @@ static tune_t get_fen_wdl(const string& original_fen, const bool original_white_
         throw std::runtime_error("WDL marker not found");
     }
 
-    if(!original_white_to_move && side_to_move_wdl)
+    if (!original_white_to_move && side_to_move_wdl)
     {
         wdl = 1 - wdl;
     }
 
     return wdl;
-}   
+}
 
-static bool get_fen_color_to_move(const string& fen)
+static bool get_fen_color_to_move(const string &fen)
 {
     return fen.find('w') != std::string::npos;
 }
@@ -114,12 +112,12 @@ static void print_elapsed(high_resolution_clock::time_point start)
     const auto now = high_resolution_clock::now();
     const auto elapsed = now - start;
     const auto elapsed_seconds = duration_cast<seconds>(elapsed).count();
-    cout << "[" << elapsed_seconds << "s] ";
+    cout << "[" << elapsed_seconds << "s]" << std::endl;
 }
 
-static void get_coefficient_entries(const coefficients_t& coefficients, vector<CoefficientEntry>& coefficient_entries, int32_t parameter_count)
+static void get_coefficient_entries(const coefficients_t &coefficients, vector<CoefficientEntry> &coefficient_entries, int32_t parameter_count)
 {
-    if(coefficients.size() != parameter_count)
+    if (coefficients.size() != parameter_count)
     {
         throw runtime_error("Parameter count mismatch");
     }
@@ -136,20 +134,20 @@ static void get_coefficient_entries(const coefficients_t& coefficients, vector<C
     }
 }
 
-static tune_t linear_eval(const Entry& entry, const parameters_t& parameters)
+static tune_t linear_eval(const Entry &entry, const parameters_t &parameters)
 {
     tune_t score = entry.additional_score;
-#if TAPERED 
+#if TAPERED
     tune_t midgame = 0;
     tune_t endgame = 0;
-    for (const auto& coefficient : entry.coefficients)
+    for (const auto &coefficient : entry.coefficients)
     {
         midgame += coefficient.value * parameters[coefficient.index][static_cast<int32_t>(PhaseStages::Midgame)];
         endgame += coefficient.value * parameters[coefficient.index][static_cast<int32_t>(PhaseStages::Endgame)] * entry.endgame_scale;
     }
     score += (midgame * entry.phase + endgame * (24 - entry.phase)) / 24;
 #else
-    for (const auto& coefficient : entry.coefficients)
+    for (const auto &coefficient : entry.coefficients)
     {
         score += coefficient.value * parameters[coefficient.index];
     }
@@ -158,13 +156,13 @@ static tune_t linear_eval(const Entry& entry, const parameters_t& parameters)
     return score;
 }
 
-static int32_t get_phase(const string& fen)
+static int32_t get_phase(const string &fen)
 {
     int32_t phase = 0;
     auto stop = false;
-    for(const char ch : fen)
+    for (const char ch : fen)
     {
-        if(stop)
+        if (stop)
         {
             break;
         }
@@ -206,11 +204,11 @@ static int32_t get_phase(const string& fen)
     return phase;
 }
 
-static int32_t get_phase(const chess::Board& board)
+static int32_t get_phase(const chess::Board &board)
 {
     int32_t phase = 0;
 
-    for(uint8_t square_num = 0; square_num < 64; ++square_num)
+    for (uint8_t square_num = 0; square_num < 64; ++square_num)
     {
         const auto square = static_cast<chess::Square>(square_num);
         const auto piece = board.at(square);
@@ -236,7 +234,7 @@ static int32_t get_phase(const chess::Board& board)
     return phase;
 }
 
-static void print_statistics(const parameters_t& parameters, const vector<Entry>& entries)
+static void print_statistics(const parameters_t &parameters, const vector<Entry> &entries)
 {
     array<size_t, 2> wins{};
     array<size_t, 2> draws{};
@@ -248,13 +246,13 @@ static void print_statistics(const parameters_t& parameters, const vector<Entry>
     size_t max_parameters = 0;
     size_t total_parameters = 0;
 
-    for(auto& entry : entries)
+    for (auto &entry : entries)
     {
-        if(entry.wdl == 1)
+        if (entry.wdl == 1)
         {
             wins[entry.white_to_move]++;
         }
-        else if(entry.wdl == 0.5)
+        else if (entry.wdl == 0.5)
         {
             draws[entry.white_to_move]++;
         }
@@ -265,7 +263,7 @@ static void print_statistics(const parameters_t& parameters, const vector<Entry>
         total[entry.white_to_move]++;
         wdls[entry.white_to_move] += entry.wdl;
 
-        if(entry.coefficients.size() < min_parameters)
+        if (entry.coefficients.size() < min_parameters)
         {
             min_parameters = entry.coefficients.size();
         }
@@ -280,7 +278,7 @@ static void print_statistics(const parameters_t& parameters, const vector<Entry>
 
     cout << "Dataset statistics:" << endl;
     cout << "Total positions: " << entries.size() << endl;
-    for(int color = 1; color >= 0; color--)
+    for (int color = 1; color >= 0; color--)
     {
         const auto color_name = color ? "White" : "Black";
         cout << color_name << ": " << total[color] << " (" << (total[color] * 100.0 / entries.size()) << "%)" << endl;
@@ -330,18 +328,18 @@ static int32_t get_piece_value(const chess::Piece piece)
     case chess::Piece(chess::Piece::BLACKKING):
     case chess::Piece(chess::Piece::NONE):
         return 0;
-        //throw std::runtime_error("Invalid piece for value");
+        // throw std::runtime_error("Invalid piece for value");
     }
 }
 
-static int32_t mvv_lva(const chess::Board& board, const chess::Move move)
+static int32_t mvv_lva(const chess::Board &board, const chess::Move move)
 {
     const auto from = move.from();
     const auto to = move.to();
     const auto piece = board.at(from);
     chess::Piece takes;
     const auto type = move.typeOf();
-    if(type == chess::Move::ENPASSANT)
+    if (type == chess::Move::ENPASSANT)
     {
         takes = board.sideToMove() == chess::Color::WHITE ? chess::Piece::BLACKPAWN : chess::Piece::WHITEPAWN;
     }
@@ -356,7 +354,7 @@ static int32_t mvv_lva(const chess::Board& board, const chess::Move move)
     return score;
 }
 
-static tune_t quiescence(chess::Board& board, const parameters_t& parameters, pv_table_t& pv_table, tune_t alpha, tune_t beta, const int32_t ply)
+static tune_t quiescence(chess::Board &board, const parameters_t &parameters, pv_table_t &pv_table, tune_t alpha, tune_t beta, const int32_t ply)
 {
     pv_table[ply].length = 0;
 
@@ -382,7 +380,7 @@ static tune_t quiescence(chess::Board& board, const parameters_t& parameters, pv
 #endif
     entry.additional_score = 0;
     tune_t eval = linear_eval(entry, parameters);
-    if(!entry.white_to_move)
+    if (!entry.white_to_move)
     {
         eval = -eval;
     }
@@ -405,21 +403,21 @@ static tune_t quiescence(chess::Board& board, const parameters_t& parameters, pv
         move_scores[move_index] = mvv_lva(board, moves[move_index]);
     }
 
-    if(moves.size() == 0)
+    if (moves.size() == 0)
     {
         return alpha;
     }
 
     tune_t best_score = -inf;
     auto best_move = chess::Move(chess::Move::NO_MOVE);
-    //for (const auto& move : movelist) {
-    for(int32_t move_index = 0; move_index < moves.size(); move_index++)
+    // for (const auto& move : movelist) {
+    for (int32_t move_index = 0; move_index < moves.size(); move_index++)
     {
         int32_t best_move_score = 0;
         int32_t best_move_index = 0;
-        for(auto i = move_index; i < moves.size(); i++)
+        for (auto i = move_index; i < moves.size(); i++)
         {
-            if(move_scores[i] > best_move_score)
+            if (move_scores[i] > best_move_score)
             {
                 best_move_score = move_scores[i];
                 best_move_index = i;
@@ -433,21 +431,21 @@ static tune_t quiescence(chess::Board& board, const parameters_t& parameters, pv
         board.makeMove(move);
 
         const auto child_score = -quiescence(board, parameters, pv_table, -beta, -alpha, ply + 1);
-        if(child_score > best_score)
+        if (child_score > best_score)
         {
             best_score = child_score;
             best_move = move;
             if (child_score > alpha)
             {
                 alpha = child_score;
-                if(child_score >= beta)
+                if (child_score >= beta)
                 {
                     board.unmakeMove(move);
                     break;
                 }
 
-                auto& this_ply = pv_table[ply];
-                auto& next_ply = pv_table[ply + 1];
+                auto &this_ply = pv_table[ply];
+                auto &next_ply = pv_table[ply + 1];
                 this_ply.moves[0] = move;
                 this_ply.length = next_ply.length + 1;
                 for (int32_t nextPlyIndex = 0; nextPlyIndex < next_ply.length; nextPlyIndex++)
@@ -463,15 +461,18 @@ static tune_t quiescence(chess::Board& board, const parameters_t& parameters, pv
     return best_score;
 }
 
-string cleanup_fen(const string& initial_fen)
+string cleanup_fen(const string &initial_fen)
 {
     int space_count = 0;
     size_t pos = 0;
-    for (size_t i = 0; i < initial_fen.size(); ++i) {
-        if (initial_fen[i] == ' ') {
+    for (size_t i = 0; i < initial_fen.size(); ++i)
+    {
+        if (initial_fen[i] == ' ')
+        {
             ++space_count;
         }
-        if (space_count == 4) {
+        if (space_count == 4)
+        {
             pos = i;
             break;
         }
@@ -480,11 +481,11 @@ string cleanup_fen(const string& initial_fen)
     return clean_fen;
 }
 
-chess::Board quiescence_root(const parameters_t& parameters, chess::Board board)
+chess::Board quiescence_root(const parameters_t &parameters, chess::Board board)
 {
-    pv_table_t pv_table {};
+    pv_table_t pv_table{};
     auto score = quiescence(board, parameters, pv_table, -inf, inf, 0);
-    if(board.sideToMove() == chess::Color::BLACK)
+    if (board.sideToMove() == chess::Color::BLACK)
     {
         score = -score;
     }
@@ -509,14 +510,14 @@ chess::Board quiescence_root(const parameters_t& parameters, chess::Board board)
     return board;
 }
 
-static void parse_fen(const bool side_to_move_wdl, const parameters_t& parameters, vector<Entry>& entries, const string& original_fen)
+static void parse_fen(const bool side_to_move_wdl, const parameters_t &parameters, vector<Entry> &entries, const string &original_fen)
 {
     if constexpr (print_data_entries)
     {
-        //cout << fen;
+        // cout << fen;
     }
 
-    //string fen;
+    // string fen;
     const auto clean_fen = cleanup_fen(original_fen);
     chess::Board board = chess::Board(clean_fen);
 
@@ -540,7 +541,6 @@ static void parse_fen(const bool side_to_move_wdl, const parameters_t& parameter
     {
         auto fen = board.getFen();
         eval_result = TuneEval::get_fen_eval_result(fen);
-
     }
 
     if constexpr (print_eval)
@@ -548,15 +548,14 @@ static void parse_fen(const bool side_to_move_wdl, const parameters_t& parameter
         std::cout << original_fen << ": " << TuneEval::NormalizeScore(eval_result.score) << std::endl;
     }
 
-
     Entry entry;
-    //entry.white_to_move = get_fen_color_to_move(fen);
+    // entry.white_to_move = get_fen_color_to_move(fen);
     entry.white_to_move = board.sideToMove() == chess::Color::WHITE;
 #if TAPERED
     entry.endgame_scale = eval_result.endgame_scale;
 #endif
     const bool original_white_to_move = get_fen_color_to_move(original_fen);
-    //cout << (entry.white_to_move ? "w" : "b") << " ";
+    // cout << (entry.white_to_move ? "w" : "b") << " ";
     entry.wdl = get_fen_wdl(original_fen, original_white_to_move, entry.white_to_move, side_to_move_wdl);
     get_coefficient_entries(eval_result.coefficients, entry.coefficients, static_cast<int32_t>(parameters.size()));
 #if TAPERED
@@ -576,7 +575,7 @@ static void parse_fen(const bool side_to_move_wdl, const parameters_t& parameter
     entries.push_back(entry);
 }
 
-static void read_fens(const DataSource& source, const high_resolution_clock::time_point start, vector<string>& fens)
+static void read_fens(const DataSource &source, const high_resolution_clock::time_point start, vector<string> &fens)
 {
     cout << "Reading " << source.path;
     if (source.position_limit > 0)
@@ -613,7 +612,7 @@ static void read_fens(const DataSource& source, const high_resolution_clock::tim
     std::cout << "Read " << fens.size() << " positions from " << source.path << endl;
 }
 
-static void parse_fens(ThreadPool& thread_pool, const DataSource& source, const vector<string>& fens, const parameters_t& parameters, const high_resolution_clock::time_point time_start, vector<Entry>& entries)
+static void parse_fens(ThreadPool &thread_pool, const DataSource &source, const vector<string> &fens, const parameters_t &parameters, const high_resolution_clock::time_point time_start, vector<Entry> &entries)
 {
     cout << "Parsing " << fens.size() << " positions..." << endl;
     array<vector<Entry>, data_load_thread_count> thread_entries;
@@ -622,7 +621,7 @@ static void parse_fens(ThreadPool& thread_pool, const DataSource& source, const 
     mutex mut;
     queue<vector<string>> batches;
     vector<string> current_batch;
-    for(const auto& fen : fens)
+    for (const auto &fen : fens)
     {
         current_batch.push_back(fen);
         if (current_batch.size() == batch_size)
@@ -631,7 +630,7 @@ static void parse_fens(ThreadPool& thread_pool, const DataSource& source, const 
             current_batch.clear();
         }
     }
-    if(!current_batch.empty())
+    if (!current_batch.empty())
     {
         batches.emplace(current_batch);
     }
@@ -639,7 +638,7 @@ static void parse_fens(ThreadPool& thread_pool, const DataSource& source, const 
     for (int thread_id = 0; thread_id < data_load_thread_count; thread_id++)
     {
         thread_pool.enqueue([thread_id, &thread_entries, &mut, side_to_move_wdl, parameters, &batches, time_start]()
-        {
+                            {
             vector<Entry> entries;
 
             int position_count = 0;
@@ -669,22 +668,21 @@ static void parse_fens(ThreadPool& thread_pool, const DataSource& source, const 
                 }
             }
 
-            thread_entries[thread_id] = entries;
-        });
+            thread_entries[thread_id] = entries; });
     }
 
     thread_pool.wait_for_completion();
 
     for (int thread_id = 0; thread_id < data_load_thread_count; thread_id++)
     {
-        for(const Entry& entry : thread_entries[thread_id])
+        for (const Entry &entry : thread_entries[thread_id])
         {
             entries.push_back(entry);
         }
     }
 }
 
-static void load_fens(ThreadPool& thread_pool, const DataSource& source, const parameters_t& parameters, const high_resolution_clock::time_point start, vector<Entry>& entries)
+static void load_fens(ThreadPool &thread_pool, const DataSource &source, const parameters_t &parameters, const high_resolution_clock::time_point start, vector<Entry> &entries)
 {
     vector<string> fens;
     read_fens(source, start, fens);
@@ -696,13 +694,13 @@ static tune_t sigmoid(const tune_t K, const tune_t eval)
     return static_cast<tune_t>(1) / (static_cast<tune_t>(1) + exp(-K * eval / static_cast<tune_t>(400)));
 }
 
-static tune_t get_average_error(ThreadPool& thread_pool, const vector<Entry>& entries, const parameters_t& parameters, tune_t K)
+static tune_t get_average_error(ThreadPool &thread_pool, const vector<Entry> &entries, const parameters_t &parameters, tune_t K)
 {
     array<tune_t, thread_count> thread_errors;
-    for(int thread_id = 0; thread_id < thread_count; thread_id++)
+    for (int thread_id = 0; thread_id < thread_count; thread_id++)
     {
         thread_pool.enqueue([thread_id, &thread_errors, &entries, &parameters, K]()
-        {
+                            {
             const auto entries_per_thread = entries.size() / thread_count;
             const auto start = static_cast<int>(thread_id * entries_per_thread);
             const auto end = static_cast<int>((thread_id + 1) * entries_per_thread - 1);
@@ -716,8 +714,7 @@ static tune_t get_average_error(ThreadPool& thread_pool, const vector<Entry>& en
                 const auto entry_error = pow(diff, 2);
                 error += entry_error;
             }
-            thread_errors[thread_id] = error;
-        });
+            thread_errors[thread_id] = error; });
     }
 
     thread_pool.wait_for_completion();
@@ -732,7 +729,7 @@ static tune_t get_average_error(ThreadPool& thread_pool, const vector<Entry>& en
     return avg_error;
 }
 
-static tune_t find_optimal_k(ThreadPool& thread_pool, const vector<Entry>& entries, const parameters_t& parameters)
+static tune_t find_optimal_k(ThreadPool &thread_pool, const vector<Entry> &entries, const parameters_t &parameters)
 {
     constexpr tune_t rate = 10;
     constexpr tune_t delta = 1e-5;
@@ -752,7 +749,8 @@ static tune_t find_optimal_k(ThreadPool& thread_pool, const vector<Entry>& entri
     return K;
 }
 
-static void update_single_gradient(parameters_t& gradient, const Entry& entry, const parameters_t& params, tune_t K) {
+static void update_single_gradient(parameters_t &gradient, const Entry &entry, const parameters_t &params, tune_t K)
+{
 
     const tune_t eval = linear_eval(entry, params);
     const tune_t sig = sigmoid(K, eval);
@@ -763,7 +761,7 @@ static void update_single_gradient(parameters_t& gradient, const Entry& entry, c
     const auto eg_base = res - mg_base;
 #endif
 
-    for (const auto& coefficient : entry.coefficients)
+    for (const auto &coefficient : entry.coefficients)
     {
 #if TAPERED
         gradient[coefficient.index][static_cast<int32_t>(PhaseStages::Midgame)] += mg_base * coefficient.value;
@@ -774,13 +772,13 @@ static void update_single_gradient(parameters_t& gradient, const Entry& entry, c
     }
 }
 
-static void compute_gradient(ThreadPool& thread_pool, parameters_t& gradient, const vector<Entry>& entries, const parameters_t& params, tune_t K)
+static void compute_gradient(ThreadPool &thread_pool, parameters_t &gradient, const vector<Entry> &entries, const parameters_t &params, tune_t K)
 {
     array<parameters_t, thread_count> thread_gradients;
-    for(int thread_id = 0; thread_id < thread_count; thread_id++)
+    for (int thread_id = 0; thread_id < thread_count; thread_id++)
     {
         thread_pool.enqueue([thread_id, &thread_gradients, &entries, &params, K]()
-        {
+                            {
             const auto entries_per_thread = entries.size() / thread_count;
             const auto start = static_cast<int>(thread_id * entries_per_thread);
             const auto end = static_cast<int>((thread_id + 1) * entries_per_thread - 1);
@@ -794,15 +792,14 @@ static void compute_gradient(ThreadPool& thread_pool, parameters_t& gradient, co
                 const auto& entry = entries[i];
                 update_single_gradient(gradient, entry, params, K);
             }
-            thread_gradients[thread_id] = gradient;
-        });
+            thread_gradients[thread_id] = gradient; });
     }
 
     thread_pool.wait_for_completion();
 
     for (int thread_id = 0; thread_id < thread_count; thread_id++)
     {
-        for(auto parameter_index = 0; parameter_index < params.size(); parameter_index++)
+        for (auto parameter_index = 0; parameter_index < params.size(); parameter_index++)
         {
 #if TAPERED
             gradient[parameter_index][static_cast<int32_t>(PhaseStages::Midgame)] += thread_gradients[thread_id][parameter_index][static_cast<int32_t>(PhaseStages::Midgame)];
@@ -814,9 +811,10 @@ static void compute_gradient(ThreadPool& thread_pool, parameters_t& gradient, co
     }
 }
 
-void Tuner::run(const std::vector<DataSource>& sources)
+void Tuner::run(const std::vector<DataSource> &sources)
 {
-    cout << "Starting tuning" << endl << endl;
+    cout << "Starting tuning" << endl
+         << endl;
     const auto start = high_resolution_clock::now();
 
     cout << "Starting thread pool..." << endl;
@@ -836,20 +834,21 @@ void Tuner::run(const std::vector<DataSource>& sources)
     vector<Entry> entries;
 
     // Debug entry
-    //const string debug_fen = "rnb1kbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQK1NR w KQkq - 0 1; 1.0";
-    //Entry debug_entry;
-    //debug_entry.wdl = get_fen_wdl(debug_fen);
-    //debug_entry.white_to_move = get_fen_color_to_move(debug_fen);
-    //get_coefficient_entries(debug_fen, debug_entry.coefficients);
-    //debug_entry.initial_eval = linear_eval(debug_entry, parameters);
-    //entries.push_back(debug_entry);
+    // const string debug_fen = "rnb1kbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQK1NR w KQkq - 0 1; 1.0";
+    // Entry debug_entry;
+    // debug_entry.wdl = get_fen_wdl(debug_fen);
+    // debug_entry.white_to_move = get_fen_color_to_move(debug_fen);
+    // get_coefficient_entries(debug_fen, debug_entry.coefficients);
+    // debug_entry.initial_eval = linear_eval(debug_entry, parameters);
+    // entries.push_back(debug_entry);
 
     vector<string> fens;
-    for (const auto& source : sources)
+    for (const auto &source : sources)
     {
         load_fens(thread_pool, source, parameters, start, entries);
     }
-    cout << "Data loading complete" << endl << endl;
+    cout << "Data loading complete" << endl
+         << endl;
 
     print_statistics(parameters, entries);
 
@@ -860,7 +859,7 @@ void Tuner::run(const std::vector<DataSource>& sources)
 
     if constexpr (retune_from_zero)
     {
-        for (auto& parameter : parameters)
+        for (auto &parameter : parameters)
         {
 #if TAPERED
             parameter[static_cast<int>(PhaseStages::Midgame)] = static_cast<tune_t>(0);
@@ -882,7 +881,7 @@ void Tuner::run(const std::vector<DataSource>& sources)
     }
     else
     {
-        cout << "Using predefined K = " << preferred_k <<  endl;
+        cout << "Using predefined K = " << preferred_k << endl;
         K = preferred_k;
     }
     cout << "K = " << K << endl;
@@ -907,15 +906,16 @@ void Tuner::run(const std::vector<DataSource>& sources)
 #else
         parameters_t gradient(parameters.size(), 0);
 #endif
-        
+
         compute_gradient(thread_pool, gradient, entries, parameters, K);
 
         constexpr tune_t beta1 = 0.9;
         constexpr tune_t beta2 = 0.999;
 
-        for (int parameter_index = 0; parameter_index < parameters.size(); parameter_index++) {
+        for (int parameter_index = 0; parameter_index < parameters.size(); parameter_index++)
+        {
 #if TAPERED
-            for(int phase_stage = 0; phase_stage < 2; phase_stage++)
+            for (int phase_stage = 0; phase_stage < 2; phase_stage++)
             {
                 const tune_t grad = -K / static_cast<tune_t>(400) * gradient[parameter_index][phase_stage] / static_cast<tune_t>(entries.size());
                 momentum[parameter_index][phase_stage] = beta1 * momentum[parameter_index][phase_stage] + (1 - beta1) * grad;
@@ -928,20 +928,23 @@ void Tuner::run(const std::vector<DataSource>& sources)
             velocity[parameter_index] = beta2 * velocity[parameter_index] + (1 - beta2) * pow(grad, 2);
             parameters[parameter_index] -= learning_rate * momentum[parameter_index] / (1e-8 + sqrt(velocity[parameter_index]));
 #endif
-            
         }
 
-        if (epoch % 100 == 0)
+        if (epoch % 10 == 0)
         {
             const auto elapsed_ms = duration_cast<milliseconds>(high_resolution_clock::now() - loop_start).count();
             const auto epochs_per_second = epoch * 1000.0 / elapsed_ms;
             const tune_t error = get_average_error(thread_pool, entries, parameters, K);
             print_elapsed(start);
-            cout << "Epoch " << epoch << " (" << epochs_per_second << " eps), error " << error << ", LR " << learning_rate << endl;
+            cout << "🔽 Epoch " << epoch << " (" << epochs_per_second << " eps), error " << error << ", LR " << learning_rate << "\n"
+                 << endl;
             TuneEval::print_parameters(parameters);
+            cout << "🔼 Epoch " << epoch << " (" << epochs_per_second << " eps), error " << error << ", LR " << learning_rate << "\n"
+                 << endl;
+            cout << "---------------------------------------------------------------------------------------" << endl;
         }
 
-        if(epoch % learning_rate_drop_interval == 0)
+        if (epoch % learning_rate_drop_interval == 0)
         {
             learning_rate *= learning_rate_drop_ratio;
         }
