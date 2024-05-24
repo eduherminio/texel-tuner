@@ -404,7 +404,10 @@ int RookAdditonalEvaluation(int squareIndex, int pieceIndex, const chess::Board 
 
 int BishopAdditionalEvaluation(int squareIndex, int pieceIndex, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
 {
-    auto mobilityCount = chess::attacks::bishop(static_cast<chess::Square>(squareIndex), __builtin_bswap64(board.occ().getBits())).count();
+    auto mobilityCount = chess::builtin::popcount(
+        chess::attacks::bishop(static_cast<chess::Square>(squareIndex), __builtin_bswap64(board.occ().getBits())).getBits() &
+        (~__builtin_bswap64(board.us(color).getBits())));
+
     IncrementCoefficients(coefficients, BishopMobilityBonus.index + mobilityCount, color);
 
     return BishopMobilityBonus.packed[mobilityCount];
