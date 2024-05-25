@@ -22,25 +22,25 @@ TunableSingle KingShieldBonus(17, -5);
 TunableSingle BishopPairBonus(31, 80);
 
 TunableArray PassedPawnBonus(
-        std::vector<int>{0, 2, -11, -11, 20, 60, 99, 0},
-        std::vector<int>{0, 13, 19, 47, 80, 156, 224, 0},
-        8,
-        1,
-        1);
+    std::vector<int>{0, 2, -11, -11, 20, 60, 99, 0},
+    std::vector<int>{0, 13, 19, 47, 80, 156, 224, 0},
+    8,
+    1,
+    1);
 
 TunableArray BishopMobilityBonus(
-        std::vector<int>{0, 196, 207, 218, 232, 240, 255, 266, 275, 276, 282, 284, 285, 314, 0},
-        std::vector<int>{0, 163, 163, 202, 218, 232, 252, 262, 274, 280, 286, 282, 282, 276, 0},
-        15,
-        0,
-        1);
+    std::vector<int>{0, 196, 207, 218, 232, 240, 255, 266, 275, 276, 282, 284, 285, 314, 0},
+    std::vector<int>{0, 163, 163, 202, 218, 232, 252, 262, 274, 280, 286, 282, 282, 276, 0},
+    15,
+    0,
+    1);
 
 TunableArray RookMobilityBonus(
-        std::vector<int>{296, 302, 308, 311, 310, 317, 320, 325, 327, 330, 335, 337, 338, 350, 348},
-        std::vector<int>{364, 398, 400, 407, 418, 421, 426, 431, 443, 449, 451, 453, 457, 457, 455},
-        15,
-        0,
-        0);
+    std::vector<int>{296, 302, 308, 311, 310, 317, 320, 325, 327, 330, 335, 337, 338, 350, 348},
+    std::vector<int>{364, 398, 400, 407, 418, 421, 426, 431, 443, 449, 451, 453, 457, 457, 455},
+    15,
+    0,
+    0);
 
 const int base = 64 * 6 - 16; // PSQT but removing pawns from 1 and 8 rank
 static int numParameters = base +
@@ -412,7 +412,10 @@ int RookAdditonalEvaluation(int squareIndex, int pieceIndex, const chess::Board 
 
 int BishopAdditionalEvaluation(int squareIndex, int pieceIndex, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
 {
-    auto mobilityCount = chess::attacks::bishop(static_cast<chess::Square>(squareIndex), __builtin_bswap64(board.occ().getBits())).count();
+    auto mobilityCount = chess::builtin::popcount(
+        chess::attacks::bishop(static_cast<chess::Square>(squareIndex), __builtin_bswap64(board.occ().getBits())).getBits() &
+        (~GetPieceSwappingEndianness(board, chess::PieceType::PAWN, color)));
+
     IncrementCoefficients(coefficients, BishopMobilityBonus.index + mobilityCount, color);
 
     return BishopMobilityBonus.packed[mobilityCount];
