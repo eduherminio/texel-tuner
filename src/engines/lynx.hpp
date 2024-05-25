@@ -13,28 +13,34 @@ using u64 = uint64_t;
 
 // TunableSingle DoubledPawnPenalty_MG(6, -12);
 TunableSingle IsolatedPawnPenalty(-21, -18);
-TunableSingle OpenFileRookBonus(46, 9);
-TunableSingle SemiOpenFileRookBonus(15, 14);
-TunableSingle RookMobilityBonus(5, 5);
+TunableSingle OpenFileRookBonus(45, 7);
+TunableSingle SemiOpenFileRookBonus(15, 8);
 TunableSingle QueenMobilityBonus(4, 7);
 TunableSingle SemiOpenFileKingPenalty(-39, 21);
-TunableSingle OpenFileKingPenalty(-105, 7);
-TunableSingle KingShieldBonus(16, -6);
+TunableSingle OpenFileKingPenalty(-105, 8);
+TunableSingle KingShieldBonus(17, -5);
 TunableSingle BishopPairBonus(31, 80);
 
 TunableArray PassedPawnBonus(
-    std::vector<int>{0, 2, -11, -11, 19, 58, 95, 0},
-    std::vector<int>{0, 12, 19, 47, 80, 156, 223, 0},
-    8,
-    1,  // Skipping top row
-    1); // Skipping bottom row
+        std::vector<int>{0, 2, -11, -11, 20, 60, 99, 0},
+        std::vector<int>{0, 13, 19, 47, 80, 156, 224, 0},
+        8,
+        1,
+        1);
 
 TunableArray BishopMobilityBonus(
-    std::vector<int>{0, 196, 208, 219, 233, 241, 256, 266, 275, 276, 282, 284, 286, 315, 0},
-    std::vector<int>{0, 160, 159, 198, 214, 229, 249, 259, 271, 277, 282, 279, 278, 272, 0},
-    15,
-    0,
-    1); // Skipping mobility 14
+        std::vector<int>{0, 196, 207, 218, 232, 240, 255, 266, 275, 276, 282, 284, 285, 314, 0},
+        std::vector<int>{0, 163, 163, 202, 218, 232, 252, 262, 274, 280, 286, 282, 282, 276, 0},
+        15,
+        0,
+        1);
+
+TunableArray RookMobilityBonus(
+        std::vector<int>{296, 302, 308, 311, 310, 317, 320, 325, 327, 330, 335, 337, 338, 350, 348},
+        std::vector<int>{364, 398, 400, 407, 418, 421, 426, 431, 443, 449, 451, 453, 457, 457, 455},
+        15,
+        0,
+        0);
 
 const int base = 64 * 6 - 16; // PSQT but removing pawns from 1 and 8 rank
 static int numParameters = base +
@@ -42,15 +48,15 @@ static int numParameters = base +
                            IsolatedPawnPenalty.size +
                            OpenFileRookBonus.size +
                            SemiOpenFileRookBonus.size +
-                           RookMobilityBonus.size +
                            QueenMobilityBonus.size +
                            SemiOpenFileKingPenalty.size +
                            OpenFileKingPenalty.size +
                            BishopPairBonus.size +
                            KingShieldBonus.size +
-                           (PassedPawnBonus.size - PassedPawnBonus.start - PassedPawnBonus.end) +            // 6, removing 1 and 8 rank values
-                           (BishopMobilityBonus.size - BishopMobilityBonus.start - BishopMobilityBonus.end); // 14, removing count 14
-;
+                           (PassedPawnBonus.size - PassedPawnBonus.start - PassedPawnBonus.end) +             // 6, removing 1 and 8 rank values
+                           (BishopMobilityBonus.size - BishopMobilityBonus.start - BishopMobilityBonus.end) + // 14, removing count 14
+                           (RookMobilityBonus.size - RookMobilityBonus.start - RookMobilityBonus.end)         // 15
+    ;
 
 class Lynx
 {
@@ -103,7 +109,6 @@ public:
         IsolatedPawnPenalty.add(result);
         OpenFileRookBonus.add(result);
         SemiOpenFileRookBonus.add(result);
-        RookMobilityBonus.add(result);
         QueenMobilityBonus.add(result);
         SemiOpenFileKingPenalty.add(result);
         OpenFileKingPenalty.add(result);
@@ -112,6 +117,7 @@ public:
 
         PassedPawnBonus.add(result);
         BishopMobilityBonus.add(result);
+        RookMobilityBonus.add(result);
 
         std::cout << result.size() << " == " << numParameters << std::endl;
         assert(result.size() == numParameters);
@@ -167,10 +173,6 @@ public:
         SemiOpenFileRookBonus.to_json(parameters, ss, name);
         ss << ",\n";
 
-        name = NAME(RookMobilityBonus);
-        RookMobilityBonus.to_json(parameters, ss, name);
-        ss << ",\n";
-
         name = NAME(QueenMobilityBonus);
         QueenMobilityBonus.to_json(parameters, ss, name);
         ss << ",\n";
@@ -197,6 +199,10 @@ public:
 
         name = NAME(BishopMobilityBonus);
         BishopMobilityBonus.to_json(parameters, ss, name);
+        ss << ",\n";
+
+        name = NAME(RookMobilityBonus);
+        RookMobilityBonus.to_json(parameters, ss, name);
 
         std::cout << ss.str() << std::endl
                   << std::endl;
@@ -219,9 +225,6 @@ public:
         name = NAME(SemiOpenFileRookBonus);
         SemiOpenFileRookBonus.to_csharp(parameters, ss, name);
 
-        name = NAME(RookMobilityBonus);
-        RookMobilityBonus.to_csharp(parameters, ss, name);
-
         name = NAME(QueenMobilityBonus);
         QueenMobilityBonus.to_csharp(parameters, ss, name);
 
@@ -243,6 +246,9 @@ public:
         name = NAME(BishopMobilityBonus);
         BishopMobilityBonus.to_csharp(parameters, ss, name);
 
+        name = NAME(RookMobilityBonus);
+        RookMobilityBonus.to_csharp(parameters, ss, name);
+
         std::cout << ss.str() << std::endl;
     }
 
@@ -262,9 +268,6 @@ public:
 
         name = NAME(SemiOpenFileRookBonus);
         SemiOpenFileRookBonus.to_cpp(parameters, ss, name);
-
-        name = NAME(RookMobilityBonus);
-        RookMobilityBonus.to_cpp(parameters, ss, name);
 
         name = NAME(QueenMobilityBonus);
         QueenMobilityBonus.to_cpp(parameters, ss, name);
@@ -288,10 +291,12 @@ public:
         name = NAME(BishopMobilityBonus);
         BishopMobilityBonus.to_cpp(parameters, ss, name);
 
+        name = NAME(RookMobilityBonus);
+        RookMobilityBonus.to_cpp(parameters, ss, name);
+
         std::cout << ss.str() << std::endl;
     }
 };
-
 
 static inline parameters_t initialParameters = Lynx::get_initial_parameters();
 
@@ -364,10 +369,13 @@ int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, const chess::Board
 
 int RookAdditonalEvaluation(int squareIndex, int pieceIndex, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
 {
-    auto mobilityCount = chess::attacks::rook(static_cast<chess::Square>(squareIndex), __builtin_bswap64(board.occ().getBits())).count();
-    IncrementCoefficients(coefficients, RookMobilityBonus.index, color, mobilityCount);
+    auto mobilityCount = chess::builtin::popcount(
+        chess::attacks::rook(static_cast<chess::Square>(squareIndex), __builtin_bswap64(board.occ().getBits())).getBits() &
+        (~__builtin_bswap64(board.us(color).getBits())));
 
-    int packedBonus = RookMobilityBonus.packed * mobilityCount;
+    IncrementCoefficients(coefficients, RookMobilityBonus.index + mobilityCount, color);
+
+    int packedBonus = RookMobilityBonus.packed[mobilityCount];
 
     if (((GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE) | GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK)) & FileMasks[squareIndex]) == 0) // isOpenFile
     {
