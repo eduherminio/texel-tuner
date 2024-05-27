@@ -181,7 +181,7 @@ public:
         for (int rank = 0; rank < size - end - start; ++rank)
         {
             ss << round(parameters[index + rank][0]);
-            if (rank == size - 1)
+            if (rank == size - start - 1)
                 ss << "},\n";
             else
                 ss << ", ";
@@ -206,7 +206,7 @@ public:
         for (int rank = 0; rank < size - end - start; ++rank)
         {
             ss << round(parameters[index + rank][1]);
-            if (rank == size - 1)
+            if (rank == size - start - 1)
                 ss << "},\n";
             else
                 ss << ", ";

@@ -114,7 +114,7 @@ static void print_elapsed(high_resolution_clock::time_point start)
     const auto now = high_resolution_clock::now();
     const auto elapsed = now - start;
     const auto elapsed_seconds = duration_cast<seconds>(elapsed).count();
-    cout << "[" << elapsed_seconds << "s] ";
+     cout << "[" << elapsed_seconds << "s]" << std::endl;
 }
 
 static void get_coefficient_entries(const coefficients_t& coefficients, vector<CoefficientEntry>& coefficient_entries, int32_t parameter_count)
@@ -937,8 +937,13 @@ void Tuner::run(const std::vector<DataSource>& sources)
             const auto epochs_per_second = epoch * 1000.0 / elapsed_ms;
             const tune_t error = get_average_error(thread_pool, entries, parameters, K);
             print_elapsed(start);
-            cout << "Epoch " << epoch << " (" << epochs_per_second << " eps), error " << error << ", LR " << learning_rate << endl;
-            TuneEval::print_parameters(parameters);
+            cout << "🔽 Epoch " << epoch << " (" << epochs_per_second << " eps), error " << error << ", LR " << learning_rate << "\n"
+                 << endl;
+            TuneEval::print_psqt(parameters);
+            TuneEval::print_cpp_parameters(parameters);
+            cout << "🔼 Epoch " << epoch << " (" << epochs_per_second << " eps), error " << error << ", LR " << learning_rate << "\n"
+                 << endl;
+            cout << "---------------------------------------------------------------------------------------" << endl;
         }
 
         if(epoch % learning_rate_drop_interval == 0)
@@ -948,7 +953,7 @@ void Tuner::run(const std::vector<DataSource>& sources)
     }
 
     TuneEval::print_csharp_parameters(parameters);
-    TuneEval::print_cpp_parameters(parameters);
+    TuneEval::print_json_parameters(parameters);
 
     thread_pool.stop();
 }
