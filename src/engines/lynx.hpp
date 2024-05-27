@@ -13,8 +13,8 @@ using u64 = uint64_t;
 
 // TunableSingle DoubledPawnPenalty_MG(6, -12);
 TunableSingle IsolatedPawnPenalty(-21, -18);
-TunableSingle OpenFileRookBonus(46, 9);
-TunableSingle SemiOpenFileRookBonus(15, 14);;
+TunableSingle OpenFileRookBonus(45, 7);
+TunableSingle SemiOpenFileRookBonus(15, 8);
 TunableSingle SemiOpenFileKingPenalty(-39, 21);
 TunableSingle OpenFileKingPenalty(-105, 8);
 TunableSingle KingShieldBonus(17, -5);
@@ -45,7 +45,7 @@ TunableArray QueenMobilityBonus(
     std::vector<int>{0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2},
     std::vector<int>{0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2},
     28,
-    0,  // Skipping mobility 0, 1 and 2
+    0, // Skipping mobility 0, 1 and 2
     0);
 
 const int base = 64 * 6 - 16; // PSQT but removing pawns from 1 and 8 rank
@@ -58,10 +58,10 @@ static int numParameters = base +
                            OpenFileKingPenalty.size +
                            BishopPairBonus.size +
                            KingShieldBonus.size +
-                           (PassedPawnBonus.size - PassedPawnBonus.start - PassedPawnBonus.end) +            // 6, removing 1 and 8 rank values
-                           (BishopMobilityBonus.size - BishopMobilityBonus.start - BishopMobilityBonus.end) + // 14, removing count 14
-                           (RookMobilityBonus.size - RookMobilityBonus.start - RookMobilityBonus.end) +        // 15
-                           (QueenMobilityBonus.size - QueenMobilityBonus.start - QueenMobilityBonus.end);   // 24, removing count 0, 1 and 2
+                           (PassedPawnBonus.size - PassedPawnBonus.start - PassedPawnBonus.end) +               // 6, removing 1 and 8 rank values
+                           (BishopMobilityBonus.size - BishopMobilityBonus.start - BishopMobilityBonus.end) +   // 14, removing count 14
+                           (RookMobilityBonus.size - RookMobilityBonus.start - RookMobilityBonus.end) +         // 15
+                           (QueenMobilityBonus.size - QueenMobilityBonus.start - QueenMobilityBonus.end);       // 24, removing count 0, 1 and 2
 ;
 
 class Lynx
@@ -151,7 +151,6 @@ public:
     {
         print_psqts(parameters);
         print_json_parameters(parameters);
-        print_cpp_parameters(parameters);
     }
 
     static void print_psqt(const parameters_t &parameters)
@@ -179,7 +178,7 @@ public:
         name = NAME(SemiOpenFileRookBonus);
         SemiOpenFileRookBonus.to_json(parameters, ss, name);
         ss << ",\n";
-        
+
         name = NAME(SemiOpenFileKingPenalty);
         SemiOpenFileKingPenalty.to_json(parameters, ss, name);
         ss << ",\n";
@@ -252,7 +251,7 @@ public:
 
         name = NAME(RookMobilityBonus);
         RookMobilityBonus.to_csharp(parameters, ss, name);
-        
+
         name = NAME(QueenMobilityBonus);
         QueenMobilityBonus.to_csharp(parameters, ss, name);
 
@@ -297,7 +296,7 @@ public:
 
         name = NAME(RookMobilityBonus);
         RookMobilityBonus.to_cpp(parameters, ss, name);
-        
+
         name = NAME(QueenMobilityBonus);
         QueenMobilityBonus.to_cpp(parameters, ss, name);
 
