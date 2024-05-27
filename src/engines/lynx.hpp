@@ -42,10 +42,10 @@ TunableArray RookMobilityBonus(
         0);
 
 TunableArray QueenMobilityBonus(
-    std::vector<int>{-1, -1, -1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2},
-    std::vector<int>{-1, -1, -1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2},
+    std::vector<int>{0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2},
+    std::vector<int>{0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2},
     28,
-    3,  // Skipping mobility 0, 1 and 2
+    0,  // Skipping mobility 0, 1 and 2
     0);
 
 const int base = 64 * 6 - 16; // PSQT but removing pawns from 1 and 8 rank
@@ -151,6 +151,7 @@ public:
     {
         print_psqts(parameters);
         print_json_parameters(parameters);
+        print_cpp_parameters(parameters);
     }
 
     static void print_psqt(const parameters_t &parameters)
