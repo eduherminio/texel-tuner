@@ -426,7 +426,10 @@ int BishopAdditionalEvaluation(int squareIndex, int pieceIndex, const chess::Boa
 
 int QueenAdditionalEvaluation(int squareIndex, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
 {
-    auto mobilityCount = chess::attacks::queen(static_cast<chess::Square>(squareIndex), __builtin_bswap64(board.occ().getBits())).count();
+    auto mobilityCount =  chess::builtin::popcount(
+        chess::attacks::queen(static_cast<chess::Square>(squareIndex), __builtin_bswap64(board.occ().getBits())).getBits() &
+        (~__builtin_bswap64(board.us(color).getBits())));
+
     IncrementCoefficients(coefficients, QueenMobilityBonus.index + mobilityCount, color);
 
     return QueenMobilityBonus.packed[mobilityCount];
