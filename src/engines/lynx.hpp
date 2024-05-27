@@ -28,6 +28,13 @@ TunableArray PassedPawnBonus(
         1,
         1);
 
+TunableArray KnightMobilityBonus(
+        std::vector<int>{0, 0, 1, 1, 1, 1, 1, 1, 2},
+        std::vector<int>{0, 0, 1, 1, 1, 1, 1, 1, 2},
+        9,
+        0,
+        0);
+
 TunableArray BishopMobilityBonus(
         std::vector<int>{0, 196, 207, 218, 232, 240, 255, 266, 275, 276, 282, 284, 285, 314, 0},
         std::vector<int>{0, 163, 163, 202, 218, 232, 252, 262, 274, 280, 286, 282, 282, 276, 0},
@@ -54,6 +61,7 @@ static int numParameters = base +
                            BishopPairBonus.size +
                            KingShieldBonus.size +
                            (PassedPawnBonus.size - PassedPawnBonus.start - PassedPawnBonus.end) +             // 6, removing 1 and 8 rank values
+                           (KnightMobilityBonus.size - KnightMobilityBonus.start - KnightMobilityBonus.end) + // 14, removing count 14
                            (BishopMobilityBonus.size - BishopMobilityBonus.start - BishopMobilityBonus.end) + // 14, removing count 14
                            (RookMobilityBonus.size - RookMobilityBonus.start - RookMobilityBonus.end)         // 15
     ;
@@ -116,6 +124,7 @@ public:
         BishopPairBonus.add(result);
 
         PassedPawnBonus.add(result);
+        KnightMobilityBonus.add(result);
         BishopMobilityBonus.add(result);
         RookMobilityBonus.add(result);
 
@@ -197,6 +206,10 @@ public:
         PassedPawnBonus.to_json(parameters, ss, name);
         ss << ",\n";
 
+        name = NAME(KnightMobilityBonus);
+        KnightMobilityBonus.to_json(parameters, ss, name);
+        ss << ",\n";
+
         name = NAME(BishopMobilityBonus);
         BishopMobilityBonus.to_json(parameters, ss, name);
         ss << ",\n";
@@ -243,6 +256,9 @@ public:
         name = NAME(PassedPawnBonus);
         PassedPawnBonus.to_csharp(parameters, ss, name);
 
+        name = NAME(KnightMobilityBonus);
+        KnightMobilityBonus.to_csharp(parameters, ss, name);
+
         name = NAME(BishopMobilityBonus);
         BishopMobilityBonus.to_csharp(parameters, ss, name);
 
@@ -287,6 +303,9 @@ public:
 
         name = NAME(PassedPawnBonus);
         PassedPawnBonus.to_cpp(parameters, ss, name);
+
+        name = NAME(KnightobilityBonus);
+        KnightMobilityBonus.to_cpp(parameters, ss, name);
 
         name = NAME(BishopMobilityBonus);
         BishopMobilityBonus.to_cpp(parameters, ss, name);
@@ -410,6 +429,17 @@ int RookAdditonalEvaluation(int squareIndex, int pieceIndex, const chess::Board 
     return packedBonus;
 }
 
+int KnightAdditionalEvaluation(int squareIndex, int pieceIndex, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
+{
+    auto mobilityCount = chess::builtin::popcount(
+        chess::attacks::knight(static_cast<chess::Square>(squareIndex)).getBits() &
+        (~__builtin_bswap64(board.us(color).getBits())));
+
+    IncrementCoefficients(coefficients, KnightMobilityBonus.index + mobilityCount, color);
+
+    return KnightMobilityBonus.packed[mobilityCount];
+}
+
 int BishopAdditionalEvaluation(int squareIndex, int pieceIndex, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
 {
     auto mobilityCount = chess::attacks::bishop(static_cast<chess::Square>(squareIndex), __builtin_bswap64(board.occ().getBits())).count();
@@ -466,9 +496,15 @@ int AdditionalPieceEvaluation(int pieceSquareIndex, int pieceIndex, const chess:
     case 0:
     case 6:
         return PawnAdditionalEvaluation(pieceSquareIndex, pieceIndex, board, color, coefficients);
+
+    case 1:
+    case 7:
+        return KnightAdditionalEvaluation(pieceSquareIndex, pieceIndex, board, color, coefficients);
+
     case 3:
     case 9:
         return RookAdditonalEvaluation(pieceSquareIndex, pieceIndex, board, color, coefficients);
+
     case 2:
     case 8:
         return BishopAdditionalEvaluation(pieceSquareIndex, pieceIndex, board, color, coefficients);
