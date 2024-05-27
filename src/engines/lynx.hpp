@@ -304,7 +304,7 @@ public:
         name = NAME(PassedPawnBonus);
         PassedPawnBonus.to_cpp(parameters, ss, name);
 
-        name = NAME(KnightobilityBonus);
+        name = NAME(KnightMobilityBonus);
         KnightMobilityBonus.to_cpp(parameters, ss, name);
 
         name = NAME(BishopMobilityBonus);
