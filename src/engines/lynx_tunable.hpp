@@ -129,6 +129,10 @@ public:
         {
             variable_name = "TaperedEvaluationTermByRank";
         }
+        else if (size == 9)
+        {
+            variable_name = "TaperedEvaluationTermByCount8";
+        }
         else if (size == 15)
         {
             variable_name = "TaperedEvaluationTermByCount";
