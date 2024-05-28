@@ -19,7 +19,7 @@ TunableSingle QueenMobilityBonus(4, 7);
 TunableSingle SemiOpenFileKingPenalty(-39, 21);
 TunableSingle OpenFileKingPenalty(-105, 8);
 TunableSingle KingShieldBonus(17, -5);
-TunableSingle BishopPairBonus(31, 80);
+TunableSingle BishopPairBonus(30, 80);
 
 TunableArray PassedPawnBonus(
         std::vector<int>{0, 2, -11, -11, 20, 60, 99, 0},
@@ -29,22 +29,22 @@ TunableArray PassedPawnBonus(
         1);
 
 TunableArray KnightMobilityBonus(
-        std::vector<int>{0, 0, 1, 1, 1, 1, 1, 1, 2},
-        std::vector<int>{0, 0, 1, 1, 1, 1, 1, 1, 2},
+        std::vector<int>{216, 242, 250, 256, 260, 258, 257, 260, 271},
+        std::vector<int>{250, 246, 255, 255, 263, 271, 275, 276, 271},
         9,
         0,
         0);
 
 TunableArray BishopMobilityBonus(
-        std::vector<int>{0, 196, 207, 218, 232, 240, 255, 266, 275, 276, 282, 284, 285, 314, 0},
-        std::vector<int>{0, 163, 163, 202, 218, 232, 252, 262, 274, 280, 286, 282, 282, 276, 0},
+        std::vector<int>{0, 194, 205, 216, 230, 238, 253, 263, 272, 273, 279, 281, 283, 312, 0},
+        std::vector<int>{0, 160, 160, 200, 215, 229, 250, 260, 271, 278, 283, 280, 279, 273, 0},
         15,
         0,
         1);
 
 TunableArray RookMobilityBonus(
-        std::vector<int>{296, 302, 308, 311, 310, 317, 320, 325, 327, 330, 335, 337, 338, 350, 348},
-        std::vector<int>{364, 398, 400, 407, 418, 421, 426, 431, 443, 449, 451, 453, 457, 457, 455},
+        std::vector<int>{293, 301, 307, 310, 309, 316, 319, 324, 325, 329, 333, 336, 336, 349, 346},
+        std::vector<int>{363, 397, 399, 406, 416, 419, 425, 430, 442, 448, 450, 452, 456, 456, 453},
         15,
         0,
         0);
