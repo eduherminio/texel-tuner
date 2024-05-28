@@ -8,6 +8,7 @@
 #include <bit>
 #include <string>
 #include <cmath>
+#include <climits>
 
 using u64 = uint64_t;
 
@@ -21,27 +22,31 @@ TunableSingle KingShieldBonus(17, -5);
 TunableSingle BishopPairBonus(31, 80);
 
 TunableArray PassedPawnBonus(
-        std::vector<int>{0, 2, -11, -11, 20, 60, 99, 0},
-        std::vector<int>{0, 13, 19, 47, 80, 156, 224, 0},
-        8,
-        1,
-        1);
+    chess::PieceType::PAWN,
+    std::vector<int>{0, 2, -11, -11, 20, 60, 99, 0},
+    std::vector<int>{0, 13, 19, 47, 80, 156, 224, 0},
+    8,
+    1,
+    1);
 
 TunableArray BishopMobilityBonus(
-        std::vector<int>{0, 196, 207, 218, 232, 240, 255, 266, 275, 276, 282, 284, 285, 314, 0},
-        std::vector<int>{0, 163, 163, 202, 218, 232, 252, 262, 274, 280, 286, 282, 282, 276, 0},
-        15,
-        0,
-        1);
+    chess::PieceType::BISHOP,
+    std::vector<int>{0, 196, 207, 218, 232, 240, 255, 266, 275, 276, 282, 284, 285, 314, 0},
+    std::vector<int>{0, 163, 163, 202, 218, 232, 252, 262, 274, 280, 286, 282, 282, 276, 0},
+    15,
+    0,
+    1);
 
 TunableArray RookMobilityBonus(
-        std::vector<int>{296, 302, 308, 311, 310, 317, 320, 325, 327, 330, 335, 337, 338, 350, 348},
-        std::vector<int>{364, 398, 400, 407, 418, 421, 426, 431, 443, 449, 451, 453, 457, 457, 455},
-        15,
-        0,
-        0);
+    chess::PieceType::ROOK,
+    std::vector<int>{296, 302, 308, 311, 310, 317, 320, 325, 327, 330, 335, 337, 338, 350, 348},
+    std::vector<int>{364, 398, 400, 407, 418, 421, 426, 431, 443, 449, 451, 453, 457, 457, 455},
+    15,
+    0,
+    0);
 
 TunableArray QueenMobilityBonus(
+    chess::PieceType::QUEEN,
     std::vector<int>{0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2},
     std::vector<int>{0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2},
     28,
@@ -58,10 +63,10 @@ static int numParameters = base +
                            OpenFileKingPenalty.size +
                            BishopPairBonus.size +
                            KingShieldBonus.size +
-                           (PassedPawnBonus.size - PassedPawnBonus.start - PassedPawnBonus.end) +               // 6, removing 1 and 8 rank values
-                           (BishopMobilityBonus.size - BishopMobilityBonus.start - BishopMobilityBonus.end) +   // 14, removing count 14
-                           (RookMobilityBonus.size - RookMobilityBonus.start - RookMobilityBonus.end) +         // 15
-                           (QueenMobilityBonus.size - QueenMobilityBonus.start - QueenMobilityBonus.end);       // 24, removing count 0, 1 and 2
+                           (PassedPawnBonus.size - PassedPawnBonus.start - PassedPawnBonus.end) +             // 6, removing 1 and 8 rank values
+                           (BishopMobilityBonus.size - BishopMobilityBonus.start - BishopMobilityBonus.end) + // 14, removing count 14
+                           (RookMobilityBonus.size - RookMobilityBonus.start - RookMobilityBonus.end) +       // 15
+                           (QueenMobilityBonus.size - QueenMobilityBonus.start - QueenMobilityBonus.end);     // 24, removing count 0, 1 and 2
 ;
 
 class Lynx
@@ -145,6 +150,43 @@ public:
     static int round(double value)
     {
         return std::round(value);
+    }
+
+    static void scale_mobility(parameters_t &parameters)
+    {
+        calculate_average(BishopMobilityBonus, parameters);  // B
+        calculate_average(BishopMobilityBonus, parameters);  // R
+        //calculate_average(4, BishopMobilityBonus.index, BishopMobilityBonus.size, parameters);  // Q
+    }
+
+    static int calculate_average(TunableArray mobilityArray, parameters_t &parameters)
+    {
+        for (int phase = 0; phase <= 1; ++phase)
+        {
+            auto min = INT_MAX;
+
+            auto pieceIndex = mobilityArray.pieceIndex + phase * 6;
+
+            for (int i = mobilityArray.index; i < mobilityArray.size; ++i)
+            {
+                if (min == INT_MAX && parameters[mobilityArray.index + i][phase] != 0)
+                {
+                    min = parameters[mobilityArray.index + i][phase];
+
+                    for (int j = i; j < mobilityArray.size; ++j)
+                    {
+                        parameters[mobilityArray.index + j][phase] -= min;
+                    }
+                }
+            }
+
+            for (int square = 0; square < 64; ++square)
+            {
+                auto param_index = pieceIndex * 64 - 16 + square;
+
+                parameters[param_index][phase] += min;
+            }
+        }
     }
 
     static void print_parameters(const parameters_t &parameters)
@@ -426,7 +468,7 @@ int BishopAdditionalEvaluation(int squareIndex, int pieceIndex, const chess::Boa
 
 int QueenAdditionalEvaluation(int squareIndex, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
 {
-    auto mobilityCount =  chess::builtin::popcount(
+    auto mobilityCount = chess::builtin::popcount(
         chess::attacks::queen(static_cast<chess::Square>(squareIndex), __builtin_bswap64(board.occ().getBits())).getBits() &
         (~__builtin_bswap64(board.us(color).getBits())));
 

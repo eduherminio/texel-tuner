@@ -53,18 +53,19 @@ class TunableArray
 
 public:
     std::vector<i32> packed;
+    i32 pieceIndex;
     i32 index;
     i32 size;
     i32 start;
     i32 end;
 
-    TunableArray(const std::vector<i32> mg, const std::vector<i32> eg, i32 size)
+    TunableArray(chess::PieceType piece, const std::vector<i32> mg, const std::vector<i32> eg, i32 size)
     {
-        TunableArray(mg, eg, size, 0, 0);
+        TunableArray(piece, mg, eg, size, 0, 0);
     }
 
-    TunableArray(const std::vector<i32> mg, const std::vector<i32> eg, i32 size, i32 start, i32 end)
-        : _mg(mg), _eg(eg), size(size), start(start), end(end)
+    TunableArray(chess::PieceType piece, const std::vector<i32> mg, const std::vector<i32> eg, i32 size, i32 start, i32 end)
+        :  pieceIndex(static_cast<int>(piece)), _mg(mg), _eg(eg), size(size), start(start), end(end)
     {
         packed = std::vector<i32>(size);
 
