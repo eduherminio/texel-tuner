@@ -13,41 +13,41 @@ using u64 = uint64_t;
 
 // TunableSingle DoubledPawnPenalty_MG(6, -12);
 TunableSingle IsolatedPawnPenalty(-21, -18);
-TunableSingle OpenFileRookBonus(45, 7);
-TunableSingle SemiOpenFileRookBonus(15, 8);
-TunableSingle QueenMobilityBonus(4, 7);
-TunableSingle SemiOpenFileKingPenalty(-39, 21);
-TunableSingle OpenFileKingPenalty(-105, 8);
-TunableSingle KingShieldBonus(17, -5);
-TunableSingle BishopPairBonus(30, 80);
+TunableSingle OpenFileRookBonus(44, 7);
+TunableSingle SemiOpenFileRookBonus(14, 8);
+TunableSingle QueenMobilityBonus(4, 8);
+TunableSingle SemiOpenFileKingPenalty(-36, 20);
+TunableSingle OpenFileKingPenalty(-100, 7);
+TunableSingle KingShieldBonus(24, -6);
+TunableSingle BishopPairBonus(31, 80);
 
 TunableArray PassedPawnBonus(
-    std::vector<int>{0, 2, -11, -11, 20, 60, 99, 0},
-    std::vector<int>{0, 13, 19, 47, 80, 156, 224, 0},
-    8,
-    1,
-    1);
+        std::vector<int>{0, 3, -11, -11, 20, 60, 103, 0},
+        std::vector<int>{0, 13, 19, 47, 79, 156, 223, 0},
+        8,
+        1,
+        1);
 
 TunableArray KnightMobilityBonus(
-    std::vector<int>{216, 242, 250, 256, 260, 258, 257, 260, 271},
-    std::vector<int>{250, 246, 255, 255, 263, 271, 275, 276, 271},
-    9,
-    0,
-    0);
+        std::vector<int>{218, 243, 251, 256, 261, 260, 260, 262, 273},
+        std::vector<int>{248, 245, 254, 254, 261, 270, 273, 274, 269},
+        9,
+        0,
+        0);
 
 TunableArray BishopMobilityBonus(
-    std::vector<int>{0, 194, 205, 216, 230, 238, 253, 263, 272, 273, 279, 281, 283, 312, 0},
-    std::vector<int>{0, 160, 160, 200, 215, 229, 250, 260, 271, 278, 283, 280, 279, 273, 0},
-    15,
-    0,
-    1);
+        std::vector<int>{0, 198, 209, 219, 233, 240, 255, 265, 274, 275, 281, 283, 285, 315, 0},
+        std::vector<int>{0, 158, 157, 198, 214, 228, 249, 259, 270, 277, 282, 279, 278, 272, 0},
+        15,
+        0,
+        1);
 
 TunableArray RookMobilityBonus(
-    std::vector<int>{293, 301, 307, 310, 309, 316, 319, 324, 325, 329, 333, 336, 336, 349, 346},
-    std::vector<int>{363, 397, 399, 406, 416, 419, 425, 430, 442, 448, 450, 452, 456, 456, 453},
-    15,
-    0,
-    0);
+        std::vector<int>{297, 304, 310, 314, 313, 320, 322, 327, 329, 333, 337, 340, 340, 354, 351},
+        std::vector<int>{365, 397, 398, 405, 416, 418, 424, 429, 441, 447, 449, 451, 455, 454, 452},
+        15,
+        0,
+        0);
 
 const int base = 64 * 6 - 16; // PSQT but removing pawns from 1 and 8 rank
 static int numParameters = base +
