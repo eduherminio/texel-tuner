@@ -56,17 +56,26 @@ public:
     i32 pieceIndex;
     i32 index;
     i32 size;
+    i32 tunableSize;
     i32 start;
     i32 end;
 
-    TunableArray(chess::PieceType piece, const std::vector<i32> mg, const std::vector<i32> eg, i32 size)
+    TunableArray(chess::PieceType piece, const std::vector<i32> mg, const std::vector<i32> eg)
     {
-        TunableArray(piece, mg, eg, size, 0, 0);
+        TunableArray(piece, mg, eg, 0, 0);
     }
 
-    TunableArray(chess::PieceType piece, const std::vector<i32> mg, const std::vector<i32> eg, i32 size, i32 start, i32 end)
-        :  pieceIndex(static_cast<int>(piece)), _mg(mg), _eg(eg), size(size), start(start), end(end)
+    TunableArray(chess::PieceType piece, const std::vector<i32> mg, const std::vector<i32> eg, i32 start, i32 end)
+        : pieceIndex(static_cast<int>(piece)), _mg(mg), _eg(eg), start(start), end(end)
     {
+        if (mg.size() != eg.size())
+        {
+            throw std::invalid_argument("mg and eg size mismatch");
+        }
+
+        size = mg.size();
+        tunableSize = size - start - end;
+
         packed = std::vector<i32>(size);
 
         for (int rank = 0 + start; rank < size - end; ++rank)
@@ -222,7 +231,6 @@ public:
                 ss << ", ";
         }
 
-        ss << "\t" << size << ",\n";
         ss << "\t" << start << ",\n";
         ss << "\t" << end << ");\n\n";
     }

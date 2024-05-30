@@ -25,7 +25,6 @@ TunableArray PassedPawnBonus(
     chess::PieceType::PAWN,
     std::vector<int>{0, 2, -11, -11, 20, 60, 99, 0},
     std::vector<int>{0, 13, 19, 47, 80, 156, 224, 0},
-    8,
     1,
     1);
 
@@ -33,7 +32,6 @@ TunableArray BishopMobilityBonus(
     chess::PieceType::BISHOP,
     std::vector<int>{0, 196, 207, 218, 232, 240, 255, 266, 275, 276, 282, 284, 285, 314, 0},
     std::vector<int>{0, 163, 163, 202, 218, 232, 252, 262, 274, 280, 286, 282, 282, 276, 0},
-    15,
     0,
     1);
 
@@ -41,7 +39,6 @@ TunableArray RookMobilityBonus(
     chess::PieceType::ROOK,
     std::vector<int>{296, 302, 308, 311, 310, 317, 320, 325, 327, 330, 335, 337, 338, 350, 348},
     std::vector<int>{364, 398, 400, 407, 418, 421, 426, 431, 443, 449, 451, 453, 457, 457, 455},
-    15,
     0,
     0);
 
@@ -49,7 +46,6 @@ TunableArray QueenMobilityBonus(
     chess::PieceType::QUEEN,
     std::vector<int>{0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2},
     std::vector<int>{0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2},
-    28,
     0, // Skipping mobility 0, 1 and 2
     0);
 
@@ -63,10 +59,10 @@ static int numParameters = base +
                            OpenFileKingPenalty.size +
                            BishopPairBonus.size +
                            KingShieldBonus.size +
-                           (PassedPawnBonus.size - PassedPawnBonus.start - PassedPawnBonus.end) +             // 6, removing 1 and 8 rank values
-                           (BishopMobilityBonus.size - BishopMobilityBonus.start - BishopMobilityBonus.end) + // 14, removing count 14
-                           (RookMobilityBonus.size - RookMobilityBonus.start - RookMobilityBonus.end) +       // 15
-                           (QueenMobilityBonus.size - QueenMobilityBonus.start - QueenMobilityBonus.end);     // 24, removing count 0, 1 and 2
+                           PassedPawnBonus.tunableSize +     // 6, removing 1 and 8 rank values
+                           BishopMobilityBonus.tunableSize + // 14, removing count 14
+                           RookMobilityBonus.tunableSize +   // 15
+                           QueenMobilityBonus.tunableSize;   // 27
 ;
 
 class Lynx
@@ -130,6 +126,11 @@ public:
         RookMobilityBonus.add(result);
         QueenMobilityBonus.add(result);
 
+        assert(PassedPawnBonus.tunableSize == 6);
+        assert(BishopMobilityBonus.tunableSize == 14);
+        assert(RookMobilityBonus.tunableSize == 15);
+        assert(QueenMobilityBonus.tunableSize == 28);
+
         std::cout << result.size() << " == " << numParameters << std::endl;
         assert(result.size() == numParameters);
 
@@ -154,9 +155,9 @@ public:
 
     static void scale_mobility(parameters_t &parameters)
     {
-        calculate_average(BishopMobilityBonus, parameters);  // B
-        calculate_average(BishopMobilityBonus, parameters);  // R
-        //calculate_average(4, BishopMobilityBonus.index, BishopMobilityBonus.size, parameters);  // Q
+        calculate_average(BishopMobilityBonus, parameters); // B
+        calculate_average(BishopMobilityBonus, parameters); // R
+        // calculate_average(4, BishopMobilityBonus.index, BishopMobilityBonus.size, parameters);  // Q
     }
 
     static int calculate_average(TunableArray mobilityArray, parameters_t &parameters)
