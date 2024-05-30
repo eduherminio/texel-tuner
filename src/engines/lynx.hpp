@@ -543,10 +543,13 @@ int KingAdditionalEvaluation(int squareIndex, chess::Color kingSide, const chess
         }
     }
 
-    auto ownPiecesAroundCount = chess::builtin::popcount(chess::attacks::king(static_cast<chess::Square>(squareIndex)).getBits() & __builtin_bswap64(board.us(kingSide).getBits()));
-    IncrementCoefficients(coefficients, KingShieldBonus.index, kingSide, ownPiecesAroundCount);
+    auto ownPawnsAroundCount = chess::builtin::popcount(
+        chess::attacks::king(static_cast<chess::Square>(squareIndex)).getBits() &
+        GetPieceSwappingEndianness(board, chess::PieceType::PAWN, kingSide));
 
-    return packedBonus + KingShieldBonus.packed * ownPiecesAroundCount;
+    IncrementCoefficients(coefficients, KingShieldBonus.index, kingSide, ownPawnsAroundCount);
+
+    return packedBonus + KingShieldBonus.packed * ownPawnsAroundCount;
 }
 
 int AdditionalPieceEvaluation(int pieceSquareIndex, int pieceIndex, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
