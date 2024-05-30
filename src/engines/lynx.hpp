@@ -22,32 +22,32 @@ TunableSingle KingShieldBonus(17, -5);
 TunableSingle BishopPairBonus(30, 80);
 
 TunableArray PassedPawnBonus(
-        std::vector<int>{0, 2, -11, -11, 20, 60, 99, 0},
-        std::vector<int>{0, 13, 19, 47, 80, 156, 224, 0},
-        8,
-        1,
-        1);
+    std::vector<int>{0, 2, -11, -11, 20, 60, 99, 0},
+    std::vector<int>{0, 13, 19, 47, 80, 156, 224, 0},
+    8,
+    1,
+    1);
 
 TunableArray KnightMobilityBonus(
-        std::vector<int>{216, 242, 250, 256, 260, 258, 257, 260, 271},
-        std::vector<int>{250, 246, 255, 255, 263, 271, 275, 276, 271},
-        9,
-        0,
-        0);
+    std::vector<int>{216, 242, 250, 256, 260, 258, 257, 260, 271},
+    std::vector<int>{250, 246, 255, 255, 263, 271, 275, 276, 271},
+    9,
+    0,
+    0);
 
 TunableArray BishopMobilityBonus(
-        std::vector<int>{0, 194, 205, 216, 230, 238, 253, 263, 272, 273, 279, 281, 283, 312, 0},
-        std::vector<int>{0, 160, 160, 200, 215, 229, 250, 260, 271, 278, 283, 280, 279, 273, 0},
-        15,
-        0,
-        1);
+    std::vector<int>{0, 194, 205, 216, 230, 238, 253, 263, 272, 273, 279, 281, 283, 312, 0},
+    std::vector<int>{0, 160, 160, 200, 215, 229, 250, 260, 271, 278, 283, 280, 279, 273, 0},
+    15,
+    0,
+    1);
 
 TunableArray RookMobilityBonus(
-        std::vector<int>{293, 301, 307, 310, 309, 316, 319, 324, 325, 329, 333, 336, 336, 349, 346},
-        std::vector<int>{363, 397, 399, 406, 416, 419, 425, 430, 442, 448, 450, 452, 456, 456, 453},
-        15,
-        0,
-        0);
+    std::vector<int>{293, 301, 307, 310, 309, 316, 319, 324, 325, 329, 333, 336, 336, 349, 346},
+    std::vector<int>{363, 397, 399, 406, 416, 419, 425, 430, 442, 448, 450, 452, 456, 456, 453},
+    15,
+    0,
+    0);
 
 const int base = 64 * 6 - 16; // PSQT but removing pawns from 1 and 8 rank
 static int numParameters = base +
@@ -483,10 +483,13 @@ int KingAdditionalEvaluation(int squareIndex, chess::Color kingSide, const chess
         }
     }
 
-    auto ownPiecesAroundCount = chess::builtin::popcount(chess::attacks::king(static_cast<chess::Square>(squareIndex)).getBits() & __builtin_bswap64(board.us(kingSide).getBits()));
-    IncrementCoefficients(coefficients, KingShieldBonus.index, kingSide, ownPiecesAroundCount);
+    auto ownPawnsAroundCount = chess::builtin::popcount(
+        chess::attacks::king(static_cast<chess::Square>(squareIndex)).getBits() &
+        GetPieceSwappingEndianness(board, chess::PieceType::PAWN, kingSide));
 
-    return packedBonus + KingShieldBonus.packed * ownPiecesAroundCount;
+    IncrementCoefficients(coefficients, KingShieldBonus.index, kingSide, ownPawnsAroundCount);
+
+    return packedBonus + KingShieldBonus.packed * ownPawnsAroundCount;
 }
 
 int AdditionalPieceEvaluation(int pieceSquareIndex, int pieceIndex, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
