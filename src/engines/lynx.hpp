@@ -477,7 +477,10 @@ int QueenAdditionalEvaluation(int squareIndex, const chess::Board &board, const 
 
 int KingAdditionalEvaluation(int squareIndex, chess::Color kingSide, const chess::Board &board, const int pieceCount[], coefficients_t &coefficients)
 {
-    auto mobilityCount = chess::attacks::queen(static_cast<chess::Square>(squareIndex), __builtin_bswap64(board.occ().getBits())).count();
+    auto mobilityCount = chess::builtin::popcount(
+        chess::attacks::queen(static_cast<chess::Square>(squareIndex), __builtin_bswap64(board.occ().getBits())).getBits() &
+        (~__builtin_bswap64(board.us(kingSide).getBits())));
+
     IncrementCoefficients(coefficients, VirtualKingMobilityBonus.index + mobilityCount, kingSide);
 
     int packedBonus = VirtualKingMobilityBonus.packed[mobilityCount];
