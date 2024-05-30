@@ -13,41 +13,48 @@ using u64 = uint64_t;
 
 // TunableSingle DoubledPawnPenalty_MG(6, -12);
 TunableSingle IsolatedPawnPenalty(-21, -18);
-TunableSingle OpenFileRookBonus(45, 7);
+TunableSingle OpenFileRookBonus(46, 6);
 TunableSingle SemiOpenFileRookBonus(15, 8);
-TunableSingle QueenMobilityBonus(4, 7);
-TunableSingle SemiOpenFileKingPenalty(-39, 21);
-TunableSingle OpenFileKingPenalty(-105, 8);
-TunableSingle KingShieldBonus(17, -5);
+TunableSingle QueenMobilityBonus(4, 8);
+TunableSingle SemiOpenFileKingPenalty(-34, 19);
+TunableSingle OpenFileKingPenalty(-102, 19);
+TunableSingle KingShieldBonus(14, -12);
 TunableSingle BishopPairBonus(30, 80);
 
 TunableArray PassedPawnBonus(
-    std::vector<int>{0, 2, -11, -11, 20, 60, 99, 0},
-    std::vector<int>{0, 13, 19, 47, 80, 156, 224, 0},
-    8,
-    1,
-    1);
+        std::vector<int>{0, 2, -11, -11, 19, 60, 101, 0},
+        std::vector<int>{0, 12, 19, 47, 81, 159, 226, 0},
+        8,
+        1,
+        1);
+
+TunableArray VirtualKingMobilityBonus(
+        std::vector<int>{0, 0, 0, 25, 54, 20, 18, 16, 12, 10, 8, 3, 3, -2, -11, -21, -30, -41, -48, -56, -47, -43, -42, -38, -45, -23, -63, -36},
+        std::vector<int>{0, 0, 0, 8, -10, 31, 19, 9, 11, 9, 13, 16, 10, 13, 15, 17, 13, 10, 7, -0, -10, -18, -30, -40, -52, -74, -83, -102},
+        28,
+        0,
+        0);
 
 TunableArray KnightMobilityBonus(
-    std::vector<int>{216, 242, 250, 256, 260, 258, 257, 260, 271},
-    std::vector<int>{250, 246, 255, 255, 263, 271, 275, 276, 271},
-    9,
-    0,
-    0);
+        std::vector<int>{216, 241, 250, 256, 260, 258, 258, 260, 272},
+        std::vector<int>{250, 247, 255, 255, 262, 271, 275, 276, 271},
+        9,
+        0,
+        0);
 
 TunableArray BishopMobilityBonus(
-    std::vector<int>{0, 194, 205, 216, 230, 238, 253, 263, 272, 273, 279, 281, 283, 312, 0},
-    std::vector<int>{0, 160, 160, 200, 215, 229, 250, 260, 271, 278, 283, 280, 279, 273, 0},
-    15,
-    0,
-    1);
+        std::vector<int>{0, 193, 205, 215, 230, 238, 253, 263, 272, 273, 279, 282, 285, 315, 0},
+        std::vector<int>{0, 164, 161, 200, 215, 230, 250, 260, 271, 277, 283, 279, 277, 270, 0},
+        15,
+        0,
+        1);
 
 TunableArray RookMobilityBonus(
-    std::vector<int>{293, 301, 307, 310, 309, 316, 319, 324, 325, 329, 333, 336, 336, 349, 346},
-    std::vector<int>{363, 397, 399, 406, 416, 419, 425, 430, 442, 448, 450, 452, 456, 456, 453},
-    15,
-    0,
-    0);
+        std::vector<int>{293, 302, 306, 310, 308, 315, 317, 322, 324, 327, 332, 334, 335, 348, 344},
+        std::vector<int>{364, 396, 399, 407, 417, 421, 427, 432, 444, 450, 452, 455, 459, 458, 457},
+        15,
+        0,
+        0);
 
 const int base = 64 * 6 - 16; // PSQT but removing pawns from 1 and 8 rank
 static int numParameters = base +
@@ -60,10 +67,11 @@ static int numParameters = base +
                            OpenFileKingPenalty.size +
                            BishopPairBonus.size +
                            KingShieldBonus.size +
-                           (PassedPawnBonus.size - PassedPawnBonus.start - PassedPawnBonus.end) +             // 6, removing 1 and 8 rank values
-                           (KnightMobilityBonus.size - KnightMobilityBonus.start - KnightMobilityBonus.end) + // 14, removing count 14
-                           (BishopMobilityBonus.size - BishopMobilityBonus.start - BishopMobilityBonus.end) + // 14, removing count 14
-                           (RookMobilityBonus.size - RookMobilityBonus.start - RookMobilityBonus.end)         // 15
+                           (PassedPawnBonus.size - PassedPawnBonus.start - PassedPawnBonus.end) +                            // 6, removing 1 and 8 rank values
+                           (VirtualKingMobilityBonus.size - VirtualKingMobilityBonus.start - VirtualKingMobilityBonus.end) + // 28
+                           (KnightMobilityBonus.size - KnightMobilityBonus.start - KnightMobilityBonus.end) +                // 14, removing count 14
+                           (BishopMobilityBonus.size - BishopMobilityBonus.start - BishopMobilityBonus.end) +                // 14, removing count 14
+                           (RookMobilityBonus.size - RookMobilityBonus.start - RookMobilityBonus.end)                        // 15
     ;
 
 class Lynx
@@ -124,6 +132,7 @@ public:
         BishopPairBonus.add(result);
 
         PassedPawnBonus.add(result);
+        VirtualKingMobilityBonus.add(result);
         KnightMobilityBonus.add(result);
         BishopMobilityBonus.add(result);
         RookMobilityBonus.add(result);
@@ -206,6 +215,10 @@ public:
         PassedPawnBonus.to_json(parameters, ss, name);
         ss << ",\n";
 
+        name = NAME(VirtualKingMobilityBonus);
+        VirtualKingMobilityBonus.to_json(parameters, ss, name);
+        ss << ",\n";
+
         name = NAME(KnightMobilityBonus);
         KnightMobilityBonus.to_json(parameters, ss, name);
         ss << ",\n";
@@ -256,6 +269,9 @@ public:
         name = NAME(PassedPawnBonus);
         PassedPawnBonus.to_csharp(parameters, ss, name);
 
+        name = NAME(VirtualKingMobilityBonus);
+        VirtualKingMobilityBonus.to_csharp(parameters, ss, name);
+
         name = NAME(KnightMobilityBonus);
         KnightMobilityBonus.to_csharp(parameters, ss, name);
 
@@ -303,6 +319,9 @@ public:
 
         name = NAME(PassedPawnBonus);
         PassedPawnBonus.to_cpp(parameters, ss, name);
+
+        name = NAME(VirtualKingMobilityBonus);
+        VirtualKingMobilityBonus.to_cpp(parameters, ss, name);
 
         name = NAME(KnightMobilityBonus);
         KnightMobilityBonus.to_cpp(parameters, ss, name);
@@ -458,7 +477,11 @@ int QueenAdditionalEvaluation(int squareIndex, const chess::Board &board, const 
 
 int KingAdditionalEvaluation(int squareIndex, chess::Color kingSide, const chess::Board &board, const int pieceCount[], coefficients_t &coefficients)
 {
-    int packedBonus = 0;
+    auto mobilityCount = chess::attacks::queen(static_cast<chess::Square>(squareIndex), __builtin_bswap64(board.occ().getBits())).count();
+    IncrementCoefficients(coefficients, VirtualKingMobilityBonus.index + mobilityCount, kingSide);
+
+    int packedBonus = VirtualKingMobilityBonus.packed[mobilityCount];
+
     auto kingSideOffset = kingSide == chess::Color::WHITE ? 0 : 6;
 
     if (pieceCount[9 - kingSideOffset] + pieceCount[10 - kingSideOffset] != 0) // areThereOppositeSideRooksOrQueens
