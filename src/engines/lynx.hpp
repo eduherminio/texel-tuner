@@ -22,39 +22,39 @@ TunableSingle KingShieldBonus(14, -12);
 TunableSingle BishopPairBonus(30, 80);
 
 TunableArray PassedPawnBonus(
-        std::vector<int>{0, 2, -11, -11, 19, 60, 101, 0},
-        std::vector<int>{0, 12, 19, 47, 81, 159, 226, 0},
-        8,
-        1,
-        1);
+    chess::PieceType::PAWN,
+    std::vector<int>{0, 2, -11, -11, 19, 60, 101, 0},
+    std::vector<int>{0, 12, 19, 47, 81, 159, 226, 0},
+    1,
+    1);
 
 TunableArray VirtualKingMobilityBonus(
-        std::vector<int>{0, 0, 0, 25, 54, 20, 18, 16, 12, 10, 8, 3, 3, -2, -11, -21, -30, -41, -48, -56, -47, -43, -42, -38, -45, -23, -63, -36},
-        std::vector<int>{0, 0, 0, 8, -10, 31, 19, 9, 11, 9, 13, 16, 10, 13, 15, 17, 13, 10, 7, -0, -10, -18, -30, -40, -52, -74, -83, -102},
-        28,
-        0,
-        0);
+    chess::PieceType::QUEEN,
+    std::vector<int>{0, 0, 0, 25, 54, 20, 18, 16, 12, 10, 8, 3, 3, -2, -11, -21, -30, -41, -48, -56, -47, -43, -42, -38, -45, -23, -63, -36},
+    std::vector<int>{0, 0, 0, 8, -10, 31, 19, 9, 11, 9, 13, 16, 10, 13, 15, 17, 13, 10, 7, -0, -10, -18, -30, -40, -52, -74, -83, -102},
+    0,
+    0);
 
 TunableArray KnightMobilityBonus(
-        std::vector<int>{216, 241, 250, 256, 260, 258, 258, 260, 272},
-        std::vector<int>{250, 247, 255, 255, 262, 271, 275, 276, 271},
-        9,
-        0,
-        0);
+    chess::PieceType::KNIGHT,
+    std::vector<int>{0, 25, 34, 40, 44, 42, 42, 44, 56},
+    std::vector<int>{0, -4, 5, 5, 12, 21, 24, 26, 21},
+    0,
+    0);
 
 TunableArray BishopMobilityBonus(
-        std::vector<int>{0, 193, 205, 215, 230, 238, 253, 263, 272, 273, 279, 282, 285, 315, 0},
-        std::vector<int>{0, 164, 161, 200, 215, 230, 250, 260, 271, 277, 283, 279, 277, 270, 0},
-        15,
-        0,
-        1);
+    chess::PieceType::BISHOP,
+    std::vector<int>{-193, 0, 11, 22, 36, 44, 60, 70, 79, 80, 86, 89, 91, 122, 0},
+    std::vector<int>{-164, 0, -3, 37, 52, 66, 86, 96, 108, 114, 119, 115, 113, 106, 0},
+    0,
+    1);
 
 TunableArray RookMobilityBonus(
-        std::vector<int>{293, 302, 306, 310, 308, 315, 317, 322, 324, 327, 332, 334, 335, 348, 344},
-        std::vector<int>{364, 396, 399, 407, 417, 421, 427, 432, 444, 450, 452, 455, 459, 458, 457},
-        15,
-        0,
-        0);
+    chess::PieceType::ROOK,
+    std::vector<int>{0, 8, 13, 16, 15, 21, 24, 29, 30, 34, 38, 41, 41, 55, 51},
+    std::vector<int>{0, 32, 35, 42, 53, 57, 63, 68, 80, 86, 88, 91, 95, 94, 93},
+    0,
+    0);
 
 const int base = 64 * 6 - 16; // PSQT but removing pawns from 1 and 8 rank
 static int numParameters = base +
@@ -67,11 +67,11 @@ static int numParameters = base +
                            OpenFileKingPenalty.size +
                            BishopPairBonus.size +
                            KingShieldBonus.size +
-                           (PassedPawnBonus.size - PassedPawnBonus.start - PassedPawnBonus.end) +                            // 6, removing 1 and 8 rank values
-                           (VirtualKingMobilityBonus.size - VirtualKingMobilityBonus.start - VirtualKingMobilityBonus.end) + // 28
-                           (KnightMobilityBonus.size - KnightMobilityBonus.start - KnightMobilityBonus.end) +                // 14, removing count 14
-                           (BishopMobilityBonus.size - BishopMobilityBonus.start - BishopMobilityBonus.end) +                // 14, removing count 14
-                           (RookMobilityBonus.size - RookMobilityBonus.start - RookMobilityBonus.end)                        // 15
+                           PassedPawnBonus.tunableSize +          // 6, removing 1 and 8 rank values
+                           VirtualKingMobilityBonus.tunableSize + // 28
+                           KnightMobilityBonus.tunableSize +      // 9
+                           BishopMobilityBonus.tunableSize +      // 14, removing end
+                           RookMobilityBonus.tunableSize          // 15
     ;
 
 class Lynx
@@ -137,6 +137,12 @@ public:
         BishopMobilityBonus.add(result);
         RookMobilityBonus.add(result);
 
+        assert(PassedPawnBonus.tunableSize == 6);
+        assert(VirtualKingMobilityBonus.tunableSize == 28);
+        assert(KnightMobilityBonus.tunableSize == 9);
+        assert(BishopMobilityBonus.tunableSize == 14);
+        assert(RookMobilityBonus.tunableSize == 15);
+
         std::cout << result.size() << " == " << numParameters << std::endl;
         assert(result.size() == numParameters);
 
@@ -154,23 +160,53 @@ public:
 
     static int NormalizeScore(int score);
 
-    static int round(double value)
+    static std::array<tune_t, 12> extract_mobility_offset(const parameters_t &parameters)
     {
-        return std::round(value);
+        std::array<tune_t, 12> mobilityPieceValues;
+        mobilityPieceValues.fill(0);
+
+        auto mobility = KnightMobilityBonus.extract_offset(parameters);
+        mobilityPieceValues[KnightMobilityBonus.pieceIndex] = mobility[0];
+        mobilityPieceValues[KnightMobilityBonus.pieceIndex + 6] = mobility[1];
+
+        mobility = BishopMobilityBonus.extract_offset(parameters);
+        mobilityPieceValues[BishopMobilityBonus.pieceIndex] = mobility[0];
+        mobilityPieceValues[BishopMobilityBonus.pieceIndex + 6] = mobility[1];
+
+        mobility = RookMobilityBonus.extract_offset(parameters);
+        mobilityPieceValues[RookMobilityBonus.pieceIndex] = mobility[0];
+        mobilityPieceValues[RookMobilityBonus.pieceIndex + 6] = mobility[1];
+
+        return mobilityPieceValues;
     }
 
     static void print_parameters(const parameters_t &parameters)
     {
-        print_psqts(parameters);
-        print_json_parameters(parameters);
+        auto mobilityPieceValues = extract_mobility_offset(parameters);
+
+        std::cout << "------------------------------------------------------------------------" << std::endl;
+        print_psqts_cpp(parameters, mobilityPieceValues);
+        std::cout << "------------------------------------------------------------------------" << std::endl;
+        print_cpp_parameters(parameters, mobilityPieceValues);
+        std::cout << "------------------------------------------------------------------------" << std::endl;
+
+        print_psqts_csharp(parameters, mobilityPieceValues);
+        std::cout << "------------------------------------------------------------------------" << std::endl;
+        print_json_parameters(parameters, mobilityPieceValues);
+        std::cout << "------------------------------------------------------------------------" << std::endl;
+        print_csharp_parameters(parameters, mobilityPieceValues);
+        std::cout << "------------------------------------------------------------------------" << std::endl;
     }
 
-    static void print_psqt(const parameters_t &parameters)
+    static void print_step_parameters(const parameters_t &parameters)
     {
-        print_psqts(parameters);
+        auto mobilityPieceValues = extract_mobility_offset(parameters);
+
+        print_psqts_cpp(parameters, mobilityPieceValues);
+        print_cpp_parameters(parameters, mobilityPieceValues);
     }
 
-    static void print_json_parameters(const parameters_t &parameters)
+    static void print_json_parameters(const parameters_t &parameters, const std::array<tune_t, 12> &mobilityPieceValues)
     {
         std::stringstream ss;
         std::string name;
@@ -220,21 +256,22 @@ public:
         ss << ",\n";
 
         name = NAME(KnightMobilityBonus);
-        KnightMobilityBonus.to_json(parameters, ss, name);
+        KnightMobilityBonus.to_json(parameters, ss, name, mobilityPieceValues);
         ss << ",\n";
 
         name = NAME(BishopMobilityBonus);
-        BishopMobilityBonus.to_json(parameters, ss, name);
+        BishopMobilityBonus.to_json(parameters, ss, name, mobilityPieceValues);
         ss << ",\n";
 
         name = NAME(RookMobilityBonus);
-        RookMobilityBonus.to_json(parameters, ss, name);
+        RookMobilityBonus.to_json(parameters, ss, name, mobilityPieceValues);
+        ss << ",\n";
 
         std::cout << ss.str() << std::endl
                   << std::endl;
     }
 
-    static void print_csharp_parameters(const parameters_t &parameters)
+    static void print_csharp_parameters(const parameters_t &parameters, const std::array<tune_t, 12> &mobilityPieceValues)
     {
         std::stringstream ss;
         std::string name;
@@ -273,18 +310,18 @@ public:
         VirtualKingMobilityBonus.to_csharp(parameters, ss, name);
 
         name = NAME(KnightMobilityBonus);
-        KnightMobilityBonus.to_csharp(parameters, ss, name);
+        KnightMobilityBonus.to_csharp(parameters, ss, name, mobilityPieceValues);
 
         name = NAME(BishopMobilityBonus);
-        BishopMobilityBonus.to_csharp(parameters, ss, name);
+        BishopMobilityBonus.to_csharp(parameters, ss, name, mobilityPieceValues);
 
         name = NAME(RookMobilityBonus);
-        RookMobilityBonus.to_csharp(parameters, ss, name);
+        RookMobilityBonus.to_csharp(parameters, ss, name, mobilityPieceValues);
 
         std::cout << ss.str() << std::endl;
     }
 
-    static void print_cpp_parameters(const parameters_t &parameters)
+    static void print_cpp_parameters(const parameters_t &parameters, const std::array<tune_t, 12> &mobilityPieceValues)
     {
         std::stringstream ss;
         std::string name;
@@ -324,13 +361,13 @@ public:
         VirtualKingMobilityBonus.to_cpp(parameters, ss, name);
 
         name = NAME(KnightMobilityBonus);
-        KnightMobilityBonus.to_cpp(parameters, ss, name);
+        KnightMobilityBonus.to_cpp(parameters, ss, name, mobilityPieceValues);
 
         name = NAME(BishopMobilityBonus);
-        BishopMobilityBonus.to_cpp(parameters, ss, name);
+        BishopMobilityBonus.to_cpp(parameters, ss, name, mobilityPieceValues);
 
         name = NAME(RookMobilityBonus);
-        RookMobilityBonus.to_cpp(parameters, ss, name);
+        RookMobilityBonus.to_cpp(parameters, ss, name, mobilityPieceValues);
 
         std::cout << ss.str() << std::endl;
     }
