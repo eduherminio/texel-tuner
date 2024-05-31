@@ -325,9 +325,9 @@ constexpr static std::array<int, 64> Rank = {
     1UL, 1UL, 1UL, 1UL, 1UL, 1UL, 1UL, 1UL,
     0UL, 0UL, 0UL, 0UL, 0UL, 0UL, 0UL, 0UL};
 
-static void print_psqts_csharp(const parameters_t &parameters, std::array<int, 12> &existingPieceValues)
+static void print_psqts_csharp(const parameters_t &parameters, std::array<tune_t, 12> &existingPieceValues)
 {
-    std::array<int, 12> psqtPieceValues;
+    std::array<tune_t, 12> psqtPieceValues;
 
     // Exctract and print pieces values
     for (int phase = 0; phase <= 1; ++phase)
@@ -340,7 +340,7 @@ static void print_psqts_csharp(const parameters_t &parameters, std::array<int, 1
 
         // Pawns
         {
-            int pawnSum = 0;
+            tune_t pawnSum = 0;
 
             for (int square = 0; square < 48; ++square)
             {
@@ -351,13 +351,13 @@ static void print_psqts_csharp(const parameters_t &parameters, std::array<int, 1
 
             auto pieceIndex = phase * 6;
             // pieceValues[pieceIndex] = PieceValue[phase * 5];
-            psqtPieceValues[pieceIndex] = static_cast<int>(std::round(average));
-            std::cout << "+" << psqtPieceValues[pieceIndex] + existingPieceValues[pieceIndex] << ", ";
+            psqtPieceValues[pieceIndex] = average;
+            std::cout << "+" << std::round(psqtPieceValues[pieceIndex] + existingPieceValues[pieceIndex]) << ", ";
         }
 
         for (int piece = 1; piece < 5; ++piece)
         {
-            int sum = 0;
+            tune_t sum = 0;
 
             for (int square = 0; square < 64; ++square)
             {
@@ -368,8 +368,8 @@ static void print_psqts_csharp(const parameters_t &parameters, std::array<int, 1
 
             auto pieceIndex = piece + phase * 6;
             // pieceValues[pieceIndex] = PieceValue[piece + phase * 5];
-            psqtPieceValues[pieceIndex] = static_cast<int>(std::round(average));
-            std::cout << "+" << psqtPieceValues[pieceIndex] + existingPieceValues[pieceIndex] << ", ";
+            psqtPieceValues[pieceIndex] = average;
+            std::cout << "+" << std::round(psqtPieceValues[pieceIndex] + existingPieceValues[pieceIndex]) << ", ";
         }
 
         // Kings
@@ -401,7 +401,7 @@ static void print_psqts_csharp(const parameters_t &parameters, std::array<int, 1
 
             for (int square = 0; square < 48; ++square)
             {
-                std::cout << std::setw(4) << round(parameters[square][phase] - psqtPieceValues[phase * 6]) << ",";
+                std::cout << std::setw(4) << std::round(parameters[square][phase] - psqtPieceValues[phase * 6]) << ",";
                 if (square % 8 == 7)
                     std::cout << "\n";
                 if (square != 47)
@@ -420,7 +420,7 @@ static void print_psqts_csharp(const parameters_t &parameters, std::array<int, 1
             std::cout << "\ninternal static readonly short[] " << (phase == 0 ? "MiddleGame" : "EndGame") << names[piece] << "Table =\n[\n\t";
             for (int square = 0; square < 64; ++square)
             {
-                std::cout << std::setw(4) << round(parameters[piece * 64 - 16 + square][phase] - psqtPieceValues[piece + phase * 6]) << ","; // We substract the 16 non-tuned pawn valeus
+                std::cout << std::setw(4) << std::round(parameters[piece * 64 - 16 + square][phase] - psqtPieceValues[piece + phase * 6]) << ","; // We substract the 16 non-tuned pawn valeus
                 if (square % 8 == 7)
                     std::cout << "\n";
                 if (square != 63)
@@ -432,7 +432,7 @@ static void print_psqts_csharp(const parameters_t &parameters, std::array<int, 1
     std::cout << std::endl;
 }
 
-static void print_psqts_cpp(const parameters_t &parameters, std::array<int, 12> &existingPieceValues)
+static void print_psqts_cpp(const parameters_t &parameters, std::array<tune_t, 12> &existingPieceValues)
 {
     std::array<int, 12> psqtPieceValues;
 
@@ -445,7 +445,7 @@ static void print_psqts_cpp(const parameters_t &parameters, std::array<int, 12> 
 
         // Pawns
         {
-            int pawnSum = 0;
+            tune_t pawnSum = 0;
 
             for (int square = 0; square < 48; ++square)
             {
@@ -456,13 +456,13 @@ static void print_psqts_cpp(const parameters_t &parameters, std::array<int, 12> 
 
             auto pieceIndex = phase * 6;
             // pieceValues[pieceIndex] = PieceValue[phase * 5];
-            psqtPieceValues[pieceIndex] = static_cast<int>(std::round(average));
+            psqtPieceValues[pieceIndex] = average;
             std::cout << "+" << psqtPieceValues[pieceIndex] + existingPieceValues[pieceIndex] << ", ";
         }
 
         for (int piece = 1; piece < 5; ++piece)
         {
-            int sum = 0;
+            tune_t sum = 0;
 
             for (int square = 0; square < 64; ++square)
             {
@@ -473,8 +473,8 @@ static void print_psqts_cpp(const parameters_t &parameters, std::array<int, 12> 
 
             auto pieceIndex = piece + phase * 6;
             // pieceValues[pieceIndex] = PieceValue[piece + phase * 5];
-            psqtPieceValues[pieceIndex] = static_cast<int>(std::round(average));
-            std::cout << "+" << psqtPieceValues[pieceIndex] + existingPieceValues[pieceIndex] << ", ";
+            psqtPieceValues[pieceIndex] = average;
+            std::cout << "+" << std::round(psqtPieceValues[pieceIndex] + existingPieceValues[pieceIndex]) << ", ";
         }
 
         // Kings
@@ -518,7 +518,7 @@ static void print_psqts_cpp(const parameters_t &parameters, std::array<int, 12> 
             std::cout << "\nconstexpr static std::array<int, 64> " << (phase == 0 ? "MiddleGame" : "EndGame") << names[piece] << "Table = {\n\t";
             for (int square = 0; square < 64; ++square)
             {
-                std::cout << std::setw(4) << round(parameters[piece * 64 - 16 + square][phase] - psqtPieceValues[piece + phase * 6]); // We substract the 16 non-tuned pawn valeus
+                std::cout << std::setw(4) << std::round(parameters[piece * 64 - 16 + square][phase] - psqtPieceValues[piece + phase * 6]); // We substract the 16 non-tuned pawn valeus
                 if (square != 63)
                 {
                     std::cout << ",";

@@ -49,7 +49,7 @@ public:
 
 class TunableArray
 {
-    static inline std::array<int, 12> emptyArray = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    static inline std::array<tune_t, 12> emptyArray = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     std::vector<i32> _mg;
     std::vector<i32> _eg;
 
@@ -102,7 +102,7 @@ public:
 
         for (int phase = 0; phase <= 1; ++phase)
         {
-            auto min = INT_MAX;
+            tune_t min = std::numeric_limits<double>::max();
 
             for (int i = 0; i < size; ++i)
             {
@@ -124,7 +124,7 @@ public:
         to_json(parameters, ss, name, emptyArray);
     }
 
-    void to_json(const parameters_t &parameters, std::stringstream &ss, const std::string &name, const std::array<int, 12> &mobilityPieceValues)
+    void to_json(const parameters_t &parameters, std::stringstream &ss, const std::string &name, const std::array<tune_t, 12> &mobilityPieceValues)
     {
         const std::string keyword = size == 8
                                         ? "Rank"
@@ -167,7 +167,7 @@ public:
         to_csharp(parameters, ss, name, emptyArray);
     }
 
-    void to_csharp(const parameters_t &parameters, std::stringstream &ss, const std::string &name, const std::array<int, 12> &mobilityPieceValues)
+    void to_csharp(const parameters_t &parameters, std::stringstream &ss, const std::string &name, const std::array<tune_t, 12> &mobilityPieceValues)
     {
         std::string variable_name;
 
@@ -224,7 +224,7 @@ public:
         to_cpp(parameters, ss, name, emptyArray);
     }
 
-    void to_cpp(const parameters_t &parameters, std::stringstream &ss, const std::string &name, const std::array<int, 12> &mobilityPieceValues)
+    void to_cpp(const parameters_t &parameters, std::stringstream &ss, const std::string &name, const std::array<tune_t, 12> &mobilityPieceValues)
     {
         std::string pieceType;
         switch (pieceIndex)

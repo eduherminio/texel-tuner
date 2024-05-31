@@ -165,9 +165,9 @@ public:
         return std::round(value);
     }
 
-    static std::array<int, 12> scale_mobility(const parameters_t &parameters)
+    static std::array<tune_t, 12> scale_mobility(const parameters_t &parameters)
     {
-        std::array<int, 12> mobilityPieceValues;
+        std::array<tune_t, 12> mobilityPieceValues;
         mobilityPieceValues.fill(0);
 
         auto mobility = KnightMobilityBonus.extract_offset(parameters);
@@ -211,7 +211,7 @@ public:
         print_cpp_parameters(parameters, mobilityPieceValues);
     }
 
-    static void print_json_parameters(const parameters_t &parameters, const std::array<int, 12> &mobilityPieceValues)
+    static void print_json_parameters(const parameters_t &parameters, const std::array<tune_t, 12> &mobilityPieceValues)
     {
         std::stringstream ss;
         std::string name;
@@ -276,7 +276,7 @@ public:
                   << std::endl;
     }
 
-    static void print_csharp_parameters(const parameters_t &parameters, const std::array<int, 12> &mobilityPieceValues)
+    static void print_csharp_parameters(const parameters_t &parameters, const std::array<tune_t, 12> &mobilityPieceValues)
     {
         std::stringstream ss;
         std::string name;
@@ -326,7 +326,7 @@ public:
         std::cout << ss.str() << std::endl;
     }
 
-    static void print_cpp_parameters(const parameters_t &parameters, const std::array<int, 12> &mobilityPieceValues)
+    static void print_cpp_parameters(const parameters_t &parameters, const std::array<tune_t, 12> &mobilityPieceValues)
     {
         std::stringstream ss;
         std::string name;
