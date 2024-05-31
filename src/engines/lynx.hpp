@@ -8,7 +8,6 @@
 #include <bit>
 #include <string>
 #include <cmath>
-#include <climits>
 
 using u64 = uint64_t;
 
@@ -153,55 +152,53 @@ public:
         return std::round(value);
     }
 
-    static void scale_mobility(parameters_t &parameters)
+    static std::array<int, 12> scale_mobility(const parameters_t &parameters)
     {
-        calculate_average(BishopMobilityBonus, parameters); // B
-        calculate_average(BishopMobilityBonus, parameters); // R
-        // calculate_average(4, BishopMobilityBonus.index, BishopMobilityBonus.size, parameters);  // Q
-    }
+        std::array<int, 12> mobilityPieceValues;
+        mobilityPieceValues.fill(0);
 
-    static int calculate_average(TunableArray mobilityArray, parameters_t &parameters)
-    {
-        for (int phase = 0; phase <= 1; ++phase)
-        {
-            auto min = INT_MAX;
+        auto mobility = BishopMobilityBonus.extract_offset(parameters);
+        mobilityPieceValues[BishopMobilityBonus.pieceIndex] = mobility[0];
+        mobilityPieceValues[BishopMobilityBonus.pieceIndex + 6] = mobility[1];
 
-            auto pieceIndex = mobilityArray.pieceIndex + phase * 6;
+        mobility = RookMobilityBonus.extract_offset(parameters);
+        mobilityPieceValues[RookMobilityBonus.pieceIndex] = mobility[0];
+        mobilityPieceValues[RookMobilityBonus.pieceIndex + 6] = mobility[1];
 
-            for (int i = mobilityArray.index; i < mobilityArray.size; ++i)
-            {
-                if (min == INT_MAX && parameters[mobilityArray.index + i][phase] != 0)
-                {
-                    min = parameters[mobilityArray.index + i][phase];
+        mobility = QueenMobilityBonus.extract_offset(parameters);
+        mobilityPieceValues[QueenMobilityBonus.pieceIndex] = mobility[0];
+        mobilityPieceValues[QueenMobilityBonus.pieceIndex + 6] = mobility[1];
 
-                    for (int j = i; j < mobilityArray.size; ++j)
-                    {
-                        parameters[mobilityArray.index + j][phase] -= min;
-                    }
-                }
-            }
-
-            for (int square = 0; square < 64; ++square)
-            {
-                auto param_index = pieceIndex * 64 - 16 + square;
-
-                parameters[param_index][phase] += min;
-            }
-        }
+        return mobilityPieceValues;
     }
 
     static void print_parameters(const parameters_t &parameters)
     {
-        print_psqts(parameters);
-        print_json_parameters(parameters);
-    }
+        auto mobilityPieceValues = scale_mobility(parameters);
 
-    static void print_psqt(const parameters_t &parameters)
+        std::cout << "------------------------------------------------------------------------" << std::endl;
+        print_psqts_cpp(parameters, mobilityPieceValues);
+        std::cout << "------------------------------------------------------------------------" << std::endl;
+        print_cpp_parameters(parameters, mobilityPieceValues);
+        std::cout << "------------------------------------------------------------------------" << std::endl;
+
+        print_psqts_csharp(parameters, mobilityPieceValues);
+        std::cout << "------------------------------------------------------------------------" << std::endl;
+        print_json_parameters(parameters, mobilityPieceValues);
+        std::cout << "------------------------------------------------------------------------" << std::endl;
+        print_csharp_parameters(parameters, mobilityPieceValues);
+        std::cout << "------------------------------------------------------------------------" << std::endl;
+    }
+ 
+    static void print_step_parameters(const parameters_t &parameters)
     {
-        print_psqts(parameters);
+        auto mobilityPieceValues = scale_mobility(parameters);
+
+        print_psqts_cpp(parameters, mobilityPieceValues);
+        print_cpp_parameters(parameters, mobilityPieceValues);
     }
 
-    static void print_json_parameters(const parameters_t &parameters)
+    static void print_json_parameters(const parameters_t &parameters, const std::array<int, 12> &mobilityPieceValues)
     {
         std::stringstream ss;
         std::string name;
@@ -243,21 +240,21 @@ public:
         ss << ",\n";
 
         name = NAME(BishopMobilityBonus);
-        BishopMobilityBonus.to_json(parameters, ss, name);
+        BishopMobilityBonus.to_json(parameters, ss, name, mobilityPieceValues);
         ss << ",\n";
 
         name = NAME(RookMobilityBonus);
-        RookMobilityBonus.to_json(parameters, ss, name);
+        RookMobilityBonus.to_json(parameters, ss, name, mobilityPieceValues);
         ss << ",\n";
 
         name = NAME(QueenMobilityBonus);
-        QueenMobilityBonus.to_json(parameters, ss, name);
+        QueenMobilityBonus.to_json(parameters, ss, name, mobilityPieceValues);
 
         std::cout << ss.str() << std::endl
                   << std::endl;
     }
 
-    static void print_csharp_parameters(const parameters_t &parameters)
+    static void print_csharp_parameters(const parameters_t &parameters, const std::array<int, 12> &mobilityPieceValues)
     {
         std::stringstream ss;
         std::string name;
@@ -290,18 +287,18 @@ public:
         PassedPawnBonus.to_csharp(parameters, ss, name);
 
         name = NAME(BishopMobilityBonus);
-        BishopMobilityBonus.to_csharp(parameters, ss, name);
+        BishopMobilityBonus.to_csharp(parameters, ss, name, mobilityPieceValues);
 
         name = NAME(RookMobilityBonus);
-        RookMobilityBonus.to_csharp(parameters, ss, name);
+        RookMobilityBonus.to_csharp(parameters, ss, name, mobilityPieceValues);
 
         name = NAME(QueenMobilityBonus);
-        QueenMobilityBonus.to_csharp(parameters, ss, name);
+        QueenMobilityBonus.to_csharp(parameters, ss, name, mobilityPieceValues);
 
         std::cout << ss.str() << std::endl;
     }
 
-    static void print_cpp_parameters(const parameters_t &parameters)
+    static void print_cpp_parameters(const parameters_t &parameters, const std::array<int, 12> &mobilityPieceValues)
     {
         std::stringstream ss;
         std::string name;
@@ -335,13 +332,13 @@ public:
         PassedPawnBonus.to_cpp(parameters, ss, name);
 
         name = NAME(BishopMobilityBonus);
-        BishopMobilityBonus.to_cpp(parameters, ss, name);
+        BishopMobilityBonus.to_cpp(parameters, ss, name, mobilityPieceValues);
 
         name = NAME(RookMobilityBonus);
-        RookMobilityBonus.to_cpp(parameters, ss, name);
+        RookMobilityBonus.to_cpp(parameters, ss, name, mobilityPieceValues);
 
         name = NAME(QueenMobilityBonus);
-        QueenMobilityBonus.to_cpp(parameters, ss, name);
+        QueenMobilityBonus.to_cpp(parameters, ss, name, mobilityPieceValues);
 
         std::cout << ss.str() << std::endl;
     }

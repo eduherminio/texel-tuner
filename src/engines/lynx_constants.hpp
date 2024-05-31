@@ -1,18 +1,22 @@
 #include <array>
 #include <cmath>
+#include <iomanip>
 
 using u64 = uint64_t;
 
-constexpr int32_t Pack(const int16_t mg, const int16_t eg) {
-    return ((int32_t) eg << 16) + (int32_t) mg;
+constexpr int32_t Pack(const int16_t mg, const int16_t eg)
+{
+    return ((int32_t)eg << 16) + (int32_t)mg;
 }
 
-constexpr int16_t UnpackMG(const int32_t packed) {
-    return (int16_t) packed;
+constexpr int16_t UnpackMG(const int32_t packed)
+{
+    return (int16_t)packed;
 }
 
-constexpr int16_t UnpackEG(const int32_t packed) {
-    return (int16_t) ((packed + 0x8000) >> 16);
+constexpr int16_t UnpackEG(const int32_t packed)
+{
+    return (int16_t)((packed + 0x8000) >> 16);
 }
 
 constexpr int PieceOffset(bool isWhite)
@@ -20,166 +24,135 @@ constexpr int PieceOffset(bool isWhite)
     return 6 - (6 * isWhite);
 }
 
-constexpr std::array<int, 12> PieceValue = {
-        +101, +392, +170, +208, +1114, // 0,
-        +129, +445, +207, +381, +1427, // 0
-};
-
-constexpr std::array<int, 10> PackedPieceValue = {
-    Pack(PieceValue[0], PieceValue[5]),
-    Pack(PieceValue[1], PieceValue[6]),
-    Pack(PieceValue[2], PieceValue[7]),
-    Pack(PieceValue[3], PieceValue[8]),
-    Pack(PieceValue[4], PieceValue[9])
-};
-
 std::array<int, 6> phaseValues = {0, 1, 1, 2, 4, 0};
 
 constexpr static int EvalNormalizationCoefficient = 142;
 
-constexpr static std::array<int, 64> MiddleGamePawnTable =
-    {
-        0,      0,      0,      0,      0,      0,      0,      0,
-        -24,    -23,    -15,    -7,     -2,     27,     28,     -12,
-        -25,    -26,    -6,     11,     18,     25,     22,     9,
-        -23,    -16,    3,      18,     25,     30,     0,      -2,
-        -23,    -12,    1,      19,     27,     27,     -1,     -4,
-        -22,    -19,    -4,     4,      14,     23,     15,     4,
-        -25,    -21,    -19,    -11,    -4,     22,     17,     -20,
-        0,      0,      0,      0,      0,      0,      0,      0,
-    };
+constexpr std::array<int, 12> PieceValue = {
+    +101, +393, +170, +209, +1114, // 0
+    +129, +446, +207, +382, +1428, // 0
+};
 
-constexpr static std::array<int, 64> EndGamePawnTable =
-    {
-        0,      0,      0,      0,      0,      0,      0,      0,
-        14,     9,      4,      -9,     7,      1,      -7,     -7,
-        12,     9,      -1,     -12,    -6,     -7,     -7,     -8,
-        26,     16,     -1,     -19,    -15,    -14,    3,      0,
-        24,     15,     -2,     -15,    -14,    -11,    1,      -2,
-        13,     6,      -3,     -10,    -3,     -5,     -6,     -8,
-        17,     9,      8,      -8,     15,     4,      -4,     -4,
-        0,      0,      0,      0,      0,      0,      0,      0,
-    };
+constexpr static std::array<int, 64> MiddleGamePawnTable = {
+    0, 0, 0, 0, 0, 0, 0, 0,
+    -24, -23, -15, -7, -2, 27, 28, -12,
+    -25, -26, -6, 11, 18, 25, 22, 9,
+    -23, -16, 3, 18, 25, 30, 0, -2,
+    -23, -12, 1, 19, 27, 27, -1, -4,
+    -22, -19, -4, 4, 14, 23, 15, 4,
+    -25, -21, -19, -11, -4, 22, 17, -20,
+    0, 0, 0, 0, 0, 0, 0, 0};
 
-constexpr static std::array<int, 64> MiddleGameKnightTable =
-    {
-        -146,   -23,    -52,    -33,    -13,    -22,    -10,    -98,
-        -45,    -27,    -3,     17,     18,     23,     -15,    -18,
-        -28,    2,      20,     57,     60,     40,     34,     -4,
-        -10,    25,     45,     60,     60,     60,     45,     18,
-        -6,     24,     46,     47,     58,     59,     45,     17,
-        -26,    4,      20,     49,     58,     33,     27,     -6,
-        -47,    -19,    0,      16,     16,     18,     -13,    -19,
-        -164,   -25,    -49,    -24,    -11,    -13,    -18,    -89,
-    };
+constexpr static std::array<int, 64> EndGamePawnTable = {
+    0, 0, 0, 0, 0, 0, 0, 0,
+    14, 9, 4, -9, 7, 1, -7, -7,
+    12, 9, -1, -12, -6, -7, -7, -8,
+    26, 16, -1, -19, -15, -14, 3, 0,
+    24, 15, -2, -15, -14, -11, 1, -2,
+    13, 6, -3, -10, -3, -5, -6, -8,
+    17, 9, 8, -8, 15, 4, -4, -4,
+    0, 0, 0, 0, 0, 0, 0, 0};
 
-constexpr static std::array<int, 64> EndGameKnightTable =
-    {
-        -66,    -49,    -11,    -10,    -9,     -26,    -43,    -87,
-        -19,    1,      13,     8,      8,      5,      -10,    -20,
-        -14,    14,     35,     35,     32,     17,     8,      -14,
-        6,      19,     47,     48,     51,     45,     23,     -8,
-        3,      24,     46,     51,     52,     41,     27,     -2,
-        -16,    17,     25,     40,     32,     18,     5,      -10,
-        -25,    3,      6,      11,     4,      0,      -11,    -24,
-        -71,    -46,    -6,     -12,    -10,    -25,    -42,    -87,
-    };
+constexpr static std::array<int, 64> MiddleGameKnightTable = {
+    -147, -24, -53, -34, -14, -23, -11, -99,
+    -46, -28, -4, 16, 17, 22, -16, -19,
+    -29, 1, 19, 56, 59, 39, 33, -5,
+    -11, 24, 44, 59, 59, 59, 44, 17,
+    -7, 23, 45, 46, 57, 58, 44, 16,
+    -27, 3, 19, 48, 57, 32, 26, -7,
+    -48, -20, -1, 15, 15, 17, -14, -20,
+    -165, -26, -50, -25, -12, -14, -19, -90};
 
-constexpr static std::array<int, 64> MiddleGameBishopTable =
-    {
-        -10,    16,     -5,     -18,    -11,    -16,    -20,    4,
-        7,      2,      5,      -19,    0,      -1,     26,     -13,
-        -7,     4,      -7,     5,      -7,     10,     4,      25,
-        -8,     -7,     -3,     24,     22,     -13,    1,      -2,
-        -15,    -3,     -11,    20,     9,      -9,     -7,     4,
-        4,      3,      4,      -2,     6,      3,      6,      21,
-        9,      13,     9,      -7,     -4,     1,      19,     -3,
-        14,     20,     8,      -32,    -13,    -21,    1,      -11,
-    };
+constexpr static std::array<int, 64> EndGameKnightTable = {
+    -67, -50, -12, -11, -10, -27, -44, -88,
+    -20, 0, 12, 7, 7, 4, -11, -21,
+    -15, 13, 34, 34, 31, 16, 7, -15,
+    5, 18, 46, 47, 50, 44, 22, -9,
+    2, 23, 45, 50, 51, 40, 26, -3,
+    -17, 16, 24, 39, 31, 17, 4, -11,
+    -26, 2, 5, 10, 3, -1, -12, -25,
+    -72, -47, -7, -13, -11, -26, -43, -88};
 
-constexpr static std::array<int, 64> EndGameBishopTable =
-    {
-        -2,     13,     -7,     3,      -1,     7,      -1,     -18,
-        -1,     -8,     -7,     0,      -2,     -13,    -4,     -11,
-        11,     9,      6,      -0,     9,      3,      2,      8,
-        11,     2,      6,      5,      4,      6,      1,      4,
-        6,      5,      4,      9,      1,      6,      2,      5,
-        8,      -0,     -0,     -3,     4,      -2,     0,      5,
-        -10,    -11,    -18,    -2,     -4,     -7,     -3,     -5,
-        0,      -12,    -6,     7,      7,      7,      -3,     -6,
-    };
+constexpr static std::array<int, 64> MiddleGameBishopTable = {
+    -10, 16, -5, -18, -11, -16, -20, 4,
+    7, 2, 5, -19, 0, -1, 26, -13,
+    -7, 4, -7, 5, -7, 10, 4, 25,
+    -8, -7, -3, 24, 22, -13, 1, -2,
+    -15, -3, -11, 20, 9, -9, -7, 4,
+    4, 3, 4, -2, 6, 3, 6, 21,
+    9, 13, 9, -7, -4, 1, 19, -3,
+    14, 20, 8, -32, -13, -21, 1, -11};
 
-constexpr static std::array<int, 64> MiddleGameRookTable =
-    {
-         -3,     -9,     -4,     3,      16,     5,      8,      -2,
-        -28,    -17,    -11,    -9,     4,      6,      20,     -5,
-        -31,    -20,    -21,    -10,    6,      11,     50,     26,
-        -26,    -23,    -19,    -8,     -5,     6,      36,     17,
-        -21,    -18,    -14,    -5,     -7,     6,      27,     12,
-        -23,    -16,    -17,    -1,     5,      21,     49,     26,
-        -26,    -26,    -7,     -2,     5,      4,      27,     1,
-        -1,     -3,     1,      13,     24,     10,     16,     10,
-    };
+constexpr static std::array<int, 64> EndGameBishopTable = {
+    -2, 13, -7, 3, -1, 7, -1, -18,
+    -1, -8, -7, 0, -2, -13, -4, -11,
+    11, 9, 6, 0, 9, 3, 2, 8,
+    11, 2, 6, 5, 4, 6, 1, 4,
+    6, 5, 4, 9, 1, 6, 2, 5,
+    8, 0, 0, -3, 4, -2, 0, 5,
+    -10, -11, -18, -2, -4, -7, -3, -5,
+    0, -12, -6, 7, 7, 7, -3, -6};
 
-constexpr static std::array<int, 64> EndGameRookTable =
-    {
-        6,      3,      7,      -2,     -10,    5,      -1,     -3,
-        15,     18,     18,     9,      -1,     -2,     -5,     1,
-        12,     10,     12,     5,      -6,     -9,     -21,    -18,
-        14,     11,     13,     6,      -0,     -0,     -13,    -14,
-        13,     10,     13,     4,      1,      -5,     -10,    -10,
-        12,     12,     4,      -3,     -9,     -13,    -21,    -12,
-        18,     21,     14,     4,      -3,     -2,     -6,     1,
-        1,      -2,     2,      -7,     -17,    -3,     -9,     -12,
-    };
+constexpr static std::array<int, 64> MiddleGameRookTable = {
+    -4, -10, -5, 2, 15, 4, 7, -3,
+    -29, -18, -12, -10, 3, 5, 19, -6,
+    -32, -21, -22, -11, 5, 10, 49, 25,
+    -27, -24, -20, -9, -6, 5, 35, 16,
+    -22, -19, -15, -6, -8, 5, 26, 11,
+    -24, -17, -18, -2, 4, 20, 48, 25,
+    -27, -27, -8, -3, 4, 3, 26, 0,
+    -2, -4, 0, 12, 23, 9, 15, 9};
 
-constexpr static std::array<int, 64> MiddleGameQueenTable =
-    {
-        -10,    -11,    -10,    5,      1,      -32,    7,      2,
-        -3,     -11,    6,      -2,     2,      5,      22,     49,
-        -10,    -6,     -9,     -10,    -11,    7,      33,     55,
-        -12,    -19,    -19,    -9,     -9,     -5,     11,     25,
-        -12,    -15,    -18,    -18,    -9,     -4,     9,      22,
-        -7,     -4,     -15,    -11,    -5,     4,      20,     36,
-        -16,    -20,    2,      9,      7,      2,      6,      36,
-        -8,     -11,    0,      7,      4,      -37,    -14,    25,
-    };
+constexpr static std::array<int, 64> EndGameRookTable = {
+    5, 2, 6, -3, -11, 4, -2, -4,
+    14, 17, 17, 8, -2, -3, -6, 0,
+    11, 9, 11, 4, -7, -10, -22, -19,
+    13, 10, 12, 5, -1, -1, -14, -15,
+    12, 9, 12, 3, 0, -6, -11, -11,
+    11, 11, 3, -4, -10, -14, -22, -13,
+    17, 20, 13, 3, -4, -3, -7, 0,
+    0, -3, 1, -8, -18, -4, -10, -13};
 
-constexpr static std::array<int, 64> EndGameQueenTable =
-    {
-        -26,    -18,    -6,     -8,     -15,    -10,    -33,    7,
-        -17,    -9,     -25,    -1,     -2,     -16,    -46,    -7,
-        -16,    -5,     6,      2,      22,     20,     -8,     2,
-        -10,    8,      9,      14,     27,     37,     44,     29,
-        -3,     4,      15,     25,     23,     33,     24,     39,
-        -16,    -11,    14,     11,     13,     19,     18,     14,
-        -11,    -3,     -20,    -18,    -12,    -11,    -31,    2,
-        -18,    -15,    -13,    -2,     -7,     16,     13,     -3,
-    };
+constexpr static std::array<int, 64> MiddleGameQueenTable = {
+    -10, -11, -10, 5, 1, -32, 7, 2,
+    -3, -11, 6, -2, 2, 5, 22, 49,
+    -10, -6, -9, -10, -11, 7, 33, 55,
+    -12, -19, -19, -9, -9, -5, 11, 25,
+    -12, -15, -18, -18, -9, -4, 9, 22,
+    -7, -4, -15, -11, -5, 4, 20, 36,
+    -16, -20, 2, 9, 7, 2, 6, 36,
+    -8, -11, 0, 7, 4, -37, -14, 25};
 
-constexpr static std::array<int, 64> MiddleGameKingTable =
-    {
-        28,     52,     27,     -77,    6,      -61,    41,     51,
-        -13,    -17,    -36,    -73,    -85,    -59,    -11,    18,
-        -84,    -70,    -109,   -110,   -118,   -126,   -85,    -97,
-        -107,   -97,    -117,   -153,   -150,   -139,   -138,   -162,
-        -77,    -70,    -105,   -133,   -149,   -124,   -142,   -159,
-        -83,    -47,    -100,   -107,   -96,    -106,   -76,    -88,
-        72,     -10,    -39,    -65,    -70,    -48,    3,      26,
-        41,     77,     39,     -62,    17,     -52,    55,     65,
-    };
+constexpr static std::array<int, 64> EndGameQueenTable = {
+    -27, -19, -7, -9, -16, -11, -34, 6,
+    -18, -10, -26, -2, -3, -17, -47, -8,
+    -17, -6, 5, 1, 21, 19, -9, 1,
+    -11, 7, 8, 13, 26, 36, 43, 28,
+    -4, 3, 14, 24, 22, 32, 23, 38,
+    -17, -12, 13, 10, 12, 18, 17, 13,
+    -12, -4, -21, -19, -13, -12, -32, 1,
+    -19, -16, -14, -3, -8, 15, 12, -4};
 
-constexpr static std::array<int, 64> EndGameKingTable =
-    {
-        -72,    -45,    -20,    7,      -31,    -1,     -38,    -90,
-        -12,    18,     27,     39,     45,     33,     12,     -23,
-        10,     43,     59,     69,     72,     64,     44,     22,
-        15,     54,     75,     90,     89,     81,     68,     39,
-        5,      45,     73,     86,     92,     79,     71,     39,
-        12,     39,     58,     68,     67,     59,     43,     18,
-        -38,    13,     29,     37,     40,     29,     8,      -25,
-        -83,    -57,    -27,    -0,     -27,    -5,     -42,    -95,
-    };
+constexpr static std::array<int, 64> MiddleGameKingTable = {
+    28, 52, 27, -77, 6, -61, 41, 51,
+    -13, -17, -36, -73, -85, -59, -11, 18,
+    -84, -70, -109, -110, -118, -126, -85, -97,
+    -107, -97, -117, -153, -150, -139, -138, -162,
+    -77, -70, -105, -133, -149, -124, -142, -159,
+    -83, -47, -100, -107, -96, -106, -76, -88,
+    72, -10, -39, -65, -70, -48, 3, 26,
+    41, 77, 39, -62, 17, -52, 55, 65};
+
+constexpr static std::array<int, 64> EndGameKingTable = {
+    -72, -45, -20, 7, -31, -1, -38, -90,
+    -12, 18, 27, 39, 45, 33, 12, -23,
+    10, 43, 59, 69, 72, 64, 44, 22,
+    15, 54, 75, 90, 89, 81, 68, 39,
+    5, 45, 73, 86, 92, 79, 71, 39,
+    12, 39, 58, 68, 67, 59, 43, 18,
+    -38, 13, 29, 37, 40, 29, 8, -25,
+    -83, -57, -27, 0, -27, -5, -42, -95};
+
 
 constexpr static std::array<std::array<int, 64>, 6> MiddleGamePositionalWhiteTables =
     {
@@ -197,6 +170,13 @@ constexpr static std::array<std::array<int, 64>, 6> EndGamePositionalWhiteTables
     EndGameRookTable,
     EndGameQueenTable,
     EndGameKingTable};
+
+constexpr std::array<int, 10> PackedPieceValue = {
+    Pack(PieceValue[0], PieceValue[5]),
+    Pack(PieceValue[1], PieceValue[6]),
+    Pack(PieceValue[2], PieceValue[7]),
+    Pack(PieceValue[3], PieceValue[8]),
+    Pack(PieceValue[4], PieceValue[9])};
 
 int MiddleGamePositionalTables(int piece, int square)
 {
@@ -336,21 +316,21 @@ constexpr static std::array<u64, 64> BlackPassedPawnMasks = {
     216172782113783808UL, 504403158265495552UL, 1008806316530991104UL, 2017612633061982208UL, 4035225266123964416UL, 8070450532247928832UL, 16140901064495857664UL, 13835058055282163712UL,
     0UL, 0UL, 0UL, 0UL, 0UL, 0UL, 0UL, 0UL};
 
-constexpr static std::array<int, 64> Rank =
-    {
-        7UL, 7UL, 7UL, 7UL, 7UL, 7UL, 7UL, 7UL,
-        6UL, 6UL, 6UL, 6UL, 6UL, 6UL, 6UL, 6UL,
-        5UL, 5UL, 5UL, 5UL, 5UL, 5UL, 5UL, 5UL,
-        4UL, 4UL, 4UL, 4UL, 4UL, 4UL, 4UL, 4UL,
-        3UL, 3UL, 3UL, 3UL, 3UL, 3UL, 3UL, 3UL,
-        2UL, 2UL, 2UL, 2UL, 2UL, 2UL, 2UL, 2UL,
-        1UL, 1UL, 1UL, 1UL, 1UL, 1UL, 1UL, 1UL,
-        0UL, 0UL, 0UL, 0UL, 0UL, 0UL, 0UL, 0UL};
+constexpr static std::array<int, 64> Rank = {
+    7UL, 7UL, 7UL, 7UL, 7UL, 7UL, 7UL, 7UL,
+    6UL, 6UL, 6UL, 6UL, 6UL, 6UL, 6UL, 6UL,
+    5UL, 5UL, 5UL, 5UL, 5UL, 5UL, 5UL, 5UL,
+    4UL, 4UL, 4UL, 4UL, 4UL, 4UL, 4UL, 4UL,
+    3UL, 3UL, 3UL, 3UL, 3UL, 3UL, 3UL, 3UL,
+    2UL, 2UL, 2UL, 2UL, 2UL, 2UL, 2UL, 2UL,
+    1UL, 1UL, 1UL, 1UL, 1UL, 1UL, 1UL, 1UL,
+    0UL, 0UL, 0UL, 0UL, 0UL, 0UL, 0UL, 0UL};
 
-static void print_psqts(const parameters_t &parameters)
+static void print_psqts_csharp(const parameters_t &parameters, std::array<int, 12> &existingPieceValues)
 {
-    int pieceValues[12];
+    std::array<int, 12> psqtPieceValues;
 
+    // Exctract and print pieces values
     for (int phase = 0; phase <= 1; ++phase)
     {
         if (phase == 0)
@@ -372,8 +352,8 @@ static void print_psqts(const parameters_t &parameters)
 
             auto pieceIndex = phase * 6;
             // pieceValues[pieceIndex] = PieceValue[phase * 5];
-            pieceValues[pieceIndex] = static_cast<int>(std::round(average));
-            std::cout << "+" << pieceValues[pieceIndex] << ", ";
+            psqtPieceValues[pieceIndex] = static_cast<int>(std::round(average));
+            std::cout << "+" << psqtPieceValues[pieceIndex] + existingPieceValues[pieceIndex] << ", ";
         }
 
         for (int piece = 1; piece < 5; ++piece)
@@ -389,23 +369,25 @@ static void print_psqts(const parameters_t &parameters)
 
             auto pieceIndex = piece + phase * 6;
             // pieceValues[pieceIndex] = PieceValue[piece + phase * 5];
-            pieceValues[pieceIndex] = static_cast<int>(std::round(average));
-            std::cout << "+" << pieceValues[pieceIndex] << ", ";
+            psqtPieceValues[pieceIndex] = static_cast<int>(std::round(average));
+            std::cout << "+" << psqtPieceValues[pieceIndex] + existingPieceValues[pieceIndex] << ", ";
         }
 
         // Kings
         auto kingIndex = 5 + phase * 6;
-        pieceValues[kingIndex] = 0;
-        std::cout << pieceValues[kingIndex] << ",\n\t";
+        psqtPieceValues[kingIndex] = 0;
+        std::cout << psqtPieceValues[kingIndex] + existingPieceValues[kingIndex] << ",\n\t";
 
         for (int piece = 0; piece < 5; ++piece)
         {
             auto pieceIndex = piece + phase * 6;
-            std::cout << "-" << pieceValues[pieceIndex] << ", ";
+            std::cout << "-" << psqtPieceValues[pieceIndex] + existingPieceValues[pieceIndex] << ", ";
         }
 
-        std::cout << pieceValues[kingIndex] << "\n];\n";
+        std::cout << psqtPieceValues[kingIndex] + existingPieceValues[kingIndex] << "\n];\n";
     }
+
+    // Print PSQTs
 
     std::string names[] = {"Pawn", "Knight", "Bishop", "Rook", "Queen", "King"};
 
@@ -416,16 +398,17 @@ static void print_psqts(const parameters_t &parameters)
         {
             std::cout << "\ninternal static readonly short[] " << (phase == 0 ? "MiddleGame" : "EndGame") << names[piece] << "Table =\n[\n\t";
 
-            std::cout << "0,\t0,\t0,\t0,\t0,\t0,\t0,\t0,\n\t";
+            std::cout << "   0,\t   0,\t   0,\t   0,\t   0,\t   0,\t   0,\t   0,\n\t";
+
             for (int square = 0; square < 48; ++square)
             {
-                std::cout << round(parameters[square][phase] - pieceValues[phase * 6]) << ", ";
+                std::cout << std::setw(4) << round(parameters[square][phase] - psqtPieceValues[phase * 6]) << ",";
                 if (square % 8 == 7)
                     std::cout << "\n";
-                if (square != 63)
+                if (square != 47)
                     std::cout << "\t";
             }
-            std::cout << "0,\t0,\t0,\t0,\t0,\t0,\t0,\t0," << std::endl;
+            std::cout << "\t   0,\t   0,\t   0,\t   0,\t   0,\t   0,\t   0,\t   0," << std::endl;
 
             std::cout << "];\n";
         }
@@ -438,13 +421,116 @@ static void print_psqts(const parameters_t &parameters)
             std::cout << "\ninternal static readonly short[] " << (phase == 0 ? "MiddleGame" : "EndGame") << names[piece] << "Table =\n[\n\t";
             for (int square = 0; square < 64; ++square)
             {
-                std::cout << round(parameters[piece * 64 - 16 + square][phase] - pieceValues[piece + phase * 6]) << ", "; // We substract the 16 non-tuned pawn valeus
+                std::cout << std::setw(4) << round(parameters[piece * 64 - 16 + square][phase] - psqtPieceValues[piece + phase * 6]) << ","; // We substract the 16 non-tuned pawn valeus
                 if (square % 8 == 7)
                     std::cout << "\n";
                 if (square != 63)
                     std::cout << "\t";
             }
             std::cout << "];\n";
+        }
+    }
+    std::cout << std::endl;
+}
+
+static void print_psqts_cpp(const parameters_t &parameters, std::array<int, 12> &existingPieceValues)
+{
+    std::array<int, 12> psqtPieceValues;
+
+    std::cout << "constexpr std::array<int, 12> PieceValue = {";
+
+    // Exctract and print pieces values
+    for (int phase = 0; phase <= 1; ++phase)
+    {
+        std::cout << "\n\t";
+
+        // Pawns
+        {
+            int pawnSum = 0;
+
+            for (int square = 0; square < 48; ++square)
+            {
+                pawnSum += parameters[square][phase];
+            }
+
+            auto average = (pawnSum / 48.0);
+
+            auto pieceIndex = phase * 6;
+            // pieceValues[pieceIndex] = PieceValue[phase * 5];
+            psqtPieceValues[pieceIndex] = static_cast<int>(std::round(average));
+            std::cout << "+" << psqtPieceValues[pieceIndex] + existingPieceValues[pieceIndex] << ", ";
+        }
+
+        for (int piece = 1; piece < 5; ++piece)
+        {
+            int sum = 0;
+
+            for (int square = 0; square < 64; ++square)
+            {
+                sum += parameters[piece * 64 - 16 + square][phase]; // Substract 16 since we're only tuning 48 pawn values
+            }
+
+            auto average = (sum / 64.0);
+
+            auto pieceIndex = piece + phase * 6;
+            // pieceValues[pieceIndex] = PieceValue[piece + phase * 5];
+            psqtPieceValues[pieceIndex] = static_cast<int>(std::round(average));
+            std::cout << "+" << psqtPieceValues[pieceIndex] + existingPieceValues[pieceIndex] << ", ";
+        }
+
+        // Kings
+        auto kingIndex = 5 + phase * 6;
+        psqtPieceValues[kingIndex] = 0;
+        std::cout << "// " << psqtPieceValues[kingIndex] + existingPieceValues[kingIndex];
+    }
+
+    std::cout << "\n};\n";
+
+    // Print PSQTs
+
+    std::string names[] = {"Pawn", "Knight", "Bishop", "Rook", "Queen", "King"};
+
+    // Pawns
+    {
+        const int piece = 0;
+        for (int phase = 0; phase <= 1; ++phase)
+        {
+            std::cout << "\nconstexpr static std::array<int, 64> " << (phase == 0 ? "MiddleGame" : "EndGame") << names[piece] << "Table = {\n\t";
+
+            std::cout << "   0,\t   0,\t   0,\t   0,\t   0,\t   0,\t   0,\t   0,\n\t";
+
+            for (int square = 0; square < 48; ++square)
+            {
+                std::cout << std::setw(4) << round(parameters[square][phase] - psqtPieceValues[phase * 6]) << ",";
+                if (square % 8 == 7)
+                    std::cout << "\n";
+                if (square != 47)
+                    std::cout << "\t";
+            }
+
+            std::cout << "\t   0,\t   0,\t   0,\t   0,\t   0,\t   0,\t   0,\t   0};" << std::endl;
+        }
+    }
+
+    for (int piece = 1; piece < 6; ++piece)
+    {
+        for (int phase = 0; phase <= 1; ++phase)
+        {
+            std::cout << "\nconstexpr static std::array<int, 64> " << (phase == 0 ? "MiddleGame" : "EndGame") << names[piece] << "Table = {\n\t";
+            for (int square = 0; square < 64; ++square)
+            {
+                std::cout << std::setw(4) << round(parameters[piece * 64 - 16 + square][phase] - psqtPieceValues[piece + phase * 6]); // We substract the 16 non-tuned pawn valeus
+                if (square != 63)
+                {
+                    std::cout << ",";
+
+                    if (square % 8 == 7)
+                        std::cout << "\n";
+
+                    std::cout << "\t";
+                }
+            }
+            std::cout << "};\n";
         }
     }
     std::cout << std::endl;

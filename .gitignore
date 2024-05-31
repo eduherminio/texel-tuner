@@ -4,6 +4,7 @@
 
 out
 build
+release
 enc_temp_folder
 CMakeFiles
 
