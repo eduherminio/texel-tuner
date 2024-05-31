@@ -500,7 +500,7 @@ static void print_psqts_cpp(const parameters_t &parameters, std::array<tune_t, 1
 
             for (int square = 0; square < 48; ++square)
             {
-                std::cout << std::setw(4) << round(parameters[square][phase] - psqtPieceValues[phase * 6]) << ",";
+                std::cout << std::setw(4) << std::round(parameters[square][phase] - psqtPieceValues[phase * 6]) << ",";
                 if (square % 8 == 7)
                     std::cout << "\n";
                 if (square != 47)

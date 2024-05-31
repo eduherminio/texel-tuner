@@ -160,11 +160,6 @@ public:
 
     static int NormalizeScore(int score);
 
-    static int round(double value)
-    {
-        return std::round(value);
-    }
-
     static std::array<tune_t, 12> scale_mobility(const parameters_t &parameters)
     {
         std::array<tune_t, 12> mobilityPieceValues;
