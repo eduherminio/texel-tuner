@@ -434,7 +434,7 @@ static void print_psqts_csharp(const parameters_t &parameters, std::array<tune_t
 
 static void print_psqts_cpp(const parameters_t &parameters, std::array<tune_t, 12> &existingPieceValues)
 {
-    std::array<int, 12> psqtPieceValues;
+    std::array<tune_t, 12> psqtPieceValues;
 
     std::cout << "constexpr std::array<int, 12> PieceValue = {";
 
