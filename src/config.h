@@ -25,5 +25,6 @@ constexpr tune_t learning_rate_drop_ratio = 1;
 constexpr bool print_data_entries = false;
 constexpr bool print_eval = false;
 constexpr int32_t data_load_print_interval = 10000;
+constexpr int32_t print_step_interval = 500;
 
 #endif // !CONFIG_H

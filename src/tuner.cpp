@@ -939,10 +939,14 @@ void Tuner::run(const std::vector<DataSource>& sources)
             print_elapsed(start);
             cout << "🔽 Epoch " << epoch << " (" << epochs_per_second << " eps), error " << error << ", LR " << learning_rate << "\n"
                  << endl;
-            TuneEval::print_step_parameters(parameters);
-            cout << "🔼 Epoch " << epoch << " (" << epochs_per_second << " eps), error " << error << ", LR " << learning_rate << "\n"
-                 << endl;
-            cout << "---------------------------------------------------------------------------------------" << endl;
+
+            if(epoch % print_step_interval == 0)
+            {
+                TuneEval::print_step_parameters(parameters);
+                cout << "🔼 Epoch " << epoch << " (" << epochs_per_second << " eps), error " << error << ", LR " << learning_rate << "\n"
+                     << endl;
+                cout << "---------------------------------------------------------------------------------------" << endl;
+            }
         }
 
         if(epoch % learning_rate_drop_interval == 0)
