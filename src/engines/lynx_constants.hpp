@@ -380,10 +380,10 @@ static void print_psqts_csharp(const parameters_t &parameters, std::array<tune_t
         for (int piece = 0; piece < 5; ++piece)
         {
             auto pieceIndex = piece + phase * 6;
-            std::cout << "-" << psqtPieceValues[pieceIndex] + existingPieceValues[pieceIndex] << ", ";
+            std::cout << "-" << std::round(psqtPieceValues[pieceIndex] + existingPieceValues[pieceIndex]) << ", ";
         }
 
-        std::cout << psqtPieceValues[kingIndex] + existingPieceValues[kingIndex] << "\n];\n";
+        std::cout << std::round(psqtPieceValues[kingIndex] + existingPieceValues[kingIndex]) << "\n];\n";
     }
 
     // Print PSQTs
@@ -457,7 +457,7 @@ static void print_psqts_cpp(const parameters_t &parameters, std::array<tune_t, 1
             auto pieceIndex = phase * 6;
             // pieceValues[pieceIndex] = PieceValue[phase * 5];
             psqtPieceValues[pieceIndex] = average;
-            std::cout << "+" << psqtPieceValues[pieceIndex] + existingPieceValues[pieceIndex] << ", ";
+            std::cout << "+" << std::round(psqtPieceValues[pieceIndex] + existingPieceValues[pieceIndex]) << ", ";
         }
 
         for (int piece = 1; piece < 5; ++piece)
