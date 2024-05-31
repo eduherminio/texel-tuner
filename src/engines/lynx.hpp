@@ -160,7 +160,7 @@ public:
 
     static int NormalizeScore(int score);
 
-    static std::array<tune_t, 12> scale_mobility(const parameters_t &parameters)
+    static std::array<tune_t, 12> extract_mobility_offset(const parameters_t &parameters)
     {
         std::array<tune_t, 12> mobilityPieceValues;
         mobilityPieceValues.fill(0);
@@ -182,7 +182,7 @@ public:
 
     static void print_parameters(const parameters_t &parameters)
     {
-        auto mobilityPieceValues = scale_mobility(parameters);
+        auto mobilityPieceValues = extract_mobility_offset(parameters);
 
         std::cout << "------------------------------------------------------------------------" << std::endl;
         print_psqts_cpp(parameters, mobilityPieceValues);
@@ -200,7 +200,7 @@ public:
 
     static void print_step_parameters(const parameters_t &parameters)
     {
-        auto mobilityPieceValues = scale_mobility(parameters);
+        auto mobilityPieceValues = extract_mobility_offset(parameters);
 
         print_psqts_cpp(parameters, mobilityPieceValues);
         print_cpp_parameters(parameters, mobilityPieceValues);

@@ -480,7 +480,7 @@ static void print_psqts_cpp(const parameters_t &parameters, std::array<tune_t, 1
         // Kings
         auto kingIndex = 5 + phase * 6;
         psqtPieceValues[kingIndex] = 0;
-        std::cout << "// " << psqtPieceValues[kingIndex] + existingPieceValues[kingIndex];
+        std::cout << "// " << std::round(psqtPieceValues[kingIndex] + existingPieceValues[kingIndex]);
     }
 
     std::cout << "\n};\n";
