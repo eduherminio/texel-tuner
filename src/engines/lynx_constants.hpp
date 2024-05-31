@@ -61,7 +61,7 @@ constexpr static std::array<int, 64> MiddleGameKnightTable = {
     -8, 22, 40, 40, 50, 52, 42, 16,
     -28, 2, 16, 44, 53, 31, 25, -4,
     -44, -19, -2, 14, 16, 14, -14, -11,
-    -155, -20, -49, -21, -8, -14, -13, -740};
+    -155, -20, -49, -21, -8, -14, -13, -74};
 
 constexpr static std::array<int, 64> EndGameKnightTable = {
     -56, -40, -6, -3, -4, -20, -32, -77,

@@ -62,10 +62,10 @@ static int numParameters = base +
                            IsolatedPawnPenalty.size +
                            OpenFileRookBonus.size +
                            SemiOpenFileRookBonus.size +
+                           QueenMobilityBonus.size +
                            SemiOpenFileKingPenalty.size +
                            OpenFileKingPenalty.size +
                            BishopPairBonus.size +
-                           QueenMobilityBonus.size +
                            KingShieldBonus.size +
                            PassedPawnBonus.tunableSize +          // 6, removing 1 and 8 rank values
                            VirtualKingMobilityBonus.tunableSize + // 28
@@ -125,9 +125,9 @@ public:
         IsolatedPawnPenalty.add(result);
         OpenFileRookBonus.add(result);
         SemiOpenFileRookBonus.add(result);
+        QueenMobilityBonus.add(result);
         SemiOpenFileKingPenalty.add(result);
         OpenFileKingPenalty.add(result);
-        QueenMobilityBonus.add(result);
         KingShieldBonus.add(result);
         BishopPairBonus.add(result);
 
@@ -232,6 +232,10 @@ public:
         SemiOpenFileRookBonus.to_json(parameters, ss, name);
         ss << ",\n";
 
+        name = NAME(QueenMobilityBonus);
+        QueenMobilityBonus.to_json(parameters, ss, name);
+        ss << ",\n";
+
         name = NAME(SemiOpenFileKingPenalty);
         SemiOpenFileKingPenalty.to_json(parameters, ss, name);
         ss << ",\n";
@@ -242,10 +246,6 @@ public:
 
         name = NAME(KingShieldBonus);
         KingShieldBonus.to_json(parameters, ss, name);
-        ss << ",\n";
-
-        name = NAME(QueenMobilityBonus);
-        QueenMobilityBonus.to_json(parameters, ss, name);
         ss << ",\n";
 
         name = NAME(BishopPairBonus);
@@ -293,14 +293,14 @@ public:
         name = NAME(SemiOpenFileRookBonus);
         SemiOpenFileRookBonus.to_csharp(parameters, ss, name);
 
+        name = NAME(QueenMobilityBonus);
+        QueenMobilityBonus.to_csharp(parameters, ss, name);
+
         name = NAME(SemiOpenFileKingPenalty);
         SemiOpenFileKingPenalty.to_csharp(parameters, ss, name);
 
         name = NAME(OpenFileKingPenalty);
         OpenFileKingPenalty.to_csharp(parameters, ss, name);
-
-        name = NAME(QueenMobilityBonus);
-        QueenMobilityBonus.to_csharp(parameters, ss, name);
 
         name = NAME(KingShieldBonus);
         KingShieldBonus.to_csharp(parameters, ss, name);
@@ -343,14 +343,14 @@ public:
         name = NAME(SemiOpenFileRookBonus);
         SemiOpenFileRookBonus.to_cpp(parameters, ss, name);
 
+        name = NAME(QueenMobilityBonus);
+        QueenMobilityBonus.to_cpp(parameters, ss, name);
+
         name = NAME(SemiOpenFileKingPenalty);
         SemiOpenFileKingPenalty.to_cpp(parameters, ss, name);
 
         name = NAME(OpenFileKingPenalty);
         OpenFileKingPenalty.to_cpp(parameters, ss, name);
-
-        name = NAME(QueenMobilityBonus);
-        QueenMobilityBonus.to_cpp(parameters, ss, name);
 
         name = NAME(KingShieldBonus);
         KingShieldBonus.to_cpp(parameters, ss, name);
