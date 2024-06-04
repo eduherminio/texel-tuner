@@ -181,11 +181,11 @@ public:
         }
         else if (size == 15)
         {
-            variable_name = "TaperedEvaluationTermByCount";
+            variable_name = "TaperedEvaluationTermByCount14";
         }
         else if (size == 28)
         {
-            variable_name = "TaperedEvaluationTermByLargeCount";
+            variable_name = "TaperedEvaluationTermByCount27";
         }
         else
         {
