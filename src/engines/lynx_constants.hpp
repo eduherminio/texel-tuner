@@ -26,7 +26,7 @@ constexpr int PieceOffset(bool isWhite)
 
 std::array<int, 6> phaseValues = {0, 1, 1, 2, 4, 0};
 
-constexpr static int EvalNormalizationCoefficient = 142;
+constexpr static int EvalNormalizationCoefficient = 90;
 
 constexpr std::array<int, 12> PieceValue = {
     +100, +356, +372, +507, +1119, // 0
