@@ -505,6 +505,7 @@ int RookAdditonalEvaluation(int squareIndex, int pieceIndex, const chess::Board 
         //     (oppositeKingRank == eightRank ||
         //      (oppositePawns & SeventhRankMasks[0]) != 0))
         {
+            IncrementCoefficients(coefficients, SeventhRankRookBonus.index, color);
             packedBonus += SeventhRankRookBonus.packed;
         }
     }
@@ -522,6 +523,7 @@ int RookAdditonalEvaluation(int squareIndex, int pieceIndex, const chess::Board 
         //     (oppositeKingRank == eightRank ||
         //      (oppositePawns & SeventhRankMasks[1]) != 0))
         {
+            IncrementCoefficients(coefficients, SeventhRankRookBonus.index, color);
             packedBonus += SeventhRankRookBonus.packed;
         }
     }
