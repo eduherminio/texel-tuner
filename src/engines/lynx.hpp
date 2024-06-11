@@ -500,9 +500,8 @@ int RookAdditonalEvaluation(int squareIndex, int pieceIndex, const chess::Board 
         auto oppositeKingRank = Rank[oppositeKingSquare];
         auto oppositePawns = GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK);
 
-        if (rookRank == seventhRank)
-        //  &&
-        //     (oppositeKingRank == eightRank ||
+        if (rookRank == seventhRank &&
+            (oppositeKingRank == eightRank)) // ||
         //      (oppositePawns & SeventhRankMasks[0]) != 0))
         {
             packedBonus += SeventhRankRookBonus.packed;
@@ -517,9 +516,8 @@ int RookAdditonalEvaluation(int squareIndex, int pieceIndex, const chess::Board 
         auto oppositeKingRank = Rank[oppositeKingSquare];
         auto oppositePawns = GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE);
 
-        if (rookRank == seventhRank)
-        //  &&
-        //     (oppositeKingRank == eightRank ||
+        if (rookRank == seventhRank &&
+            (oppositeKingRank == eightRank)) // ||
         //      (oppositePawns & SeventhRankMasks[1]) != 0))
         {
             packedBonus += SeventhRankRookBonus.packed;
