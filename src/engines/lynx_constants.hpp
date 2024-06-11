@@ -324,6 +324,8 @@ constexpr static std::array<int, 64> Rank = {
     1UL, 1UL, 1UL, 1UL, 1UL, 1UL, 1UL, 1UL,
     0UL, 0UL, 0UL, 0UL, 0UL, 0UL, 0UL, 0UL};
 
+constexpr static std::array<u64, 64> SeventhRankMasks = {65280UL, 71776119061217280UL};
+
 static void print_psqts_csharp(const parameters_t &parameters, std::array<tune_t, 12> &existingPieceValues)
 {
     std::array<tune_t, 12> psqtPieceValues;

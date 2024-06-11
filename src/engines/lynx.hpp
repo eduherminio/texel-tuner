@@ -15,6 +15,7 @@ using u64 = uint64_t;
 TunableSingle IsolatedPawnPenalty(-21, -18);
 TunableSingle OpenFileRookBonus(46, 6);
 TunableSingle SemiOpenFileRookBonus(15, 8);
+TunableSingle SeventhRankRookBonus(1, 1);
 TunableSingle QueenMobilityBonus(4, 8);
 TunableSingle SemiOpenFileKingPenalty(-30, 19);
 TunableSingle OpenFileKingPenalty(-96, 16);
@@ -416,10 +417,6 @@ int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, const chess::Board
             // std::cout << "Piece: " << GetPiece(board, chess::PieceType::PAWN, chess::Color::BLACK) << std::endl;
             // std::cout << "Mask: " << WhitePassedPawnMasks[squareIndex] << std::endl;
             auto rank = Rank[squareIndex];
-            if (pieceIndex == 6)
-            {
-                rank = 7 - rank;
-            }
             packedBonus += PassedPawnBonus.packed[rank];
             IncrementCoefficients(coefficients, PassedPawnBonus.index + rank - 1, color); // There's no coefficient for rank 0
             // std::cout << "White pawn on " << squareIndex << " is passed, bonus " << PassedPawnBonus[rank] << std::endl;
@@ -479,6 +476,41 @@ int RookAdditonalEvaluation(int squareIndex, int pieceIndex, const chess::Board 
                 IncrementCoefficients(coefficients, SemiOpenFileRookBonus.index, color);
                 packedBonus += SemiOpenFileRookBonus.packed;
             }
+        }
+    }
+
+    if (color == chess::Color::WHITE)
+    {
+        auto rookRank = Rank[squareIndex];
+        const int seventhRank = 6;
+        const int eightRank = 7;
+        auto oppositeKingSquare = chess::builtin::lsb(GetPieceSwappingEndianness(board, chess::PieceType::KING, chess::Color::BLACK)).index();
+        auto oppositeKingRank = Rank[oppositeKingSquare];
+        auto oppositePawns = GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK);
+
+        if (rookRank == seventhRank)
+        //  &&
+        //     (oppositeKingRank == eightRank ||
+        //      (oppositePawns & SeventhRankMasks[0]) != 0))
+        {
+            packedBonus += SeventhRankRookBonus.packed;
+        }
+    }
+    else
+    {
+        auto rookRank = Rank[squareIndex];
+        const int seventhRank = 1;
+        const int eightRank = 0;
+        auto oppositeKingSquare = chess::builtin::lsb(GetPieceSwappingEndianness(board, chess::PieceType::KING, chess::Color::WHITE)).index();
+        auto oppositeKingRank = Rank[oppositeKingSquare];
+        auto oppositePawns = GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE);
+
+        if (rookRank == seventhRank)
+        //  &&
+        //     (oppositeKingRank == eightRank ||
+        //      (oppositePawns & SeventhRankMasks[1]) != 0))
+        {
+            packedBonus += SeventhRankRookBonus.packed;
         }
     }
 
