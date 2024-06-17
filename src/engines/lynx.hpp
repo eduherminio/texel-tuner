@@ -498,31 +498,28 @@ int KnightAdditionalEvaluation(int squareIndex, int pieceIndex, const u64 oppone
     return KnightMobilityBonus.packed[mobilityCount];
 }
 
-int BishopAdditionalEvaluation(int squareIndex, int pieceIndex, const u64 opponentPawnAttacks, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
+int BishopAdditionalEvaluation(int squareIndex, int pieceIndex, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
 {
-    auto mobilityCount = chess::builtin::popcount(
-        chess::attacks::bishop(static_cast<chess::Square>(squareIndex), __builtin_bswap64(board.occ().getBits())).getBits() &
-        (~opponentPawnAttacks));
+    auto mobilityCount =
+        chess::attacks::bishop(static_cast<chess::Square>(squareIndex), __builtin_bswap64(board.occ().getBits())).count();
     IncrementCoefficients(coefficients, BishopMobilityBonus.index + mobilityCount, color);
 
     return BishopMobilityBonus.packed[mobilityCount];
 }
 
-int QueenAdditionalEvaluation(int squareIndex, const u64 opponentPawnAttacks, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
+int QueenAdditionalEvaluation(int squareIndex, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
 {
-    auto mobilityCount = chess::builtin::popcount(
-        chess::attacks::queen(static_cast<chess::Square>(squareIndex), __builtin_bswap64(board.occ().getBits())).getBits() &
-        (~opponentPawnAttacks));
+    auto mobilityCount =
+        chess::attacks::queen(static_cast<chess::Square>(squareIndex), __builtin_bswap64(board.occ().getBits())).count();
     IncrementCoefficients(coefficients, QueenMobilityBonus.index, color, mobilityCount);
 
     return QueenMobilityBonus.packed * mobilityCount;
 }
 
-int KingAdditionalEvaluation(int squareIndex, chess::Color kingSide, const u64 opponentPawnAttacks, const chess::Board &board, const int pieceCount[], coefficients_t &coefficients)
+int KingAdditionalEvaluation(int squareIndex, chess::Color kingSide, const chess::Board &board, const int pieceCount[], coefficients_t &coefficients)
 {
-    auto mobilityCount = chess::builtin::popcount(
-        chess::attacks::queen(static_cast<chess::Square>(squareIndex), __builtin_bswap64(board.occ().getBits())).getBits() &
-        (~opponentPawnAttacks));
+    auto mobilityCount =
+        chess::attacks::queen(static_cast<chess::Square>(squareIndex), __builtin_bswap64(board.occ().getBits())).count();
     IncrementCoefficients(coefficients, VirtualKingMobilityBonus.index + mobilityCount, kingSide);
 
     int packedBonus = VirtualKingMobilityBonus.packed[mobilityCount];
@@ -578,11 +575,11 @@ int AdditionalPieceEvaluation(int pieceSquareIndex, int pieceIndex, const u64 op
 
     case 2:
     case 8:
-        return BishopAdditionalEvaluation(pieceSquareIndex, pieceIndex, opponentPawnAttacks, board, color, coefficients);
+        return BishopAdditionalEvaluation(pieceSquareIndex, pieceIndex, board, color, coefficients);
 
     case 4:
     case 10:
-        return QueenAdditionalEvaluation(pieceSquareIndex, opponentPawnAttacks, board, color, coefficients);
+        return QueenAdditionalEvaluation(pieceSquareIndex, board, color, coefficients);
 
     default:
         return 0;
@@ -677,8 +674,8 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
     auto blackKing = chess::builtin::lsb(GetPieceSwappingEndianness(board, chess::PieceType::KING, chess::Color::BLACK)).index();
     packedScore += PackedPositionalTables(5, whiteKing) +
                    PackedPositionalTables(11, blackKing) +
-                   KingAdditionalEvaluation(whiteKing, chess::Color::WHITE, blackPawnAttacks, board, pieceCount, coefficients) -
-                   KingAdditionalEvaluation(blackKing, chess::Color::BLACK, whitePawnAttacks, board, pieceCount, coefficients);
+                   KingAdditionalEvaluation(whiteKing, chess::Color::WHITE, board, pieceCount, coefficients) -
+                   KingAdditionalEvaluation(blackKing, chess::Color::BLACK, board, pieceCount, coefficients);
 
     IncrementCoefficients(coefficients, 64 * 5 + whiteKing - 16, chess::Color::WHITE);
     IncrementCoefficients(coefficients, 64 * 5 + blackKing - 16, chess::Color::BLACK);
