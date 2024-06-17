@@ -95,7 +95,7 @@ public:
         }
     }
 
-    /// Extracts first not-zerp value
+    /// Extracts first not-zero value
     pair_t extract_offset(const parameters_t &parameters)
     {
         pair_t packed;

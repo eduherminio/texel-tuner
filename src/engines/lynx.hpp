@@ -13,46 +13,46 @@ using u64 = uint64_t;
 
 // TunableSingle DoubledPawnPenalty_MG(6, -12);
 TunableSingle IsolatedPawnPenalty(-21, -18);
-TunableSingle OpenFileRookBonus(46, 6);
-TunableSingle SemiOpenFileRookBonus(15, 8);
-TunableSingle QueenMobilityBonus(4, 8);
-TunableSingle SemiOpenFileKingPenalty(-30, 19);
-TunableSingle OpenFileKingPenalty(-96, 16);
-TunableSingle KingShieldBonus(21, -11);
-TunableSingle BishopPairBonus(30, 80);
+TunableSingle OpenFileRookBonus(46, 8);
+TunableSingle SemiOpenFileRookBonus(16, 11);
+TunableSingle QueenMobilityBonus(6, 4);
+TunableSingle SemiOpenFileKingPenalty(-31, 18);
+TunableSingle OpenFileKingPenalty(-100, 17);
+TunableSingle KingShieldBonus(23, -10);
+TunableSingle BishopPairBonus(31, 82);
 
 TunableArray PassedPawnBonus(
     chess::PieceType::PAWN,
-    std::vector<int>{0, 3, -11, -11, 20, 61, 105, 0},
-    std::vector<int>{0, 11, 19, 47, 81, 158, 224, 0},
+    std::vector<int>{0, -1, -12, -11, 18, 55, 91, 0},
+    std::vector<int>{0, 12, 19, 48, 82, 159, 225, 0},
     1,
     1);
 
 TunableArray VirtualKingMobilityBonus(
     chess::PieceType::QUEEN,
-    std::vector<int>{0, 0, 0, 37, 51, 24, 21, 19, 15, 11, 10, 2, 1, -5, -15, -25, -35, -46, -52, -60, -51, -47, -45, -40, -46, -23, -62, -37},
-    std::vector<int>{0, 0, 0, -8, -12, 21, 12, 2, 5, 4, 9, 14, 9, 13, 16, 19, 16, 13, 11, 4, -4, -13, -23, -33, -43, -64, -72, -90},
+    std::vector<int>{0, -385, -75, 41, 46, 33, 31, 26, 21, 18, 20, 14, 12, 4, -5, -15, -30, -37, -33, -31, -26, -26, -13, -33, -19, -5, -17, -44},
+    std::vector<int>{0, -193, 60, -6, 2, 22, 13, 7, 12, 10, 13, 18, 15, 18, 19, 18, 17, 13, 6, -2, -10, -23, -32, -44, -55, -74, -95, -96},
     0,
     0);
 
 TunableArray KnightMobilityBonus(
     chess::PieceType::KNIGHT,
-    std::vector<int>{0, 25, 34, 40, 44, 42, 42, 45, 57},
-    std::vector<int>{0, -3, 6, 5, 12, 21, 25, 26, 20},
+    std::vector<int>{0, 23, 36, 45, 53, 60, 70, 81, 100},
+    std::vector<int>{0, 50, 81, 94, 105, 118, 116, 110, 93},
     0,
     0);
 
 TunableArray BishopMobilityBonus(
     chess::PieceType::BISHOP,
-    std::vector<int>{-197, 0, 11, 21, 35, 43, 58, 68, 77, 78, 84, 87, 89, 121, 0},
-    std::vector<int>{-157, 0, -0, 40, 55, 70, 91, 101, 112, 119, 124, 120, 118, 111, 0},
+    std::vector<int>{0, 18, 66, 82, 96, 109, 118, 126, 131, 137, 143, 161, 173, 176, 0},
+    std::vector<int>{0, 140, 195, 225, 238, 247, 259, 265, 269, 272, 271, 264, 259, 257, 0},
     0,
     1);
 
 TunableArray RookMobilityBonus(
     chess::PieceType::ROOK,
-    std::vector<int>{0, 7, 12, 15, 14, 20, 23, 28, 29, 33, 38, 40, 40, 55, 50},
-    std::vector<int>{0, 32, 34, 41, 52, 56, 62, 67, 79, 85, 87, 90, 94, 93, 92},
+    std::vector<int>{0, 9, 14, 18, 17, 25, 28, 33, 40, 43, 49, 51, 61, 67, 69},
+    std::vector<int>{0, 30, 35, 44, 55, 60, 70, 72, 79, 85, 86, 89, 89, 85, 86},
     0,
     0);
 
