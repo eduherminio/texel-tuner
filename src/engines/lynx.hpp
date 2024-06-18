@@ -22,41 +22,42 @@ TunableSingle KingShieldBonus(22, -11);
 TunableSingle BishopPairBonus(30, 81);
 
 TunableSingle PieceProtectedByPawnBonus(6, 11);
+TunableSingle PieceAttackedByPawnPenalty(-1, -1);
 
 TunableArray PassedPawnBonus(
-        chess::PieceType::PAWN,
-        std::vector<int>{0, 2, -11, -12, 20, 66, 108, 0},
-        std::vector<int>{0, 11, 20, 47, 81, 161, 224, 0},
-        1,
-        1);
+    chess::PieceType::PAWN,
+    std::vector<int>{0, 2, -11, -12, 20, 66, 108, 0},
+    std::vector<int>{0, 11, 20, 47, 81, 161, 224, 0},
+    1,
+    1);
 
 TunableArray VirtualKingMobilityBonus(
-        chess::PieceType::QUEEN,
-        std::vector<int>{0, 0, 0, 37, 51, 24, 22, 19, 15, 11, 9, 2, 1, -5, -15, -26, -35, -46, -52, -59, -51, -46, -44, -39, -45, -22, -62, -37},
-        std::vector<int>{0, 0, 0, -4, -8, 24, 13, 3, 6, 5, 9, 13, 9, 12, 15, 18, 15, 12, 10, 3, -5, -13, -23, -34, -44, -65, -72, -90},
-        0,
-        0);
+    chess::PieceType::QUEEN,
+    std::vector<int>{0, 0, 0, 37, 51, 24, 22, 19, 15, 11, 9, 2, 1, -5, -15, -26, -35, -46, -52, -59, -51, -46, -44, -39, -45, -22, -62, -37},
+    std::vector<int>{0, 0, 0, -4, -8, 24, 13, 3, 6, 5, 9, 13, 9, 12, 15, 18, 15, 12, 10, 3, -5, -13, -23, -34, -44, -65, -72, -90},
+    0,
+    0);
 
 TunableArray KnightMobilityBonus(
-        chess::PieceType::KNIGHT,
-        std::vector<int>{0, 25, 34, 40, 44, 42, 42, 45, 56},
-        std::vector<int>{0, -4, 5, 5, 10, 19, 22, 23, 16},
-        0,
-        0);
+    chess::PieceType::KNIGHT,
+    std::vector<int>{0, 25, 34, 40, 44, 42, 42, 45, 56},
+    std::vector<int>{0, -4, 5, 5, 10, 19, 22, 23, 16},
+    0,
+    0);
 
 TunableArray BishopMobilityBonus(
-        chess::PieceType::BISHOP,
-        std::vector<int>{-198, 0, 11, 20, 35, 41, 57, 66, 75, 76, 82, 86, 89, 121, 0},
-        std::vector<int>{-153, 0, 3, 42, 58, 74, 94, 104, 116, 122, 127, 127, 127, 119, 0},
-        0,
-        1);
+    chess::PieceType::BISHOP,
+    std::vector<int>{-198, 0, 11, 20, 35, 41, 57, 66, 75, 76, 82, 86, 89, 121, 0},
+    std::vector<int>{-153, 0, 3, 42, 58, 74, 94, 104, 116, 122, 127, 127, 127, 119, 0},
+    0,
+    1);
 
 TunableArray RookMobilityBonus(
-        chess::PieceType::ROOK,
-        std::vector<int>{0, 7, 12, 16, 14, 21, 24, 29, 30, 34, 38, 41, 41, 55, 51},
-        std::vector<int>{0, 31, 33, 41, 52, 55, 61, 66, 78, 84, 86, 88, 92, 92, 90},
-        0,
-        0);
+    chess::PieceType::ROOK,
+    std::vector<int>{0, 7, 12, 16, 14, 21, 24, 29, 30, 34, 38, 41, 41, 55, 51},
+    std::vector<int>{0, 31, 33, 41, 52, 55, 61, 66, 78, 84, 86, 88, 92, 92, 90},
+    0,
+    0);
 
 const int base = 64 * 6 - 16; // PSQT but removing pawns from 1 and 8 rank
 static int numParameters = base +
@@ -69,6 +70,7 @@ static int numParameters = base +
                            OpenFileKingPenalty.size +
                            BishopPairBonus.size +
                            PieceProtectedByPawnBonus.size +
+                           PieceAttackedByPawnPenalty.size +
                            KingShieldBonus.size +
                            PassedPawnBonus.tunableSize +          // 6, removing 1 and 8 rank values
                            VirtualKingMobilityBonus.tunableSize + // 28
@@ -134,6 +136,7 @@ public:
         KingShieldBonus.add(result);
         BishopPairBonus.add(result);
         PieceProtectedByPawnBonus.add(result);
+        PieceAttackedByPawnPenalty.add(result);
 
         PassedPawnBonus.add(result);
         VirtualKingMobilityBonus.add(result);
@@ -255,6 +258,10 @@ public:
         PieceProtectedByPawnBonus.to_json(parameters, ss, name);
         ss << ",\n";
 
+        name = NAME(PieceAttackedByPawnPenalty);
+        PieceAttackedByPawnPenalty.to_json(parameters, ss, name);
+        ss << ",\n";
+
         name = NAME(PassedPawnBonus);
         PassedPawnBonus.to_json(parameters, ss, name);
         ss << ",\n";
@@ -314,6 +321,9 @@ public:
         name = NAME(PieceProtectedByPawnBonus);
         PieceProtectedByPawnBonus.to_csharp(parameters, ss, name);
 
+        name = NAME(PieceAttackedByPawnPenalty);
+        PieceAttackedByPawnPenalty.to_csharp(parameters, ss, name);
+
         name = NAME(PassedPawnBonus);
         PassedPawnBonus.to_csharp(parameters, ss, name);
 
@@ -367,6 +377,9 @@ public:
 
         name = NAME(PieceProtectedByPawnBonus);
         PieceProtectedByPawnBonus.to_cpp(parameters, ss, name);
+
+        name = NAME(PieceAttackedByPawnPenalty);
+        PieceAttackedByPawnPenalty.to_cpp(parameters, ss, name);
         ss << "\n";
 
         name = NAME(PassedPawnBonus);
@@ -668,13 +681,21 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
         }
     }
 
-    auto protectedPiecesByWhitePawns = chess::builtin::popcount(whitePawnAttacks & __builtin_bswap64(board.us(chess::Color::WHITE).getBits()) &(~GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE)));
-    auto protectedPiecesByBlackPawns = chess::builtin::popcount(blackPawnAttacks & __builtin_bswap64(board.us(chess::Color::BLACK).getBits()) &(~GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK)));
+    // auto protectedPiecesByWhitePawns = chess::builtin::popcount(whitePawnAttacks & __builtin_bswap64(board.us(chess::Color::WHITE).getBits()) &(~GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE)));
+    // auto protectedPiecesByBlackPawns = chess::builtin::popcount(blackPawnAttacks & __builtin_bswap64(board.us(chess::Color::BLACK).getBits()) &(~GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK)));
 
-    IncrementCoefficients(coefficients, PieceProtectedByPawnBonus.index, chess::Color::WHITE, protectedPiecesByWhitePawns);
-    IncrementCoefficients(coefficients, PieceProtectedByPawnBonus.index, chess::Color::BLACK, protectedPiecesByBlackPawns);
+    // IncrementCoefficients(coefficients, PieceProtectedByPawnBonus.index, chess::Color::WHITE, protectedPiecesByWhitePawns);
+    // IncrementCoefficients(coefficients, PieceProtectedByPawnBonus.index, chess::Color::BLACK, protectedPiecesByBlackPawns);
 
-    packedScore += PieceProtectedByPawnBonus.packed * (protectedPiecesByWhitePawns - protectedPiecesByBlackPawns);
+    // packedScore += PieceProtectedByPawnBonus.packed * (protectedPiecesByWhitePawns - protectedPiecesByBlackPawns);
+
+    auto attackedPiecesByWhitePawns = chess::builtin::popcount(blackPawnAttacks & __builtin_bswap64(board.us(chess::Color::WHITE).getBits()) /*&(~GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE))*/);
+    auto attackedPiecesByBlackPawns = chess::builtin::popcount(whitePawnAttacks & __builtin_bswap64(board.us(chess::Color::BLACK).getBits()) /*&(~GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK))*/);
+
+    IncrementCoefficients(coefficients, PieceAttackedByPawnPenalty.index, chess::Color::WHITE, attackedPiecesByWhitePawns);
+    IncrementCoefficients(coefficients, PieceAttackedByPawnPenalty.index, chess::Color::BLACK, attackedPiecesByBlackPawns);
+
+    packedScore += PieceAttackedByPawnPenalty.packed * (attackedPiecesByWhitePawns - attackedPiecesByBlackPawns);
 
     if (board.pieces(chess::PieceType::BISHOP, chess::Color::WHITE).count() >= 2)
     {
