@@ -12,51 +12,51 @@
 using u64 = uint64_t;
 
 // TunableSingle DoubledPawnPenalty_MG(6, -12);
-TunableSingle IsolatedPawnPenalty(-19, -14);
-TunableSingle OpenFileRookBonus(45, 6);
+TunableSingle IsolatedPawnPenalty(-21, -18);
+TunableSingle OpenFileRookBonus(46, 6);
 TunableSingle SemiOpenFileRookBonus(15, 8);
 TunableSingle QueenMobilityBonus(4, 8);
-TunableSingle SemiOpenFileKingPenalty(-29, 18);
-TunableSingle OpenFileKingPenalty(-96, 16);
-TunableSingle KingShieldBonus(22, -11);
-TunableSingle BishopPairBonus(30, 81);
+TunableSingle SemiOpenFileKingPenalty(-30, 17);
+TunableSingle OpenFileKingPenalty(-96, 15);
+TunableSingle KingShieldBonus(22, -12);
+TunableSingle BishopPairBonus(30, 82);
 
-TunableSingle PieceProtectedByPawnBonus(6, 11);
+TunableSingle PieceProtectedByPawnBonus(-6, 16);
 
 TunableArray PassedPawnBonus(
-        chess::PieceType::PAWN,
-        std::vector<int>{0, 2, -11, -12, 20, 66, 108, 0},
-        std::vector<int>{0, 11, 20, 47, 81, 161, 224, 0},
-        1,
-        1);
+    chess::PieceType::PAWN,
+    std::vector<int>{0, 2, -11, -11, 20, 61, 105, 0},
+    std::vector<int>{0, 11, 18, 46, 80, 157, 225, 0},
+    1,
+    1);
 
 TunableArray VirtualKingMobilityBonus(
-        chess::PieceType::QUEEN,
-        std::vector<int>{0, 0, 0, 37, 51, 24, 22, 19, 15, 11, 9, 2, 1, -5, -15, -26, -35, -46, -52, -59, -51, -46, -44, -39, -45, -22, -62, -37},
-        std::vector<int>{0, 0, 0, -4, -8, 24, 13, 3, 6, 5, 9, 13, 9, 12, 15, 18, 15, 12, 10, 3, -5, -13, -23, -34, -44, -65, -72, -90},
-        0,
-        0);
+    chess::PieceType::QUEEN,
+    std::vector<int>{0, 0, 0, 37, 50, 24, 21, 19, 15, 11, 10, 3, 1, -5, -14, -25, -34, -45, -51, -59, -50, -46, -45, -40, -47, -25, -65, -40},
+    std::vector<int>{0, 0, 0, -7, -10, 23, 14, 4, 7, 6, 10, 14, 9, 13, 15, 18, 15, 12, 10, 3, -6, -14, -24, -34, -44, -64, -72, -90},
+    0,
+    0);
 
 TunableArray KnightMobilityBonus(
-        chess::PieceType::KNIGHT,
-        std::vector<int>{0, 25, 34, 40, 44, 42, 42, 45, 56},
-        std::vector<int>{0, -4, 5, 5, 10, 19, 22, 23, 16},
-        0,
-        0);
+    chess::PieceType::KNIGHT,
+    std::vector<int>{0, 25, 34, 40, 45, 43, 43, 46, 58},
+    std::vector<int>{0, -3, 5, 4, 10, 18, 21, 22, 16},
+    0,
+    0);
 
 TunableArray BishopMobilityBonus(
-        chess::PieceType::BISHOP,
-        std::vector<int>{-198, 0, 11, 20, 35, 41, 57, 66, 75, 76, 82, 86, 89, 121, 0},
-        std::vector<int>{-153, 0, 3, 42, 58, 74, 94, 104, 116, 122, 127, 127, 127, 119, 0},
-        0,
-        1);
+    chess::PieceType::BISHOP,
+    std::vector<int>{-199, 0, 10, 21, 34, 43, 58, 68, 77, 78, 84, 84, 86, 118, 0},
+    std::vector<int>{-153, 0, 3, 41, 58, 72, 93, 103, 115, 122, 128, 129, 131, 123, 0},
+    0,
+    1);
 
 TunableArray RookMobilityBonus(
-        chess::PieceType::ROOK,
-        std::vector<int>{0, 7, 12, 16, 14, 21, 24, 29, 30, 34, 38, 41, 41, 55, 51},
-        std::vector<int>{0, 31, 33, 41, 52, 55, 61, 66, 78, 84, 86, 88, 92, 92, 90},
-        0,
-        0);
+    chess::PieceType::ROOK,
+    std::vector<int>{0, 8, 12, 16, 14, 21, 24, 28, 30, 34, 38, 40, 41, 55, 51},
+    std::vector<int>{0, 30, 33, 40, 51, 54, 60, 65, 77, 83, 86, 88, 92, 91, 89},
+    0,
+    0);
 
 const int base = 64 * 6 - 16; // PSQT but removing pawns from 1 and 8 rank
 static int numParameters = base +
@@ -668,8 +668,8 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
         }
     }
 
-    auto protectedPiecesByWhitePawns = chess::builtin::popcount(whitePawnAttacks & __builtin_bswap64(board.us(chess::Color::WHITE).getBits()) &(~GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE)));
-    auto protectedPiecesByBlackPawns = chess::builtin::popcount(blackPawnAttacks & __builtin_bswap64(board.us(chess::Color::BLACK).getBits()) &(~GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK)));
+    auto protectedPiecesByWhitePawns = chess::builtin::popcount(whitePawnAttacks & __builtin_bswap64(board.us(chess::Color::WHITE).getBits()) & (~GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE)));
+    auto protectedPiecesByBlackPawns = chess::builtin::popcount(blackPawnAttacks & __builtin_bswap64(board.us(chess::Color::BLACK).getBits()) & (~GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK)));
 
     IncrementCoefficients(coefficients, PieceProtectedByPawnBonus.index, chess::Color::WHITE, protectedPiecesByWhitePawns);
     IncrementCoefficients(coefficients, PieceProtectedByPawnBonus.index, chess::Color::BLACK, protectedPiecesByBlackPawns);
