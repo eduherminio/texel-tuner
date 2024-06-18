@@ -324,6 +324,50 @@ constexpr static std::array<int, 64> Rank = {
     1UL, 1UL, 1UL, 1UL, 1UL, 1UL, 1UL, 1UL,
     0UL, 0UL, 0UL, 0UL, 0UL, 0UL, 0UL, 0UL};
 
+const u64 NotAFile = 0xFEFEFEFEFEFEFEFE;
+
+const u64 NotHFile = 0x7F7F7F7F7F7F7F7F;
+
+[[nodiscard]] static u64 ShiftUp(const u64 board)
+{
+    return board >> 8;
+}
+
+[[nodiscard]] static u64 ShiftDown(const u64 board)
+{
+    return board << 8;
+}
+
+[[nodiscard]] static u64 ShiftLeft(const u64 board)
+{
+    return (board >> 1) & NotHFile;
+}
+
+[[nodiscard]] static u64 ShiftRight(const u64 board)
+{
+    return (board << 1) & NotAFile;
+}
+
+[[nodiscard]] static u64 ShiftUpRight(const u64 board)
+{
+    return ShiftRight(ShiftUp(board));
+}
+
+[[nodiscard]] static u64 ShiftUpLeft(const u64 board)
+{
+    return ShiftLeft(ShiftUp(board));
+}
+
+[[nodiscard]] static u64 ShiftDownRight(const u64 board)
+{
+    return ShiftRight(ShiftDown(board));
+}
+
+[[nodiscard]] static u64 ShiftDownLeft(const u64 board)
+{
+    return ShiftLeft(ShiftDown(board));
+}
+
 static void print_psqts_csharp(const parameters_t &parameters, std::array<tune_t, 12> &existingPieceValues)
 {
     std::array<tune_t, 12> psqtPieceValues;
