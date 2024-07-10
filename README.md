@@ -26,7 +26,7 @@ Links to some training datasets:
 ### Build and run instructions
 
 Instructions/examples about how to build and run the tuner are in [run.sh](./src/run.sh).
-In sort:
+In short:
 
 - Make sure gcc v10 or higher is installed.
 
@@ -52,9 +52,9 @@ In sort:
   cmake --build .
   ```
 
-- Run the executable passing the path of `lynx-sources.csv` to it:
+- Run the executable passing the path of `sources.csv` to it:
   ```bash
-  ./tuner ../lynx-sources.csv
+  ./tuner ../sources.csv
   ```
 
 ### Checking evaluation code correctness
@@ -65,7 +65,7 @@ In sort:
 
 When it's enabled, no tuning happens, but positions are printed next to their eval in a format that matches [Lynx's custom `staticeval` UCI command output](https://github.com/lynx-chess/Lynx).
 
-This can be used with subset of a tuning dataset (i.e. 1000 entries) and the output redirected to a file, in order to be able to compare it with your engine's actual evaluation and detect any bugs that were written by porting your evaluation code to the tuner.
+This can be used with subset of a tuning dataset (i.e. 1000 entries) and the output redirected to a file, in order to be able to compare it with your engine's actual evaluation and detect any bugs that were written while porting your evaluation code to the tuner.
 
 i.e.
 
@@ -80,7 +80,7 @@ i.e.
   dotnet run -c Release "staticeval quiet-labeled-subset-1_1000.epd" > quiet-labeled-evals.epd
   ```
 
-- Compare two files manually and see if there's any difference in the evaluations
+- Compare two files using your preferred diff tool and see if there's any difference in the evaluations.
 
 ----
 
