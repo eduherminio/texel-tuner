@@ -718,12 +718,12 @@ static void print_psqts_cpp(const parameters_t &parameters, std::array<std::arra
 {
     std::array<std::array<tune_t, 12>, PSQTBucketCount> psqtPieceValues;
 
-    std::cout << "constexpr static std::array<std::array<int, 12>, PSQTBucketCount> PieceValue = {\n\t{\n\t\t";
+    std::cout << "constexpr static std::array<std::array<int, 12>, PSQTBucketCount> PieceValue = {\n\t{\n\t";
 
     // Exctract and print pieces values
     for (int bucket = 0; bucket < PSQTBucketCount; ++bucket)
     {
-        std::cout << "{\n";
+        std::cout << "\t{\n";
 
         for (int phase = 0; phase <= 1; ++phase)
         {
@@ -771,7 +771,7 @@ static void print_psqts_cpp(const parameters_t &parameters, std::array<std::arra
             psqtPieceValues[bucket][kingIndex] = 0;
             std::cout << "// " << std::round(existingPieceValues[bucket][kingIndex]) << "\n";
         }
-        std::cout << "\t\t},\n\t\t";
+        std::cout << "\t\t},\n\t";
     }
 
     std::cout << "}};\n";
@@ -794,13 +794,13 @@ static void print_psqts_cpp(const parameters_t &parameters, std::array<std::arra
 
                 std::cout << "\t{\n\t\t\t";
 
-                std::cout << "   0,\t   0,\t   0,\t   0,\t   0,\t   0,\t   0,\t   0,\n\t\t";
+                std::cout << "   0,\t   0,\t   0,\t   0,\t   0,\t   0,\t   0,\t   0,\n\t\t\t";
 
                 for (int square = 0; square < 48; ++square)
                 {
                     std::cout << std::setw(4) << std::round(parameters[48 * bucket + square][phase] - psqtPieceValues[bucket][phase * 6]) << ",";
                     if (square % 8 == 7)
-                        std::cout << "\n\t ";
+                        std::cout << "\n\t\t";
                     if (square != 47)
                         std::cout << "\t";
                 }
