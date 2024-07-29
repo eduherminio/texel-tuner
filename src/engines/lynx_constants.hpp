@@ -392,8 +392,8 @@ constexpr int PackedPositionalTables(int bucket, int piece, int square)
     }
 
     return Pack(
-        MiddleGamePositionalWhiteTables[bucket][piece][square] * coefficient,
-        EndGamePositionalWhiteTables[bucket][piece][square] * coefficient);
+        MiddleGamePositionalWhiteTables[piece][bucket][square] * coefficient,
+        EndGamePositionalWhiteTables[piece][bucket][square] * coefficient);
 }
 
 constexpr static std::array<int, 64> File = {
