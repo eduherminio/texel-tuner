@@ -38,7 +38,7 @@ public:
 
     void to_csharp(const parameters_t &parameters, std::stringstream &ss, const std::string &name)
     {
-        ss << "\tpublic TaperedEvaluationTerm " << name << " { get; set; } = new(" << std::round(parameters[index][0]) << "," << std::round(parameters[index][1]) << ");\n\n";
+        ss << "\tpublic TaperedEvaluationTerm " << name << " { get; set; } = new(" << std::round(parameters[index][0]) << ", " << std::round(parameters[index][1]) << ");\n\n";
     }
 
     void to_cpp(const parameters_t &parameters, std::stringstream &ss, const std::string &name)
@@ -200,12 +200,12 @@ public:
         ss << "\tpublic " << variable_name << " " << name << " { get; set; } = new(\n";
         for (int rank = 0; rank < start; ++rank)
         {
-            ss << "\t\tnew(0,0),\n";
+            ss << "\t\tnew(0, 0),\n";
         }
 
         for (int rank = 0; rank < size - end - start; ++rank)
         {
-            ss << "\t\tnew(" << round(parameters[index + rank][0] - mobilityPieceValues[0][pieceIndex]) << "," << round(parameters[index + rank][1] - mobilityPieceValues[0][pieceIndex + 6]) << ")";
+            ss << "\t\tnew(" << round(parameters[index + rank][0] - mobilityPieceValues[0][pieceIndex]) << ", " << round(parameters[index + rank][1] - mobilityPieceValues[0][pieceIndex + 6]) << ")";
             if (rank == size - start - 1)
                 ss << ");";
             else
@@ -214,7 +214,7 @@ public:
 
         for (int rank = size - end; rank < size; ++rank)
         {
-            ss << "\t\tnew(0,0)";
+            ss << "\t\tnew(0, 0)";
             if (rank == size - 1)
                 ss << ");";
             else
