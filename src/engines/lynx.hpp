@@ -1,4 +1,5 @@
 #include "../base.h"
+#include "../config.h"
 #include "./lynx_constants.hpp"
 #include "./lynx_tunable.hpp"
 #include "../external/chess.hpp"
@@ -230,18 +231,10 @@ public:
 
     static void print_step_parameters(const parameters_t &parameters)
     {
-        if constexpr (print_eval)
-        {
-            print_parameters(parameters);
-        }
-        else
-        {
-            // Reduces noise, but doesn't allow stopping the program between iterations
+        auto mobilityPieceValues = extract_mobility_offset(parameters, false);
 
-            auto mobilityPieceValues = extract_mobility_offset(parameters, false);
-            print_psqts_cpp(parameters, mobilityPieceValues);
-            print_cpp_parameters(parameters, mobilityPieceValues);
-        }
+        print_psqts_cpp(parameters, mobilityPieceValues);
+        print_cpp_parameters(parameters, mobilityPieceValues);
     }
 
     static void print_json_parameters(const parameters_t &parameters, const std::array<std::array<tune_t, 12>, PSQTBucketCount> &mobilityPieceValues)
