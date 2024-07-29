@@ -230,10 +230,18 @@ public:
 
     static void print_step_parameters(const parameters_t &parameters)
     {
-        auto mobilityPieceValues = extract_mobility_offset(parameters, false);
+        if constexpr (print_eval)
+        {
+            print_parameters(parameters);
+        }
+        else
+        {
+            // Reduces noise, but doesn't allow stopping the program between iterations
 
-        print_psqts_cpp(parameters, mobilityPieceValues);
-        print_cpp_parameters(parameters, mobilityPieceValues);
+            auto mobilityPieceValues = extract_mobility_offset(parameters, false);
+            print_psqts_cpp(parameters, mobilityPieceValues);
+            print_cpp_parameters(parameters, mobilityPieceValues);
+        }
     }
 
     static void print_json_parameters(const parameters_t &parameters, const std::array<std::array<tune_t, 12>, PSQTBucketCount> &mobilityPieceValues)
@@ -755,8 +763,8 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
         chess::Color::WHITE);
 
     IncrementCoefficients(coefficients,
-        (48 * PSQTBucketCount) + (64 * PSQTBucketCount * 4) + blackKing,
-        chess::Color::BLACK);
+                          (48 * PSQTBucketCount) + (64 * PSQTBucketCount * 4) + blackKing,
+                          chess::Color::BLACK);
 
     // Debugging eval
     // return EvalResult{
