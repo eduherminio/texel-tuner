@@ -28,141 +28,291 @@ std::array<int, 6> phaseValues = {0, 1, 1, 2, 4, 0};
 
 constexpr static int EvalNormalizationCoefficient = 90;
 
-constexpr std::array<int, 12> PieceValue = {
-    +97, +356, +373, +507, +1123,  // 0
-    +123, +427, +363, +747, +1425, // 0
-};
+constexpr static int PSQTBucketCount = 2;
 
-constexpr static std::array<int, 64> MiddleGamePawnTable = {
-    0, 0, 0, 0, 0, 0, 0, 0,
-    -21, -22, -14, -12, -6, 20, 23, -12,
-    -24, -26, -6, 9, 15, 23, 20, 8,
-    -20, -14, 5, 18, 27, 30, 4, -1,
-    -20, -10, 3, 20, 29, 29, 3, -2,
-    -22, -21, -5, 2, 10, 20, 13, 2,
-    -21, -19, -19, -15, -9, 14, 12, -19,
-    0, 0, 0, 0, 0, 0, 0, 0};
+constexpr std::array<std::array<int, 12>, PSQTBucketCount> PieceValue = {
+    {{
+         +97, +356, +373, +507, +1123, // 0
+         +123, +427, +363, +747, +1425 // 0
+     },
+     {
+         +97, +356, +373, +507, +1123, // 0
+         +123, +427, +363, +747, +1425 // 0
+     }}};
 
-constexpr static std::array<int, 64> EndGamePawnTable = {
-    0, 0, 0, 0, 0, 0, 0, 0,
-    16, 11, 5, -7, 8, 3, -5, -3,
-    10, 6, -3, -15, -10, -10, -10, -9,
-    27, 17, -1, -20, -16, -15, 4, 1,
-    24, 16, -3, -16, -15, -12, 2, -1,
-    12, 3, -6, -13, -7, -8, -9, -10,
-    18, 11, 9, -5, 17, 7, -1, 0,
-    0, 0, 0, 0, 0, 0, 0, 0};
+constexpr static std::array<std::array<int, 64>, PSQTBucketCount> MiddleGamePawnTable = {
+    {{
+         0, 0, 0, 0, 0, 0, 0, 0,
+         -21, -22, -14, -12, -6, 20, 23, -12,
+         -24, -26, -6, 9, 15, 23, 20, 8,
+         -20, -14, 5, 18, 27, 30, 4, -1,
+         -20, -10, 3, 20, 29, 29, 3, -2,
+         -22, -21, -5, 2, 10, 20, 13, 2,
+         -21, -19, -19, -15, -9, 14, 12, -19,
+         0, 0, 0, 0, 0, 0, 0, 0 //
+     },
+     {
+         0, 0, 0, 0, 0, 0, 0, 0,
+         -21, -22, -14, -12, -6, 20, 23, -12,
+         -24, -26, -6, 9, 15, 23, 20, 8,
+         -20, -14, 5, 18, 27, 30, 4, -1,
+         -20, -10, 3, 20, 29, 29, 3, -2,
+         -22, -21, -5, 2, 10, 20, 13, 2,
+         -21, -19, -19, -15, -9, 14, 12, -19,
+         0, 0, 0, 0, 0, 0, 0, 0 //
+     }}};
 
-constexpr static std::array<int, 64> MiddleGameKnightTable = {
-    -142, -19, -51, -28, -10, -13, -7, -79,
-    -42, -27, -5, 16, 18, 28, -8, 0,
-    -35, -4, 12, 50, 52, 33, 26, -7,
-    -13, 21, 37, 51, 51, 52, 43, 14,
-    -10, 21, 39, 39, 50, 51, 43, 13,
-    -33, -3, 12, 43, 49, 26, 20, -8,
-    -45, -20, -2, 15, 17, 23, -6, 0,
-    -157, -22, -49, -20, -8, -4, -15, -67};
+constexpr static std::array<std::array<int, 64>, PSQTBucketCount> EndGamePawnTable = {
+    {{
+         0, 0, 0, 0, 0, 0, 0, 0,
+         16, 11, 5, -7, 8, 3, -5, -3,
+         10, 6, -3, -15, -10, -10, -10, -9,
+         27, 17, -1, -20, -16, -15, 4, 1,
+         24, 16, -3, -16, -15, -12, 2, -1,
+         12, 3, -6, -13, -7, -8, -9, -10,
+         18, 11, 9, -5, 17, 7, -1, 0,
+         0, 0, 0, 0, 0, 0, 0, 0 //
+     },
+     {
+         0, 0, 0, 0, 0, 0, 0, 0,
+         16, 11, 5, -7, 8, 3, -5, -3,
+         10, 6, -3, -15, -10, -10, -10, -9,
+         27, 17, -1, -20, -16, -15, 4, 1,
+         24, 16, -3, -16, -15, -12, 2, -1,
+         12, 3, -6, -13, -7, -8, -9, -10,
+         18, 11, 9, -5, 17, 7, -1, 0,
+         0, 0, 0, 0, 0, 0, 0, 0 //
+     }}};
 
-constexpr static std::array<int, 64> EndGameKnightTable = {
-    -56, -38, -5, -3, -3, -25, -31, -80,
-    -9, 6, 10, 4, 4, -3, -7, -16,
-    -8, 7, 26, 27, 22, 7, -1, -9,
-    10, 11, 37, 38, 43, 35, 15, -3,
-    7, 16, 36, 42, 43, 32, 19, 4,
-    -10, 11, 16, 31, 22, 8, -3, -5,
-    -15, 8, 1, 7, -0, -8, -8, -20,
-    -60, -35, 0, -6, -5, -25, -30, -79};
+constexpr static std::array<std::array<int, 64>, PSQTBucketCount> MiddleGameKnightTable = {
+    {{
+         -142, -19, -51, -28, -10, -13, -7, -79,
+         -42, -27, -5, 16, 18, 28, -8, 0,
+         -35, -4, 12, 50, 52, 33, 26, -7,
+         -13, 21, 37, 51, 51, 52, 43, 14,
+         -10, 21, 39, 39, 50, 51, 43, 13,
+         -33, -3, 12, 43, 49, 26, 20, -8,
+         -45, -20, -2, 15, 17, 23, -6, 0,
+         -157, -22, -49, -20, -8, -4, -15, -67 //
+     },
+     {
+         -142, -19, -51, -28, -10, -13, -7, -79,
+         -42, -27, -5, 16, 18, 28, -8, 0,
+         -35, -4, 12, 50, 52, 33, 26, -7,
+         -13, 21, 37, 51, 51, 52, 43, 14,
+         -10, 21, 39, 39, 50, 51, 43, 13,
+         -33, -3, 12, 43, 49, 26, 20, -8,
+         -45, -20, -2, 15, 17, 23, -6, 0,
+         -157, -22, -49, -20, -8, -4, -15, -67 //
+     }}};
 
-constexpr static std::array<int, 64> MiddleGameBishopTable = {
-    -13, 13, -9, -20, -15, -10, -21, 14,
-    4, 1, 4, -17, 1, 3, 36, -6,
-    -9, -0, -9, 4, -12, 6, -2, 26,
-    -9, -8, -2, 23, 21, -13, 2, -3,
-    -17, -3, -11, 20, 9, -10, -5, 3,
-    2, -2, 2, -4, -0, -1, 0, 21,
-    7, 12, 7, -6, -4, 5, 28, 6,
-    11, 16, 3, -35, -17, -16, 2, -3};
+constexpr static std::array<std::array<int, 64>, PSQTBucketCount> EndGameKnightTable = {
+    {{
+         -56, -38, -5, -3, -3, -25, -31, -80,
+         -9, 6, 10, 4, 4, -3, -7, -16,
+         -8, 7, 26, 27, 22, 7, -1, -9,
+         10, 11, 37, 38, 43, 35, 15, -3,
+         7, 16, 36, 42, 43, 32, 19, 4,
+         -10, 11, 16, 31, 22, 8, -3, -5,
+         -15, 8, 1, 7, -0, -8, -8, -20,
+         -60, -35, 0, -6, -5, -25, -30, -79 //
+     },
+     {
+         -56, -38, -5, -3, -3, -25, -31, -80,
+         -9, 6, 10, 4, 4, -3, -7, -16,
+         -8, 7, 26, 27, 22, 7, -1, -9,
+         10, 11, 37, 38, 43, 35, 15, -3,
+         7, 16, 36, 42, 43, 32, 19, 4,
+         -10, 11, 16, 31, 22, 8, -3, -5,
+         -15, 8, 1, 7, -0, -8, -8, -20,
+         -60, -35, 0, -6, -5, -25, -30, -79 //
+     }}};
 
-constexpr static std::array<int, 64> EndGameBishopTable = {
-    1, 17, -3, 5, 2, 3, 1, -19,
-    3, -7, -6, -0, -2, -14, -7, -10,
-    13, 8, 4, -2, 6, 1, 0, 10,
-    13, 0, 3, 0, -1, 2, -1, 6,
-    7, 3, 1, 4, -3, 3, -1, 7,
-    10, -2, -2, -4, 1, -4, -2, 7,
-    -6, -9, -16, -2, -4, -8, -7, -5,
-    3, -8, -2, 9, 9, 4, -1, -6};
+constexpr static std::array<std::array<int, 64>, PSQTBucketCount> MiddleGameBishopTable = {
+    {{
+         -13, 13, -9, -20, -15, -10, -21, 14,
+         4, 1, 4, -17, 1, 3, 36, -6,
+         -9, -0, -9, 4, -12, 6, -2, 26,
+         -9, -8, -2, 23, 21, -13, 2, -3,
+         -17, -3, -11, 20, 9, -10, -5, 3,
+         2, -2, 2, -4, -0, -1, 0, 21,
+         7, 12, 7, -6, -4, 5, 28, 6,
+         11, 16, 3, -35, -17, -16, 2, -3 //
+     },
+     {
+         -13, 13, -9, -20, -15, -10, -21, 14,
+         4, 1, 4, -17, 1, 3, 36, -6,
+         -9, -0, -9, 4, -12, 6, -2, 26,
+         -9, -8, -2, 23, 21, -13, 2, -3,
+         -17, -3, -11, 20, 9, -10, -5, 3,
+         2, -2, 2, -4, -0, -1, 0, 21,
+         7, 12, 7, -6, -4, 5, 28, 6,
+         11, 16, 3, -35, -17, -16, 2, -3 //
+     }}};
 
-constexpr static std::array<int, 64> MiddleGameRookTable = {
-    -4, -10, -6, 0, 9, 8, 11, 2,
-    -29, -18, -11, -8, 4, 12, 29, -2,
-    -33, -22, -23, -12, 3, 9, 48, 24,
-    -29, -26, -23, -11, -6, 6, 37, 16,
-    -24, -21, -17, -7, -8, 7, 28, 12,
-    -26, -18, -19, -2, 0, 19, 48, 22,
-    -26, -27, -7, -2, 5, 10, 35, 5,
-    -2, -4, -1, 10, 17, 12, 19, 14};
+constexpr static std::array<std::array<int, 64>, PSQTBucketCount> EndGameBishopTable = {
+    {{
+         1, 17, -3, 5, 2, 3, 1, -19,
+         3, -7, -6, -0, -2, -14, -7, -10,
+         13, 8, 4, -2, 6, 1, 0, 10,
+         13, 0, 3, 0, -1, 2, -1, 6,
+         7, 3, 1, 4, -3, 3, -1, 7,
+         10, -2, -2, -4, 1, -4, -2, 7,
+         -6, -9, -16, -2, -4, -8, -7, -5,
+         3, -8, -2, 9, 9, 4, -1, -6 //
+     },
+     {
+         1, 17, -3, 5, 2, 3, 1, -19,
+         3, -7, -6, -0, -2, -14, -7, -10,
+         13, 8, 4, -2, 6, 1, 0, 10,
+         13, 0, 3, 0, -1, 2, -1, 6,
+         7, 3, 1, 4, -3, 3, -1, 7,
+         10, -2, -2, -4, 1, -4, -2, 7,
+         -6, -9, -16, -2, -4, -8, -7, -5,
+         3, -8, -2, 9, 9, 4, -1, -6 //
+     }}};
 
-constexpr static std::array<int, 64> EndGameRookTable = {
-    7, 5, 9, 1, -7, -1, -3, -6,
-    17, 19, 19, 9, -1, -5, -9, 0,
-    14, 10, 12, 4, -8, -12, -23, -18,
-    15, 11, 12, 4, -3, -5, -17, -16,
-    14, 10, 11, 2, -2, -10, -15, -12,
-    14, 13, 4, -3, -10, -15, -24, -11,
-    20, 22, 15, 4, -3, -5, -10, -0,
-    2, -1, 4, -5, -14, -9, -9, -14};
+constexpr static std::array<std::array<int, 64>, PSQTBucketCount> MiddleGameRookTable = {
+    {{
+         -4, -10, -6, 0, 9, 8, 11, 2,
+         -29, -18, -11, -8, 4, 12, 29, -2,
+         -33, -22, -23, -12, 3, 9, 48, 24,
+         -29, -26, -23, -11, -6, 6, 37, 16,
+         -24, -21, -17, -7, -8, 7, 28, 12,
+         -26, -18, -19, -2, 0, 19, 48, 22,
+         -26, -27, -7, -2, 5, 10, 35, 5,
+         -2, -4, -1, 10, 17, 12, 19, 14 //
+     },
+     {
+         -4, -10, -6, 0, 9, 8, 11, 2,
+         -29, -18, -11, -8, 4, 12, 29, -2,
+         -33, -22, -23, -12, 3, 9, 48, 24,
+         -29, -26, -23, -11, -6, 6, 37, 16,
+         -24, -21, -17, -7, -8, 7, 28, 12,
+         -26, -18, -19, -2, 0, 19, 48, 22,
+         -26, -27, -7, -2, 5, 10, 35, 5,
+         -2, -4, -1, 10, 17, 12, 19, 14 //
+     }}};
 
-constexpr static std::array<int, 64> MiddleGameQueenTable = {
-    -13, -12, -13, 5, -2, -30, 6, 2,
-    -4, -10, 7, -0, 3, 11, 28, 50,
-    -12, -8, -10, -10, -14, 5, 30, 53,
-    -12, -20, -17, -8, -8, -3, 13, 26,
-    -12, -16, -16, -16, -6, -3, 12, 23,
-    -9, -6, -16, -11, -9, 1, 17, 33,
-    -16, -19, 3, 12, 8, 7, 12, 38,
-    -11, -12, -2, 7, 1, -35, -15, 25};
+constexpr static std::array<std::array<int, 64>, PSQTBucketCount> EndGameRookTable = {
+    {{
+         7, 5, 9, 1, -7, -1, -3, -6,
+         17, 19, 19, 9, -1, -5, -9, 0,
+         14, 10, 12, 4, -8, -12, -23, -18,
+         15, 11, 12, 4, -3, -5, -17, -16,
+         14, 10, 11, 2, -2, -10, -15, -12,
+         14, 13, 4, -3, -10, -15, -24, -11,
+         20, 22, 15, 4, -3, -5, -10, -0,
+         2, -1, 4, -5, -14, -9, -9, -14 //
+     },
+     {
+         7, 5, 9, 1, -7, -1, -3, -6,
+         17, 19, 19, 9, -1, -5, -9, 0,
+         14, 10, 12, 4, -8, -12, -23, -18,
+         15, 11, 12, 4, -3, -5, -17, -16,
+         14, 10, 11, 2, -2, -10, -15, -12,
+         14, 13, 4, -3, -10, -15, -24, -11,
+         20, 22, 15, 4, -3, -5, -10, -0,
+         2, -1, 4, -5, -14, -9, -9, -14 //
+     }}};
 
-constexpr static std::array<int, 64> EndGameQueenTable = {
-    -22, -16, -3, -11, -15, -15, -32, 8,
-    -14, -9, -25, -2, -4, -21, -49, -5,
-    -13, -4, 7, 2, 22, 19, -8, 5,
-    -10, 7, 6, 11, 23, 33, 40, 28,
-    -2, 3, 12, 22, 19, 29, 20, 38,
-    -13, -10, 14, 11, 13, 18, 16, 18,
-    -9, -3, -21, -21, -13, -17, -34, 3,
-    -13, -13, -10, -6, -9, 11, 15, -2};
+constexpr static std::array<std::array<int, 64>, PSQTBucketCount> MiddleGameQueenTable = {
+    {{
+         -13, -12, -13, 5, -2, -30, 6, 2,
+         -4, -10, 7, -0, 3, 11, 28, 50,
+         -12, -8, -10, -10, -14, 5, 30, 53,
+         -12, -20, -17, -8, -8, -3, 13, 26,
+         -12, -16, -16, -16, -6, -3, 12, 23,
+         -9, -6, -16, -11, -9, 1, 17, 33,
+         -16, -19, 3, 12, 8, 7, 12, 38,
+         -11, -12, -2, 7, 1, -35, -15, 25 //
+     },
+     {
+         -13, -12, -13, 5, -2, -30, 6, 2,
+         -4, -10, 7, -0, 3, 11, 28, 50,
+         -12, -8, -10, -10, -14, 5, 30, 53,
+         -12, -20, -17, -8, -8, -3, 13, 26,
+         -12, -16, -16, -16, -6, -3, 12, 23,
+         -9, -6, -16, -11, -9, 1, 17, 33,
+         -16, -19, 3, 12, 8, 7, 12, 38,
+         -11, -12, -2, 7, 1, -35, -15, 25 //
+     }}};
 
-constexpr static std::array<int, 64> MiddleGameKingTable = {
-    6, 39, 36, -64, 19, -55, 35, 24,
-    -21, -15, -20, -54, -67, -44, -5, 5,
-    -83, -65, -99, -97, -106, -115, -79, -99,
-    -99, -80, -104, -151, -145, -122, -121, -155,
-    -66, -54, -92, -129, -143, -108, -125, -151,
-    -81, -44, -91, -91, -82, -92, -70, -90,
-    59, -9, -21, -42, -46, -29, 11, 14,
-    16, 60, 46, -46, 34, -42, 51, 38};
+constexpr static std::array<std::array<int, 64>, PSQTBucketCount> EndGameQueenTable = {
+    {{
+         -22, -16, -3, -11, -15, -15, -32, 8,
+         -14, -9, -25, -2, -4, -21, -49, -5,
+         -13, -4, 7, 2, 22, 19, -8, 5,
+         -10, 7, 6, 11, 23, 33, 40, 28,
+         -2, 3, 12, 22, 19, 29, 20, 38,
+         -13, -10, 14, 11, 13, 18, 16, 18,
+         -9, -3, -21, -21, -13, -17, -34, 3,
+         -13, -13, -10, -6, -9, 11, 15, -2 //
+     },
+     {
+         -22, -16, -3, -11, -15, -15, -32, 8,
+         -14, -9, -25, -2, -4, -21, -49, -5,
+         -13, -4, 7, 2, 22, 19, -8, 5,
+         -10, 7, 6, 11, 23, 33, 40, 28,
+         -2, 3, 12, 22, 19, 29, 20, 38,
+         -13, -10, 14, 11, 13, 18, 16, 18,
+         -9, -3, -21, -21, -13, -17, -34, 3,
+         -13, -13, -10, -6, -9, 11, 15, -2 //
+     }}};
 
-constexpr static std::array<int, 64> EndGameKingTable = {
-    -77, -49, -28, -1, -41, -9, -43, -91,
-    -23, 15, 24, 37, 43, 30, 8, -29,
-    -2, 40, 69, 81, 84, 73, 40, 10,
-    0, 52, 90, 122, 120, 92, 63, 23,
-    -10, 43, 88, 119, 123, 91, 65, 22,
-    -1, 37, 70, 81, 78, 68, 39, 5,
-    -47, 11, 26, 35, 37, 26, 3, -33,
-    -88, -57, -34, -9, -38, -14, -48, -96};
+constexpr static std::array<std::array<int, 64>, PSQTBucketCount> MiddleGameKingTable = {
+    {{
+         6, 39, 36, -64, 19, -55, 35, 24,
+         -21, -15, -20, -54, -67, -44, -5, 5,
+         -83, -65, -99, -97, -106, -115, -79, -99,
+         -99, -80, -104, -151, -145, -122, -121, -155,
+         -66, -54, -92, -129, -143, -108, -125, -151,
+         -81, -44, -91, -91, -82, -92, -70, -90,
+         59, -9, -21, -42, -46, -29, 11, 14,
+         16, 60, 46, -46, 34, -42, 51, 38 //
+     },
+     {
+         6, 39, 36, -64, 19, -55, 35, 24,
+         -21, -15, -20, -54, -67, -44, -5, 5,
+         -83, -65, -99, -97, -106, -115, -79, -99,
+         -99, -80, -104, -151, -145, -122, -121, -155,
+         -66, -54, -92, -129, -143, -108, -125, -151,
+         -81, -44, -91, -91, -82, -92, -70, -90,
+         59, -9, -21, -42, -46, -29, 11, 14,
+         16, 60, 46, -46, 34, -42, 51, 38 //
+     }}};
 
-constexpr static std::array<std::array<int, 64>, 6> MiddleGamePositionalWhiteTables =
-    {
-        MiddleGamePawnTable,
-        MiddleGameKnightTable,
-        MiddleGameBishopTable,
-        MiddleGameRookTable,
-        MiddleGameQueenTable,
-        MiddleGameKingTable};
+constexpr static std::array<std::array<int, 64>, PSQTBucketCount> EndGameKingTable = {
+    {{
+         -77, -49, -28, -1, -41, -9, -43, -91,
+         -23, 15, 24, 37, 43, 30, 8, -29,
+         -2, 40, 69, 81, 84, 73, 40, 10,
+         0, 52, 90, 122, 120, 92, 63, 23,
+         -10, 43, 88, 119, 123, 91, 65, 22,
+         -1, 37, 70, 81, 78, 68, 39, 5,
+         -47, 11, 26, 35, 37, 26, 3, -33,
+         -88, -57, -34, -9, -38, -14, -48, -96 //
+     },
+     {
+         -77, -49, -28, -1, -41, -9, -43, -91,
+         -23, 15, 24, 37, 43, 30, 8, -29,
+         -2, 40, 69, 81, 84, 73, 40, 10,
+         0, 52, 90, 122, 120, 92, 63, 23,
+         -10, 43, 88, 119, 123, 91, 65, 22,
+         -1, 37, 70, 81, 78, 68, 39, 5,
+         -47, 11, 26, 35, 37, 26, 3, -33,
+         -88, -57, -34, -9, -38, -14, -48, -96 //
+     }}};
 
-constexpr static std::array<std::array<int, 64>, 6> EndGamePositionalWhiteTables{
+constexpr static std::array<std::array<std::array<int, 64>, PSQTBucketCount>, 6> MiddleGamePositionalWhiteTables = {
+    MiddleGamePawnTable,
+    MiddleGameKnightTable,
+    MiddleGameBishopTable,
+    MiddleGameRookTable,
+    MiddleGameQueenTable,
+    MiddleGameKingTable};
+
+constexpr static std::array<std::array<std::array<int, 64>, PSQTBucketCount>, 6> EndGamePositionalWhiteTables{
     EndGamePawnTable,
     EndGameKnightTable,
     EndGameBishopTable,
@@ -170,14 +320,12 @@ constexpr static std::array<std::array<int, 64>, 6> EndGamePositionalWhiteTables
     EndGameQueenTable,
     EndGameKingTable};
 
-constexpr std::array<int, 10> PackedPieceValue = {
-    Pack(PieceValue[0], PieceValue[5]),
-    Pack(PieceValue[1], PieceValue[6]),
-    Pack(PieceValue[2], PieceValue[7]),
-    Pack(PieceValue[3], PieceValue[8]),
-    Pack(PieceValue[4], PieceValue[9])};
+constexpr int PackedPieceValue(int bucket, int piece)
+{
+    return Pack(PieceValue[bucket][piece], PieceValue[bucket][piece + 5]);
+}
 
-int MiddleGamePositionalTables(int piece, int square)
+constexpr int MiddleGamePositionalTables(int bucket, int piece, int square)
 {
     int coefficient = 1;
     if (piece >= 6)
@@ -187,10 +335,10 @@ int MiddleGamePositionalTables(int piece, int square)
         coefficient = -1;
     }
 
-    return MiddleGamePositionalWhiteTables[piece][square] * coefficient;
+    return MiddleGamePositionalWhiteTables[piece][bucket][square] * coefficient;
 }
 
-int EndGamePositionalTables(int piece, int square)
+constexpr int EndGamePositionalTables(int bucket, int piece, int square)
 {
     int coefficient = 1;
     if (piece >= 6)
@@ -200,10 +348,10 @@ int EndGamePositionalTables(int piece, int square)
         coefficient = -1;
     }
 
-    return EndGamePositionalWhiteTables[piece][square] * coefficient;
+    return EndGamePositionalWhiteTables[piece][bucket][square] * coefficient;
 }
 
-int PackedPositionalTables(int piece, int square)
+constexpr int PackedPositionalTables(int bucket, int piece, int square)
 {
     int coefficient = 1;
     if (piece >= 6)
@@ -214,9 +362,19 @@ int PackedPositionalTables(int piece, int square)
     }
 
     return Pack(
-        MiddleGamePositionalWhiteTables[piece][square] * coefficient,
-        EndGamePositionalWhiteTables[piece][square] * coefficient);
+        MiddleGamePositionalWhiteTables[bucket][piece][square] * coefficient,
+        EndGamePositionalWhiteTables[bucket][piece][square] * coefficient);
 }
+
+constexpr static std::array<int, 64> File = {
+    0, 1, 2, 3, 4, 5, 6, 7,
+    0, 1, 2, 3, 4, 5, 6, 7,
+    0, 1, 2, 3, 4, 5, 6, 7,
+    0, 1, 2, 3, 4, 5, 6, 7,
+    0, 1, 2, 3, 4, 5, 6, 7,
+    0, 1, 2, 3, 4, 5, 6, 7,
+    0, 1, 2, 3, 4, 5, 6, 7,
+    0, 1, 2, 3, 4, 5, 6, 7};
 
 constexpr static std::array<u64, 64> FileMasks = {
     72340172838076673UL, 144680345676153346UL, 289360691352306692UL, 578721382704613384UL, 1157442765409226768UL, 2314885530818453536UL, 4629771061636907072UL, 9259542123273814144UL,
@@ -377,65 +535,77 @@ const int MaxEval = PositiveCheckmateDetectionLimit - 1;
     return ShiftLeft(ShiftDown(board));
 }
 
-static void print_psqts_csharp(const parameters_t &parameters, std::array<tune_t, 12> &existingPieceValues)
+static void print_psqts_csharp(const parameters_t &parameters, std::array<std::array<tune_t, 12>, PSQTBucketCount> &existingPieceValues)
 {
-    std::array<tune_t, 12> psqtPieceValues;
+    std::array<std::array<tune_t, 12>, PSQTBucketCount> psqtPieceValues;
 
-    // Exctract and print pieces values
+    // Extract and print pieces values
     for (int phase = 0; phase <= 1; ++phase)
     {
         if (phase == 0)
-            std::cout << "internal static readonly short[] MiddleGamePieceValues =\n[\n\t";
+            std::cout << "internal static readonly short[][] MiddleGamePieceValues =\n[";
 
         else
-            std::cout << "\ninternal static readonly short[] EndGamePieceValues =\n[\n\t";
+            std::cout << "\ninternal static readonly short[][] EndGamePieceValues =\n[";
 
-        // Pawns
+        for (int bucket = 0; bucket < PSQTBucketCount; ++bucket)
         {
-            tune_t pawnSum = 0;
+            std::cout << "\n\t[\n\t\t";
 
-            for (int square = 0; square < 48; ++square)
+            // Pawns
             {
-                pawnSum += parameters[square][phase];
+                tune_t pawnSum = 0;
+
+                for (int square = 0; square < 48; ++square)
+                {
+                    pawnSum += parameters[48 * bucket + square][phase];
+                }
+
+                auto average = (pawnSum / 48.0);
+                auto pieceIndex = phase * 6;
+
+                psqtPieceValues[bucket][pieceIndex] = average;
+                std::cout << "+" << std::round(average + existingPieceValues[bucket][pieceIndex]) << ", ";
             }
 
-            auto average = (pawnSum / 48.0);
-
-            auto pieceIndex = phase * 6;
-            // pieceValues[pieceIndex] = PieceValue[phase * 5];
-            psqtPieceValues[pieceIndex] = average;
-            std::cout << "+" << std::round(psqtPieceValues[pieceIndex] + existingPieceValues[pieceIndex]) << ", ";
-        }
-
-        for (int piece = 1; piece < 5; ++piece)
-        {
-            tune_t sum = 0;
-
-            for (int square = 0; square < 64; ++square)
+            for (int piece = 1; piece < 5; ++piece)
             {
-                sum += parameters[piece * 64 - 16 + square][phase]; // Substract 16 since we're only tuning 48 pawn values
+                tune_t sum = 0;
+
+                for (int square = 0; square < 64; ++square)
+                {
+                    sum += parameters
+                        [(48 * PSQTBucketCount) +               // 64 - 16, since we're only tuning 48 pawn values
+                         (64 * PSQTBucketCount) * (piece - 1) + // piece - 1 since we already took pawns into account
+                         (64 * bucket) +
+                         square]
+                        [phase];
+                }
+
+                auto average = (sum / 64.0);
+                auto pieceIndex = piece + phase * 6;
+
+                // std::cout << std::endl
+                //           << existingPieceValues[0][pieceIndex] << "==" << existingPieceValues[1][pieceIndex] << std::endl;
+
+                psqtPieceValues[bucket][pieceIndex] = average;
+                std::cout << "+" << std::round(average + existingPieceValues[bucket][pieceIndex]) << ", ";
             }
 
-            auto average = (sum / 64.0);
+            // Kings
+            auto kingIndex = 5 + phase * 6;
+            psqtPieceValues[bucket][kingIndex] = 0;
+            std::cout << psqtPieceValues[bucket][kingIndex] + existingPieceValues[bucket][kingIndex] << ",\n\t\t";
 
-            auto pieceIndex = piece + phase * 6;
-            // pieceValues[pieceIndex] = PieceValue[piece + phase * 5];
-            psqtPieceValues[pieceIndex] = average;
-            std::cout << "+" << std::round(psqtPieceValues[pieceIndex] + existingPieceValues[pieceIndex]) << ", ";
+            for (int piece = 0; piece < 5; ++piece)
+            {
+                auto pieceIndex = piece + phase * 6;
+                std::cout << "-" << std::round(psqtPieceValues[bucket][pieceIndex] + existingPieceValues[bucket][pieceIndex]) << ", ";
+            }
+            std::cout << std::round(psqtPieceValues[bucket][kingIndex] + existingPieceValues[bucket][kingIndex]) << "\n\t],";
         }
 
-        // Kings
-        auto kingIndex = 5 + phase * 6;
-        psqtPieceValues[kingIndex] = 0;
-        std::cout << psqtPieceValues[kingIndex] + existingPieceValues[kingIndex] << ",\n\t";
-
-        for (int piece = 0; piece < 5; ++piece)
-        {
-            auto pieceIndex = piece + phase * 6;
-            std::cout << "-" << std::round(psqtPieceValues[pieceIndex] + existingPieceValues[pieceIndex]) << ", ";
-        }
-
-        std::cout << std::round(psqtPieceValues[kingIndex] + existingPieceValues[kingIndex]) << "\n];\n";
+        std::cout << "\n];\n";
     }
 
     // Print PSQTs
@@ -447,21 +617,33 @@ static void print_psqts_csharp(const parameters_t &parameters, std::array<tune_t
         const int piece = 0;
         for (int phase = 0; phase <= 1; ++phase)
         {
-            std::cout << "\ninternal static readonly short[] " << (phase == 0 ? "MiddleGame" : "EndGame") << names[piece] << "Table =\n[\n\t";
-
-            std::cout << "   0,\t   0,\t   0,\t   0,\t   0,\t   0,\t   0,\t   0,\n\t";
-
-            for (int square = 0; square < 48; ++square)
+            for (int bucket = 0; bucket < PSQTBucketCount; ++bucket)
             {
-                std::cout << std::setw(4) << std::round(parameters[square][phase] - psqtPieceValues[phase * 6]) << ",";
-                if (square % 8 == 7)
-                    std::cout << "\n";
-                if (square != 47)
-                    std::cout << "\t";
-            }
-            std::cout << "\t   0,\t   0,\t   0,\t   0,\t   0,\t   0,\t   0,\t   0," << std::endl;
+                if (bucket == 0)
+                {
+                    std::cout << "\ninternal static readonly short[][] " << (phase == 0 ? "MiddleGame" : "EndGame") << names[piece] << "Table =\n[\n";
+                }
 
-            std::cout << "];\n";
+                std::cout << "\t[\n\t\t";
+
+                std::cout << "   0,\t   0,\t   0,\t   0,\t   0,\t   0,\t   0,\t   0,\n\t\t";
+
+                for (int square = 0; square < 48; ++square)
+                {
+                    std::cout << std::setw(4) << std::round(parameters[48 * bucket + square][phase] - psqtPieceValues[bucket][phase * 6]) << ",";
+                    if (square % 8 == 7)
+                        std::cout << "\n\t";
+                    if (square != 47)
+                        std::cout << "\t";
+                }
+                std::cout << "\t   0,\t   0,\t   0,\t   0,\t   0,\t   0,\t   0,\t   0," << std::endl;
+                std::cout << "\t],\n";
+
+                if (bucket == PSQTBucketCount - 1)
+                {
+                    std::cout << "];\n";
+                }
+            }
         }
     }
 
@@ -469,73 +651,100 @@ static void print_psqts_csharp(const parameters_t &parameters, std::array<tune_t
     {
         for (int phase = 0; phase <= 1; ++phase)
         {
-            std::cout << "\ninternal static readonly short[] " << (phase == 0 ? "MiddleGame" : "EndGame") << names[piece] << "Table =\n[\n\t";
-            for (int square = 0; square < 64; ++square)
+            for (int bucket = 0; bucket < PSQTBucketCount; ++bucket)
             {
-                std::cout << std::setw(4) << std::round(parameters[piece * 64 - 16 + square][phase] - psqtPieceValues[piece + phase * 6]) << ","; // We substract the 16 non-tuned pawn valeus
-                if (square % 8 == 7)
-                    std::cout << "\n";
-                if (square != 63)
-                    std::cout << "\t";
+                if (bucket == 0)
+                {
+                    std::cout << "\ninternal static readonly short[][] " << (phase == 0 ? "MiddleGame" : "EndGame") << names[piece] << "Table =\n[\n";
+                }
+
+                std::cout << "\t[\n\t\t";
+
+                for (int square = 0; square < 64; ++square)
+                {
+                    std::cout << std::setw(4) << std::round(parameters[(48 * PSQTBucketCount) +               // 64 - 16, since we're only tuning 48 pawn values
+                                                                       (64 * PSQTBucketCount) * (piece - 1) + // piece - 1 since we already took pawns into account
+                                                                       (64 * bucket) + square][phase] -
+                                                            psqtPieceValues[bucket][piece + phase * 6])
+                              << ",";
+                    if (square % 8 == 7)
+                        std::cout << "\n\t";
+                    if (square != 63)
+                        std::cout << "\t";
+                }
+                std::cout << "],\n";
+
+                if (bucket == PSQTBucketCount - 1)
+                {
+                    std::cout << "];\n";
+                }
             }
-            std::cout << "];\n";
         }
     }
     std::cout << std::endl;
 }
 
-static void print_psqts_cpp(const parameters_t &parameters, std::array<tune_t, 12> &existingPieceValues)
+static void print_psqts_cpp(const parameters_t &parameters, std::array<std::array<tune_t, 12>, PSQTBucketCount> &existingPieceValues)
 {
-    std::array<tune_t, 12> psqtPieceValues;
+    std::array<std::array<tune_t, 12>, PSQTBucketCount> psqtPieceValues;
 
-    std::cout << "constexpr std::array<int, 12> PieceValue = {";
+    std::cout << "constexpr static std::array<std::array<int, 12>, PSQTBucketCount> PieceValue = {\n\t{";
 
     // Exctract and print pieces values
-    for (int phase = 0; phase <= 1; ++phase)
+    for (int bucket = 0; bucket < PSQTBucketCount; ++bucket)
     {
-        std::cout << "\n\t";
+        std::cout << "{\n";
 
-        // Pawns
+        for (int phase = 0; phase <= 1; ++phase)
         {
-            tune_t pawnSum = 0;
+            std::cout << "\t\t ";
 
-            for (int square = 0; square < 48; ++square)
+            // Pawns
             {
-                pawnSum += parameters[square][phase];
+                tune_t pawnSum = 0;
+
+                for (int square = 0; square < 48; ++square)
+                {
+                    pawnSum += parameters[48 * bucket + square][phase];
+                }
+
+                auto average = (pawnSum / 48.0);
+                auto pieceIndex = phase * 6;
+
+                psqtPieceValues[bucket][pieceIndex] = average;
+                std::cout << "+" << std::round(average + existingPieceValues[bucket][pieceIndex]) << ", ";
             }
 
-            auto average = (pawnSum / 48.0);
-
-            auto pieceIndex = phase * 6;
-            // pieceValues[pieceIndex] = PieceValue[phase * 5];
-            psqtPieceValues[pieceIndex] = average;
-            std::cout << "+" << std::round(psqtPieceValues[pieceIndex] + existingPieceValues[pieceIndex]) << ", ";
-        }
-
-        for (int piece = 1; piece < 5; ++piece)
-        {
-            tune_t sum = 0;
-
-            for (int square = 0; square < 64; ++square)
+            for (int piece = 1; piece < 5; ++piece)
             {
-                sum += parameters[piece * 64 - 16 + square][phase]; // Substract 16 since we're only tuning 48 pawn values
+                tune_t sum = 0;
+
+                for (int square = 0; square < 64; ++square)
+                {
+                    sum += parameters
+                        [(48 * PSQTBucketCount) +               // 64 - 16, since we're only tuning 48 pawn values
+                         (64 * PSQTBucketCount) * (piece - 1) + // piece - 1 since we already took pawns into account
+                         (64 * bucket) +
+                         square]
+                        [phase];
+                }
+
+                auto average = (sum / 64.0);
+                auto pieceIndex = piece + phase * 6;
+
+                psqtPieceValues[bucket][pieceIndex] = average;
+                std::cout << "+" << std::round(average /*+ existingPieceValues[bucket][pieceIndex]*/) << ", ";
             }
 
-            auto average = (sum / 64.0);
-
-            auto pieceIndex = piece + phase * 6;
-            // pieceValues[pieceIndex] = PieceValue[piece + phase * 5];
-            psqtPieceValues[pieceIndex] = average;
-            std::cout << "+" << std::round(psqtPieceValues[pieceIndex] + existingPieceValues[pieceIndex]) << ", ";
+            // Kings
+            auto kingIndex = 5 + phase * 6;
+            psqtPieceValues[bucket][kingIndex] = 0;
+            std::cout << "// " << std::round(existingPieceValues[bucket][kingIndex]) << "\n";
         }
-
-        // Kings
-        auto kingIndex = 5 + phase * 6;
-        psqtPieceValues[kingIndex] = 0;
-        std::cout << "// " << std::round(psqtPieceValues[kingIndex] + existingPieceValues[kingIndex]);
+        std::cout<<"\t},\n\t";
     }
 
-    std::cout << "\n};\n";
+    std::cout << "\n}};\n";
 
     // Print PSQTs
 
@@ -546,20 +755,34 @@ static void print_psqts_cpp(const parameters_t &parameters, std::array<tune_t, 1
         const int piece = 0;
         for (int phase = 0; phase <= 1; ++phase)
         {
-            std::cout << "\nconstexpr static std::array<int, 64> " << (phase == 0 ? "MiddleGame" : "EndGame") << names[piece] << "Table = {\n\t";
-
-            std::cout << "   0,\t   0,\t   0,\t   0,\t   0,\t   0,\t   0,\t   0,\n\t";
-
-            for (int square = 0; square < 48; ++square)
+            for (int bucket = 0; bucket < PSQTBucketCount; ++bucket)
             {
-                std::cout << std::setw(4) << std::round(parameters[square][phase] - psqtPieceValues[phase * 6]) << ",";
-                if (square % 8 == 7)
-                    std::cout << "\n";
-                if (square != 47)
-                    std::cout << "\t";
-            }
+                if (bucket == 0)
+                {
+                    std::cout << "\nconstexpr static std::array<std::array<int, 64>, PSQTBucketCount> " << (phase == 0 ? "MiddleGame" : "EndGame") << names[piece] << "Table = {\n\t{";
+                }
 
-            std::cout << "\t   0,\t   0,\t   0,\t   0,\t   0,\t   0,\t   0,\t   0};" << std::endl;
+                std::cout << "{\n\t\t ";
+
+                std::cout << "   0,\t   0,\t   0,\t   0,\t   0,\t   0,\t   0,\t   0,\n\t\t";
+
+                for (int square = 0; square < 48; ++square)
+                {
+                    std::cout << std::setw(4) << std::round(parameters[48 * bucket + square][phase] - psqtPieceValues[bucket][phase * 6]) << ",";
+                    if (square % 8 == 7)
+                        std::cout << "\n\t ";
+                    if (square != 47)
+                        std::cout << "\t";
+                }
+
+                std::cout << "\t   0,\t   0,\t   0,\t   0,\t   0,\t   0,\t   0,\t   0};\t//\n" << std::endl;
+                std::cout << "\t},\n\t";
+
+                if (bucket == PSQTBucketCount - 1)
+                {
+                    std::cout << "}};\n";
+                }
+            }
         }
     }
 
@@ -567,21 +790,40 @@ static void print_psqts_cpp(const parameters_t &parameters, std::array<tune_t, 1
     {
         for (int phase = 0; phase <= 1; ++phase)
         {
-            std::cout << "\nconstexpr static std::array<int, 64> " << (phase == 0 ? "MiddleGame" : "EndGame") << names[piece] << "Table = {\n\t";
-            for (int square = 0; square < 64; ++square)
+            for (int bucket = 0; bucket < PSQTBucketCount; ++bucket)
             {
-                std::cout << std::setw(4) << std::round(parameters[piece * 64 - 16 + square][phase] - psqtPieceValues[piece + phase * 6]); // We substract the 16 non-tuned pawn valeus
-                if (square != 63)
+                if (bucket == 0)
                 {
-                    std::cout << ",";
+                    std::cout << "\nconstexpr static std::array<std::array<int, 64>, PSQTBucketCount> " << (phase == 0 ? "MiddleGame" : "EndGame") << names[piece] << "Table = {\n\t{";
+                }
 
-                    if (square % 8 == 7)
-                        std::cout << "\n";
+                std::cout << "{\n\t\t ";
 
-                    std::cout << "\t";
+                for (int square = 0; square < 64; ++square)
+                {
+                    std::cout << std::setw(4) << std::round(parameters[(48 * PSQTBucketCount) +               // 64 - 16, since we're only tuning 48 pawn values
+                                                                       (64 * PSQTBucketCount) * (piece - 1) + // piece - 1 since we already took pawns into account
+                                                                       (64 * bucket) + square][phase] -
+                                                            psqtPieceValues[bucket][piece + phase * 6]); // We substract the 16 non-tuned pawn valeus
+                    if (square != 63)
+                    {
+                        std::cout << ",";
+
+                        if (square % 8 == 7)
+                            std::cout << "\n\t";
+
+                        std::cout << "\t";
+                    }
+                }
+
+                std::cout << "\t//\n\t},\n\t";
+
+                if (bucket == PSQTBucketCount - 1)
+                {
+
+                    std::cout << "}};\n";
                 }
             }
-            std::cout << "};\n";
         }
     }
     std::cout << std::endl;

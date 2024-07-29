@@ -49,7 +49,7 @@ public:
 
 class TunableArray
 {
-    static inline std::array<tune_t, 12> emptyArray = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    static inline std::array<std::array<tune_t, 12>, PSQTBucketCount> emptyArray;
     std::vector<i32> _mg;
     std::vector<i32> _eg;
 
@@ -70,6 +70,11 @@ public:
     TunableArray(chess::PieceType piece, const std::vector<i32> mg, const std::vector<i32> eg, i32 start, i32 end)
         : pieceIndex(static_cast<int>(piece)), _mg(mg), _eg(eg), start(start), end(end)
     {
+        for (int b = 0; b < PSQTBucketCount; ++b)
+        {
+            emptyArray[b] = std::array<tune_t, 12>{{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
+        }
+
         if (mg.size() != eg.size())
         {
             throw std::invalid_argument("mg and eg size mismatch");
@@ -95,7 +100,7 @@ public:
         }
     }
 
-    /// Extracts first not-zerp value
+    /// Extracts first not-zero value
     pair_t extract_offset(const parameters_t &parameters)
     {
         pair_t packed;
@@ -124,7 +129,7 @@ public:
         to_json(parameters, ss, name, emptyArray);
     }
 
-    void to_json(const parameters_t &parameters, std::stringstream &ss, const std::string &name, const std::array<tune_t, 12> &mobilityPieceValues)
+    void to_json(const parameters_t &parameters, std::stringstream &ss, const std::string &name, const std::array<std::array<tune_t, 12>, PSQTBucketCount> &mobilityPieceValues)
     {
         const std::string keyword = size == 8
                                         ? "Rank"
@@ -141,8 +146,8 @@ public:
         for (int rank = 0; rank < size - end - start; ++rank)
         {
             ss << "\t\"" << keyword << rank + start << "\": {\n";
-            ss << "\t\t\"MG\": " << round(parameters[index + rank][0] - mobilityPieceValues[pieceIndex]) << ",\n";
-            ss << "\t\t\"EG\": " << round(parameters[index + rank][1] - mobilityPieceValues[pieceIndex + 6]) << "\n\t}";
+            ss << "\t\t\"MG\": " << round(parameters[index + rank][0] - mobilityPieceValues[0][pieceIndex]) << ",\n";
+            ss << "\t\t\"EG\": " << round(parameters[index + rank][1] - mobilityPieceValues[0][pieceIndex + 6]) << "\n\t}";
 
             if (rank != size - 1)
                 ss << ",";
@@ -167,7 +172,7 @@ public:
         to_csharp(parameters, ss, name, emptyArray);
     }
 
-    void to_csharp(const parameters_t &parameters, std::stringstream &ss, const std::string &name, const std::array<tune_t, 12> &mobilityPieceValues)
+    void to_csharp(const parameters_t &parameters, std::stringstream &ss, const std::string &name, const std::array<std::array<tune_t, 12>, PSQTBucketCount> &mobilityPieceValues)
     {
         std::string variable_name;
 
@@ -200,7 +205,7 @@ public:
 
         for (int rank = 0; rank < size - end - start; ++rank)
         {
-            ss << "\t\tnew(" << round(parameters[index + rank][0] - mobilityPieceValues[pieceIndex]) << "," << round(parameters[index + rank][1] - mobilityPieceValues[pieceIndex + 6]) << ")";
+            ss << "\t\tnew(" << round(parameters[index + rank][0] - mobilityPieceValues[0][pieceIndex]) << "," << round(parameters[index + rank][1] - mobilityPieceValues[0][pieceIndex + 6]) << ")";
             if (rank == size - start - 1)
                 ss << ");";
             else
@@ -224,41 +229,41 @@ public:
         to_cpp(parameters, ss, name, emptyArray);
     }
 
-    void to_cpp(const parameters_t &parameters, std::stringstream &ss, const std::string &name, const std::array<tune_t, 12> &mobilityPieceValues)
+    void to_cpp(const parameters_t &parameters, std::stringstream &ss, const std::string &name, const std::array<std::array<tune_t, 12>, PSQTBucketCount> &mobilityPieceValues)
     {
         std::string pieceType;
         switch (pieceIndex)
         {
-            case static_cast<int>(chess::PieceType::PAWN) :
-            {
-                pieceType = "PAWN";
-                break;
-            }
-            case static_cast<int>(chess::PieceType::KNIGHT) :
-            {
-                pieceType = "KNIGHT";
-                break;
-            }
-            case static_cast<int>(chess::PieceType::BISHOP) :
-            {
-                pieceType = "BISHOP";
-                break;
-            }
-            case static_cast<int>(chess::PieceType::ROOK) :
-            {
-                pieceType = "ROOK";
-                break;
-            }
-            case static_cast<int>(chess::PieceType::QUEEN) :
-            {
-                pieceType = "QUEEN";
-                break;
-            }
-            case static_cast<int>(chess::PieceType::KING) :
-            {
-                pieceType = "KING";
-                break;
-            }
+        case static_cast<int>(chess::PieceType::PAWN):
+        {
+            pieceType = "PAWN";
+            break;
+        }
+        case static_cast<int>(chess::PieceType::KNIGHT):
+        {
+            pieceType = "KNIGHT";
+            break;
+        }
+        case static_cast<int>(chess::PieceType::BISHOP):
+        {
+            pieceType = "BISHOP";
+            break;
+        }
+        case static_cast<int>(chess::PieceType::ROOK):
+        {
+            pieceType = "ROOK";
+            break;
+        }
+        case static_cast<int>(chess::PieceType::QUEEN):
+        {
+            pieceType = "QUEEN";
+            break;
+        }
+        case static_cast<int>(chess::PieceType::KING):
+        {
+            pieceType = "KING";
+            break;
+        }
         }
 
         ss << "TunableArray " << name << "(\n";
@@ -271,7 +276,7 @@ public:
 
         for (int rank = 0; rank < size - end - start; ++rank)
         {
-            ss << std::round(parameters[index + rank][0] - mobilityPieceValues[pieceIndex]);
+            ss << std::round(parameters[index + rank][0] - mobilityPieceValues[0][pieceIndex]);
             if (rank == size - start - 1)
                 ss << "},\n";
             else
@@ -296,7 +301,7 @@ public:
 
         for (int rank = 0; rank < size - end - start; ++rank)
         {
-            ss << std::round(parameters[index + rank][1] - mobilityPieceValues[pieceIndex + 6]);
+            ss << std::round(parameters[index + rank][1] - mobilityPieceValues[0][pieceIndex + 6]);
             if (rank == size - start - 1)
                 ss << "},\n";
             else
