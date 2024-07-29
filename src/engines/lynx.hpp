@@ -752,12 +752,13 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
 
     IncrementCoefficients(
         coefficients,
-        (48 * PSQTBucketCount) + (64 * PSQTBucketCount * 4) + whiteKing,
+        (48 * PSQTBucketCount) + (64 * PSQTBucketCount * 4) + (64 * whiteBucket) + whiteKing,
         chess::Color::WHITE);
 
-    IncrementCoefficients(coefficients,
-                          (48 * PSQTBucketCount) + (64 * PSQTBucketCount * 4) + blackKing,
-                          chess::Color::BLACK);
+    IncrementCoefficients(
+        coefficients,
+        (48 * PSQTBucketCount) + (64 * PSQTBucketCount * 4) + (64 * blackBucket) + blackKing,
+        chess::Color::BLACK);
 
     // Debugging eval
     // return EvalResult{
