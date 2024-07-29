@@ -573,14 +573,14 @@ static void print_psqts_csharp(const parameters_t &parameters, std::array<std::a
     for (int phase = 0; phase <= 1; ++phase)
     {
         if (phase == 0)
-            std::cout << "internal static readonly short[][] MiddleGamePieceValues =\n[";
+            std::cout << "\tinternal static readonly short[][] MiddleGamePieceValues =\n\t[";
 
         else
-            std::cout << "\ninternal static readonly short[][] EndGamePieceValues =\n[";
+            std::cout << "\n\tinternal static readonly short[][] EndGamePieceValues =\n\t[";
 
         for (int bucket = 0; bucket < PSQTBucketCount; ++bucket)
         {
-            std::cout << "\n\t[\n\t\t";
+            std::cout << "\n\t\t[\n\t\t\t";
 
             // Pawns
             {
@@ -625,17 +625,17 @@ static void print_psqts_csharp(const parameters_t &parameters, std::array<std::a
             // Kings
             auto kingIndex = 5 + phase * 6;
             psqtPieceValues[bucket][kingIndex] = 0;
-            std::cout << psqtPieceValues[bucket][kingIndex] + existingPieceValues[bucket][kingIndex] << ",\n\t\t";
+            std::cout << psqtPieceValues[bucket][kingIndex] + existingPieceValues[bucket][kingIndex] << ",\n\t\t\t";
 
             for (int piece = 0; piece < 5; ++piece)
             {
                 auto pieceIndex = piece + phase * 6;
                 std::cout << "-" << std::round(psqtPieceValues[bucket][pieceIndex] + existingPieceValues[bucket][pieceIndex]) << ", ";
             }
-            std::cout << std::round(psqtPieceValues[bucket][kingIndex] + existingPieceValues[bucket][kingIndex]) << "\n\t],";
+            std::cout << std::round(psqtPieceValues[bucket][kingIndex] + existingPieceValues[bucket][kingIndex]) << "\n\t\t],";
         }
 
-        std::cout << "\n];\n";
+        std::cout << "\n\t];\n";
     }
 
     // Print PSQTs
@@ -651,27 +651,27 @@ static void print_psqts_csharp(const parameters_t &parameters, std::array<std::a
             {
                 if (bucket == 0)
                 {
-                    std::cout << "\ninternal static readonly short[][] " << (phase == 0 ? "MiddleGame" : "EndGame") << names[piece] << "Table =\n[\n";
+                    std::cout << "\n\tinternal static readonly short[][] " << (phase == 0 ? "MiddleGame" : "EndGame") << names[piece] << "Table =\n\t[\n";
                 }
 
-                std::cout << "\t[\n\t\t";
+                std::cout << "\t\t[\n\t\t\t";
 
-                std::cout << "   0,\t   0,\t   0,\t   0,\t   0,\t   0,\t   0,\t   0,\n\t\t";
+                std::cout << "   0,\t   0,\t   0,\t   0,\t   0,\t   0,\t   0,\t   0,\n\t\t\t";
 
                 for (int square = 0; square < 48; ++square)
                 {
                     std::cout << std::setw(4) << std::round(parameters[48 * bucket + square][phase] - psqtPieceValues[bucket][phase * 6]) << ",";
                     if (square % 8 == 7)
-                        std::cout << "\n\t";
+                        std::cout << "\n\t\t";
                     if (square != 47)
                         std::cout << "\t";
                 }
                 std::cout << "\t   0,\t   0,\t   0,\t   0,\t   0,\t   0,\t   0,\t   0," << std::endl;
-                std::cout << "\t],\n";
+                std::cout << "\t\t],\n";
 
                 if (bucket == PSQTBucketCount - 1)
                 {
-                    std::cout << "];\n";
+                    std::cout << "\t];\n";
                 }
             }
         }
@@ -685,10 +685,10 @@ static void print_psqts_csharp(const parameters_t &parameters, std::array<std::a
             {
                 if (bucket == 0)
                 {
-                    std::cout << "\ninternal static readonly short[][] " << (phase == 0 ? "MiddleGame" : "EndGame") << names[piece] << "Table =\n[\n";
+                    std::cout << "\n\tinternal static readonly short[][] " << (phase == 0 ? "MiddleGame" : "EndGame") << names[piece] << "Table =\n\t[\n";
                 }
 
-                std::cout << "\t[\n\t\t";
+                std::cout << "\t\t[\n\t\t\t";
 
                 for (int square = 0; square < 64; ++square)
                 {
@@ -698,7 +698,7 @@ static void print_psqts_csharp(const parameters_t &parameters, std::array<std::a
                                                             psqtPieceValues[bucket][piece + phase * 6])
                               << ",";
                     if (square % 8 == 7)
-                        std::cout << "\n\t";
+                        std::cout << "\n\t\t";
                     if (square != 63)
                         std::cout << "\t";
                 }
@@ -706,7 +706,7 @@ static void print_psqts_csharp(const parameters_t &parameters, std::array<std::a
 
                 if (bucket == PSQTBucketCount - 1)
                 {
-                    std::cout << "];\n";
+                    std::cout << "\t];\n";
                 }
             }
         }
