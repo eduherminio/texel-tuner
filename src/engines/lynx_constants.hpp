@@ -30,7 +30,7 @@ constexpr static int EvalNormalizationCoefficient = 90;
 
 constexpr std::array<int, 12> PieceValue = {
     +97, +356, +373, +507, +1123,  // 0
-    +123, +427, +363, +747, +1424, // 0
+    +123, +427, +363, +747, +1425, // 0
 };
 
 constexpr static std::array<int, 64> MiddleGamePawnTable = {
@@ -144,7 +144,7 @@ constexpr static std::array<int, 64> MiddleGameKingTable = {
     16, 60, 46, -46, 34, -42, 51, 38};
 
 constexpr static std::array<int, 64> EndGameKingTable = {
-    -77, -49, -28, -1, -41, -9, -43, -90,
+    -77, -49, -28, -1, -41, -9, -43, -91,
     -23, 15, 24, 37, 43, 30, 8, -29,
     -2, 40, 69, 81, 84, 73, 40, 10,
     0, 52, 90, 122, 120, 92, 63, 23,
@@ -328,6 +328,14 @@ constexpr static std::array<int, 64> Rank = {
 const u64 NotAFile = 0xFEFEFEFEFEFEFEFE;
 
 const u64 NotHFile = 0x7F7F7F7F7F7F7F7F;
+
+const int PositiveCheckmateDetectionLimit = 27000;
+
+const int NegativeCheckmateDetectionLimit = -27000;
+
+const int MinEval = NegativeCheckmateDetectionLimit + 1;
+
+const int MaxEval = PositiveCheckmateDetectionLimit - 1;
 
 [[nodiscard]] static u64 ShiftUp(const u64 board)
 {

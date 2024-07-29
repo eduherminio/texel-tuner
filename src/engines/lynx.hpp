@@ -3,6 +3,7 @@
 #include "./lynx_tunable.hpp"
 #include "../external/chess.hpp"
 #include "../external/builtin.hpp"
+#include <algorithm>
 #include <cassert>
 #include <array>
 #include <bit>
@@ -728,10 +729,12 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
 
     // Check if drawn position due to lack of material
 
+    int totalPawnsCount = INT_MIN;
+
     if (gamePhase <= 3)
     {
-        auto totalPawnsCount = pieceCount[0] + pieceCount[6];
-        packedScore -= (16 - totalPawnsCount);
+        totalPawnsCount = board.pieces(chess::PieceType::PAWN, chess::Color::WHITE).count() +
+                          board.pieces(chess::PieceType::PAWN, chess::Color::BLACK).count();
 
         if (totalPawnsCount == 0)
         {
@@ -803,7 +806,24 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
     auto middleGameScore = UnpackMG(packedScore);
     auto endGameScore = UnpackEG(packedScore);
     int eval = ((middleGameScore * gamePhase) + (endGameScore * endGamePhase)) / maxPhase;
-    // eval = ((middleGameScore * gamePhase) + (endGameScore * endGamePhase));
+
+    if (gamePhase <= 3)
+    {
+        auto pawnScalingPenalty = 16 - totalPawnsCount;
+
+        if (eval > 1)
+        {
+            pawnScalingPenalty = std::min(eval - 1, pawnScalingPenalty);
+            eval -= pawnScalingPenalty;
+        }
+        else if (eval < -1)
+        {
+            pawnScalingPenalty = std::min(-eval - 1, pawnScalingPenalty);
+            eval += pawnScalingPenalty;
+        }
+    }
+
+    eval = std::clamp(eval, MinEval, MaxEval);
 
     // Always white's perspective
     return EvalResult{
