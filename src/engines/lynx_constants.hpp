@@ -33,12 +33,12 @@ constexpr static int PSQTBucketCount = 2;
 constexpr static std::array<std::array<int, 12>, PSQTBucketCount> PieceValue = {
     {
         {
-            +97, +332, +350, +451, +999,    // 0,
-            +128, +405, +348, +708, +1326,  // 0
+            +97, +332, +350, +451, +999,   // 0,
+            +128, +405, +348, +708, +1326, // 0
         },
         {
-            +103, +367, +382, +517, +1150,  // 0
-            +121, +436, +375, +773, +1463,  // 0
+            +103, +367, +382, +517, +1150, // 0
+            +121, +436, +375, +773, +1463, // 0
         },
     }};
 
@@ -334,6 +334,54 @@ constexpr static std::array<std::array<int, 64>, PSQTBucketCount> EndGameKingTab
         },
     }};
 
+constexpr static std::array<std::array<int, 64>, PSQTBucketCount> MiddleGameEnemyKingTable = {
+    {
+        {
+            330, 351, 334, 276, 0, 0, 0, 0,
+            309, 321, 313, 292, 0, 0, 0, 0,
+            252, 273, 238, 236, 0, 0, 0, 0,
+            233, 251, 231, 180, 0, 0, 0, 0,
+            255, 277, 239, 199, 0, 0, 0, 0,
+            240, 274, 230, 227, 0, 0, 0, 0,
+            347, 313, 286, 280, 0, 0, 0, 0,
+            317, 345, 322, 266, 0, 0, 0, 0 //
+        },
+        {
+            0, 0, 0, 0, -108, -171, -78, -90,
+            0, 0, 0, 0, -176, -153, -107, -101,
+            0, 0, 0, 0, -215, -215, -174, -199,
+            0, 0, 0, 0, -260, -227, -220, -256,
+            0, 0, 0, 0, -256, -215, -221, -251,
+            0, 0, 0, 0, -193, -194, -167, -190,
+            0, 0, 0, 0, -163, -142, -91, -93,
+            0, 0, 0, 0, -101, -163, -64, -76 //
+        },
+    }};
+
+constexpr static std::array<std::array<int, 64>, PSQTBucketCount> EndGameEnemyKingTable = {
+    {
+        {
+            -98, -68, -47, -30, 0, 0, 0, 0,
+            -46, -11, -1, 8, 0, 0, 0, 0,
+            -26, 15, 44, 55, 0, 0, 0, 0,
+            -23, 29, 65, 97, 0, 0, 0, 0,
+            -31, 20, 63, 94, 0, 0, 0, 0,
+            -22, 15, 46, 58, 0, 0, 0, 0,
+            -62, -13, 6, 10, 0, 0, 0, 0,
+            -102, -74, -49, -30, 0, 0, 0, 0 //
+        },
+        {
+            0, 0, 0, 0, -26, 1, -32, -79,
+            0, 0, 0, 0, 52, 39, 15, -22,
+            0, 0, 0, 0, 92, 80, 44, 15,
+            0, 0, 0, 0, 128, 98, 67, 27,
+            0, 0, 0, 0, 130, 97, 69, 26,
+            0, 0, 0, 0, 88, 75, 43, 11,
+            0, 0, 0, 0, 48, 36, 10, -25,
+            0, 0, 0, 0, -21, -2, -35, -83 //
+        },
+    }};
+
 constexpr static std::array<std::array<std::array<int, 64>, PSQTBucketCount>, 6> MiddleGamePositionalWhiteTables = {
     MiddleGamePawnTable,
     MiddleGameKnightTable,
@@ -394,6 +442,20 @@ constexpr int PackedPositionalTables(int bucket, int piece, int square)
     return Pack(
         MiddleGamePositionalWhiteTables[piece][bucket][square] * coefficient,
         EndGamePositionalWhiteTables[piece][bucket][square] * coefficient);
+}
+
+constexpr int PackedEnemyKingTables(chess::Color color, int bucket, int square)
+{
+    int coefficient = 1;
+    if (color == chess::Color::BLACK)
+    {
+        square ^= 56;
+        coefficient = -1;
+    }
+
+    return Pack(
+        MiddleGameEnemyKingTable[bucket][square] * coefficient,
+        EndGameEnemyKingTable[bucket][square] * coefficient);
 }
 
 constexpr static std::array<int, 64> File = {

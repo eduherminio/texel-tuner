@@ -750,6 +750,9 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
                    KingAdditionalEvaluation(whiteKing, chess::Color::WHITE, board, pieceCount, coefficients) -
                    KingAdditionalEvaluation(blackKing, chess::Color::BLACK, board, pieceCount, coefficients);
 
+    packedScore += PackedEnemyKingTables(chess::Color::WHITE, whiteBucket, blackKing) +
+                   PackedEnemyKingTables(chess::Color::BLACK, blackBucket, whiteKing);
+
     IncrementCoefficients(
         coefficients,
         (48 * PSQTBucketCount) + (64 * PSQTBucketCount * 4) + (64 * whiteBucket) + whiteKing,
