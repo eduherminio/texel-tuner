@@ -773,6 +773,38 @@ static void print_psqts_csharp(const parameters_t &parameters, std::array<std::a
             }
         }
     }
+
+    for (int phase = 0; phase <= 1; ++phase)
+    {
+        for (int bucket = 0; bucket < PSQTBucketCount; ++bucket)
+        {
+            if (bucket == 0)
+            {
+                std::cout << "\n\tinternal static readonly short[][] " << (phase == 0 ? "MiddleGame" : "EndGame") << "EnemyKing" << "Table =\n\t[\n";
+            }
+
+            std::cout << "\t\t[\n\t\t\t";
+
+            for (int square = 0; square < 64; ++square)
+            {
+                std::cout << std::setw(4) << std::round(parameters[(48 * PSQTBucketCount) +     // 64 - 16, since we're only tuning 48 pawn values
+                                                                   (64 * PSQTBucketCount * 5) + // piece - 1 since we already took pawns into account
+                                                                   (64 * bucket) + square][phase])
+                          << ",";
+                if (square % 8 == 7)
+                    std::cout << "\n\t\t";
+                if (square != 63)
+                    std::cout << "\t";
+            }
+            std::cout << "],\n";
+
+            if (bucket == PSQTBucketCount - 1)
+            {
+                std::cout << "\t];\n";
+            }
+        }
+    }
+
     std::cout << std::endl;
 }
 
@@ -897,7 +929,7 @@ static void print_psqts_cpp(const parameters_t &parameters, std::array<std::arra
                     std::cout << std::setw(4) << std::round(parameters[(48 * PSQTBucketCount) +               // 64 - 16, since we're only tuning 48 pawn values
                                                                        (64 * PSQTBucketCount) * (piece - 1) + // piece - 1 since we already took pawns into account
                                                                        (64 * bucket) + square][phase] -
-                                                            psqtPieceValues[bucket][piece + phase * 6]); // We substract the 16 non-tuned pawn valeus
+                                                            psqtPieceValues[bucket][piece + phase * 6]);
                     if (square != 63)
                     {
                         std::cout << ",";
@@ -915,6 +947,42 @@ static void print_psqts_cpp(const parameters_t &parameters, std::array<std::arra
                 {
                     std::cout << "}};\n";
                 }
+            }
+        }
+    }
+
+    for (int phase = 0; phase <= 1; ++phase)
+    {
+        for (int bucket = 0; bucket < PSQTBucketCount; ++bucket)
+        {
+            if (bucket == 0)
+            {
+                std::cout << "\nconstexpr static std::array<std::array<int, 64>, PSQTBucketCount> " << (phase == 0 ? "MiddleGame" : "EndGame") << "EnemyKing" << "Table = {\n\t{\n\t";
+            }
+
+            std::cout << "\t{\n\t\t\t";
+
+            for (int square = 0; square < 64; ++square)
+            {
+                std::cout << std::setw(4) << std::round(parameters[(48 * PSQTBucketCount) +               // 64 - 16, since we're only tuning 48 pawn values
+                                                                   (64 * PSQTBucketCount * 5) + // piece - 1 since we already took pawns into account
+                                                                   (64 * bucket) + square][phase]);
+                if (square != 63)
+                {
+                    std::cout << ",";
+
+                    if (square % 8 == 7)
+                        std::cout << "\n\t\t";
+
+                    std::cout << "\t";
+                }
+            }
+
+            std::cout << "\t//\n\t\t},\n\t";
+
+            if (bucket == PSQTBucketCount - 1)
+            {
+                std::cout << "}};\n";
             }
         }
     }
