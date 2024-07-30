@@ -97,11 +97,10 @@ public:
         {
             auto mg = std::round(parameters[index + i][0]);
             auto eg = std::round(parameters[index + i][1]);
-            ss << "\t\tS(" << std::round(parameters[index][0]) << ", " << std::round(parameters[index][1]) << "),\n";
+            ss << "\t\tS(" << mg << ", " << eg << "),\n";
         }
 
         ss << "\t];\n\n";
-
     }
 };
 
