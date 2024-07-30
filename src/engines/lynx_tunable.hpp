@@ -47,6 +47,63 @@ public:
     }
 };
 
+class TunableSingleBucketed
+{
+public:
+    std::array<i32, PSQTBucketCount> packed;
+    i32 index;
+    constexpr static i32 size = PSQTBucketCount;
+
+    TunableSingleBucketed(std::array<i32, PSQTBucketCount> packed)
+        : packed(packed)
+    {
+    }
+
+    void add(parameters_t &parameters)
+    {
+        index = parameters.size();
+        for (int i : packed)
+        {
+            parameters.push_back({(double)mg_score(i), (double)eg_score(i)});
+        }
+    }
+
+    void to_json(const parameters_t &parameters, std::stringstream &ss, const std::string &name)
+    {
+    }
+
+    void to_csharp(const parameters_t &parameters, std::stringstream &ss, const std::string &name)
+    {
+
+        ss << "\tpublic TaperedEvaluationTerm[] " << name << " { get; set; } =" << std::endl
+           << "\t[" << std::endl;
+
+        for (int i = 0; i < size; ++i)
+        {
+            auto mg = std::round(parameters[index][0]);
+            auto eg = std::round(parameters[index][1]);
+            ss << "\t\tnew (" << mg << ", " << eg << ")," << std::endl;
+        }
+
+        ss << "\t];\n" << std::endl;
+    }
+
+    void to_cpp(const parameters_t &parameters, std::stringstream &ss, const std::string &name)
+    {
+        ss << "TunableSingleBucketed " << name << "(std::array<i32, PSQTBucketCount>(" << std::endl
+           << "\t{" << std::endl;
+
+        for (int i = 0; i < size; ++i)
+        {
+            auto mg = std::round(parameters[index][0]);
+            auto eg = std::round(parameters[index][1]);
+            ss << "\t\tS(" << std::round(parameters[index][0]) << ", " << std::round(parameters[index][1]) << "),\n";
+        }
+
+        ss << "\t}));\n" << std::endl;
+    }
+};
+
 class TunableArray
 {
     static inline std::array<std::array<tune_t, 12>, PSQTBucketCount> emptyArray;
