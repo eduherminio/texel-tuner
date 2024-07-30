@@ -19,46 +19,55 @@ TunableSingleBucketed IsolatedPawnPenalty(std::array<i32, PSQTBucketCount>(
         S(-20, -14),
         S(-20, -14),
     }));
+
 TunableSingleBucketed OpenFileRookBonus(std::array<i32, PSQTBucketCount>(
     {
         S(45, 6),
         S(45, 6),
     }));
+
 TunableSingleBucketed SemiOpenFileRookBonus(std::array<i32, PSQTBucketCount>(
     {
         S(15, 8),
         S(15, 8),
     }));
+
 TunableSingleBucketed QueenMobilityBonus(std::array<i32, PSQTBucketCount>(
     {
         S(3, 8),
         S(3, 8),
     }));
+
 TunableSingleBucketed SemiOpenFileKingPenalty(std::array<i32, PSQTBucketCount>(
     {
         S(-21, 17),
         S(-21, 17),
     }));
+
 TunableSingleBucketed OpenFileKingPenalty(std::array<i32, PSQTBucketCount>(
     {
         S(-86, 15),
         S(-86, 15),
     }));
+
 TunableSingleBucketed KingShieldBonus(std::array<i32, PSQTBucketCount>(
     {
         S(11, -9),
         S(11, -9),
     }));
+
 TunableSingleBucketed BishopPairBonus(std::array<i32, PSQTBucketCount>(
     {
         S(31, 81),
         S(31, 81),
     }));
+
 TunableSingleBucketed PieceProtectedByPawnBonus(std::array<i32, PSQTBucketCount>(
     {
         S(6, 11),
         S(6, 11),
     }));
+
 TunableSingleBucketed PieceAttackedByPawnPenalty(std::array<i32, PSQTBucketCount>(
     {
         S(-45, -18),
@@ -768,7 +777,7 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
     auto attackedPiecesByWhitePawns = chess::builtin::popcount(blackPawnAttacks & __builtin_bswap64(board.us(chess::Color::WHITE).getBits()) /*&(~GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE))*/);
     auto attackedPiecesByBlackPawns = chess::builtin::popcount(whitePawnAttacks & __builtin_bswap64(board.us(chess::Color::BLACK).getBits()) /*&(~GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK))*/);
 
-// TODO reverse?
+    // TODO reverse?
     IncrementCoefficients(coefficients, PieceAttackedByPawnPenalty.index + whiteBucket, chess::Color::WHITE, attackedPiecesByWhitePawns);
     IncrementCoefficients(coefficients, PieceAttackedByPawnPenalty.index + blackBucket, chess::Color::BLACK, attackedPiecesByBlackPawns);
 
