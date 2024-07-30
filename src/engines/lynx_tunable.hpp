@@ -80,12 +80,12 @@ public:
 
         for (int i = 0; i < size; ++i)
         {
-            auto mg = std::round(parameters[index][0]);
-            auto eg = std::round(parameters[index][1]);
+            auto mg = std::round(parameters[index + i][0]);
+            auto eg = std::round(parameters[index + i][1]);
             ss << "\t\tnew (" << mg << ", " << eg << ")," << std::endl;
         }
 
-        ss << "\t];\n" << std::endl;
+        ss << "\t];\n\n";
     }
 
     void to_cpp(const parameters_t &parameters, std::stringstream &ss, const std::string &name)
@@ -95,12 +95,13 @@ public:
 
         for (int i = 0; i < size; ++i)
         {
-            auto mg = std::round(parameters[index][0]);
-            auto eg = std::round(parameters[index][1]);
+            auto mg = std::round(parameters[index + i][0]);
+            auto eg = std::round(parameters[index + i][1]);
             ss << "\t\tS(" << std::round(parameters[index][0]) << ", " << std::round(parameters[index][1]) << "),\n";
         }
 
-        ss << "\t}));\n" << std::endl;
+        ss << "\t];\n\n";
+
     }
 };
 
