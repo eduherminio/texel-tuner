@@ -18,33 +18,33 @@ TunableSingle IsolatedPawnPenalty(-20, -14);
 
 TunableSingleBucketed OpenFileRookBonus(std::array<i32, PSQTBucketCount>(
     {
-        S(67, -7),
-        S(43, 9),
+        S(45, 6),
+        S(45, 6),
     }));
 
 TunableSingleBucketed SemiOpenFileRookBonus(std::array<i32, PSQTBucketCount>(
     {
-        S(25, 3),
-        S(14, 8),
+        S(15, 8),
+        S(15, 8),
     }));
 
 TunableSingle QueenMobilityBonus(3, 8);
 
 TunableSingleBucketed SemiOpenFileKingPenalty(std::array<i32, PSQTBucketCount>(
     {
-        S(-10, 23),
-        S(-22, 15),
+        S(-21, 17),
+        S(-21, 17),
     }));
 
 TunableSingleBucketed OpenFileKingPenalty(std::array<i32, PSQTBucketCount>(
     {
-        S(-91, 17),
-        S(-84, 15),
+        S(-86, 15),
+        S(-86, 15),
     }));
 
 TunableSingleBucketed KingShieldBonus(std::array<i32, PSQTBucketCount>(
     {
-        S(17, -10),
+        S(11, -9),
         S(11, -9),
     }));
 
