@@ -3,6 +3,7 @@
 .vscode
 
 out
+debug
 build
 release
 enc_temp_folder
