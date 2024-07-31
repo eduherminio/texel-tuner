@@ -23,41 +23,41 @@ TunableSingle OpenFileKingPenalty(-86, 15);
 TunableSingle KingShieldBonus(11, -9);
 TunableSingle BishopPairBonus(31, 81);
 
-TunableSingle PieceProtectedByPawnBonus(6, 11);
+TunableSingle PieceProtectedByPawnBonus(7, 11);
 TunableSingle PieceAttackedByPawnPenalty(-45, -18);
 
 TunableArray PassedPawnBonus(
     chess::PieceType::PAWN,
     std::vector<int>{0, 7, -6, -8, 21, 64, 100, 0},
-    std::vector<int>{0, 11, 19, 46, 81, 161, 227, 0},
+    std::vector<int>{0, 11, 19, 46, 81, 161, 228, 0},
     1,
     1);
 
 TunableArray VirtualKingMobilityBonus(
     chess::PieceType::QUEEN,
-    std::vector<int>{0, 0, 0, 36, 47, 20, 18, 18, 14, 11, 9, 4, 3, -3, -12, -22, -30, -42, -47, -53, -42, -35, -35, -26, -34, -9, -58, -22},
-    std::vector<int>{0, 0, 0, 0, -6, 23, 14, 3, 6, 5, 9, 13, 9, 13, 15, 17, 14, 12, 9, 2, -6, -15, -24, -35, -44, -64, -71, -90},
+    std::vector<int>{0, 0, 0, 35, 46, 19, 17, 17, 13, 9, 8, 3, 2, -4, -13, -23, -31, -43, -48, -54, -43, -35, -35, -26, -34, -8, -57, -20},
+    std::vector<int>{0, 0, 0, 1, -5, 23, 14, 3, 7, 6, 9, 14, 10, 13, 15, 17, 14, 12, 9, 3, -6, -15, -24, -34, -44, -64, -70, -89},
     0,
     0);
 
 TunableArray KnightMobilityBonus(
     chess::PieceType::KNIGHT,
     std::vector<int>{0, 24, 31, 36, 41, 39, 39, 42, 53},
-    std::vector<int>{0, -3, 6, 6, 12, 20, 24, 25, 18},
+    std::vector<int>{0, -3, 6, 6, 12, 21, 24, 25, 19},
     0,
     0);
 
 TunableArray BishopMobilityBonus(
     chess::PieceType::BISHOP,
-    std::vector<int>{-214, 0, 14, 21, 35, 42, 57, 66, 75, 75, 81, 85, 86, 117, 0},
-    std::vector<int>{-182, 0, -2, 37, 54, 68, 89, 98, 111, 118, 123, 122, 122, 116, 0},
+    std::vector<int>{-216, 0, 14, 21, 35, 41, 57, 66, 75, 75, 81, 85, 86, 117, 0},
+    std::vector<int>{-183, 0, -2, 37, 54, 69, 89, 99, 111, 118, 123, 122, 123, 116, 0},
     0,
     1);
 
 TunableArray RookMobilityBonus(
     chess::PieceType::ROOK,
     std::vector<int>{0, 9, 14, 19, 17, 24, 27, 32, 33, 36, 41, 44, 44, 59, 54},
-    std::vector<int>{0, 28, 29, 36, 46, 50, 57, 61, 73, 80, 82, 83, 88, 87, 85},
+    std::vector<int>{0, 28, 30, 36, 46, 50, 57, 61, 73, 80, 82, 84, 88, 87, 85},
     0,
     0);
 
