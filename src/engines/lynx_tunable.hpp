@@ -49,23 +49,34 @@ public:
 
 class TunableSingleBucketed
 {
+    i32 _index;
+    std::array<i32, PSQTBucketCount> _packed;
+
 public:
-    std::array<i32, PSQTBucketCount> packed;
-    i32 index;
     constexpr static i32 size = PSQTBucketCount;
 
     TunableSingleBucketed(std::array<i32, PSQTBucketCount> packed)
-        : packed(packed)
+        : _packed(packed)
     {
     }
 
     void add(parameters_t &parameters)
     {
-        index = parameters.size();
-        for (int i : packed)
+        _index = parameters.size();
+        for (int i : _packed)
         {
             parameters.push_back({(double)mg_score(i), (double)eg_score(i)});
         }
+    }
+
+    int index(int bucket)
+    {
+        return _index + bucket;
+    }
+
+    int packed(int bucket)
+    {
+        return _packed[bucket];
     }
 
     void to_json(const parameters_t &parameters, std::stringstream &ss, const std::string &name)
@@ -80,8 +91,8 @@ public:
 
         for (int i = 0; i < size; ++i)
         {
-            auto mg = std::round(parameters[index + i][0]);
-            auto eg = std::round(parameters[index + i][1]);
+            auto mg = std::round(parameters[_index + i][0]);
+            auto eg = std::round(parameters[_index + i][1]);
             ss << "\t\tnew (" << mg << ", " << eg << ")," << std::endl;
         }
 
@@ -95,8 +106,8 @@ public:
 
         for (int i = 0; i < size; ++i)
         {
-            auto mg = std::round(parameters[index + i][0]);
-            auto eg = std::round(parameters[index + i][1]);
+            auto mg = std::round(parameters[_index + i][0]);
+            auto eg = std::round(parameters[_index + i][1]);
             ss << "\t\tS(" << mg << ", " << eg << "),\n";
         }
 

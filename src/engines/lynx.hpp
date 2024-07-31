@@ -15,14 +15,40 @@ using u64 = uint64_t;
 
 // TunableSingle DoubledPawnPenalty_MG(6, -12);
 TunableSingle IsolatedPawnPenalty(-20, -14);
-TunableSingle OpenFileRookBonus(45, 6);
-TunableSingle SemiOpenFileRookBonus(15, 8);
-TunableSingle QueenMobilityBonus(3, 8);
-TunableSingle SemiOpenFileKingPenalty(-21, 17);
-TunableSingle OpenFileKingPenalty(-86, 15);
-TunableSingle KingShieldBonus(11, -9);
-TunableSingle BishopPairBonus(31, 81);
 
+TunableSingleBucketed OpenFileRookBonus(std::array<i32, PSQTBucketCount>(
+    {
+        S(67, -7),
+        S(43, 9),
+    }));
+
+TunableSingleBucketed SemiOpenFileRookBonus(std::array<i32, PSQTBucketCount>(
+    {
+        S(25, 3),
+        S(14, 8),
+    }));
+
+TunableSingle QueenMobilityBonus(3, 8);
+
+TunableSingleBucketed SemiOpenFileKingPenalty(std::array<i32, PSQTBucketCount>(
+    {
+        S(-10, 23),
+        S(-22, 15),
+    }));
+
+TunableSingleBucketed OpenFileKingPenalty(std::array<i32, PSQTBucketCount>(
+    {
+        S(-91, 17),
+        S(-84, 15),
+    }));
+
+TunableSingleBucketed KingShieldBonus(std::array<i32, PSQTBucketCount>(
+    {
+        S(17, -10),
+        S(11, -9),
+    }));
+
+TunableSingle BishopPairBonus(31, 81);
 TunableSingle PieceProtectedByPawnBonus(6, 11);
 TunableSingle PieceAttackedByPawnPenalty(-45, -18);
 
@@ -507,8 +533,8 @@ int RookAdditonalEvaluation(int squareIndex, int pieceIndex, int bucket, const c
     if (((GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE) | GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK)) & FileMasks[squareIndex]) == 0) // isOpenFile
     {
         // std::cout << "OpenFileRookBonus" << std::endl;
-        IncrementCoefficients(coefficients, OpenFileRookBonus.index, color);
-        packedBonus += OpenFileRookBonus.packed;
+        IncrementCoefficients(coefficients, OpenFileRookBonus.index(bucket), color);
+        packedBonus += OpenFileRookBonus.packed(bucket);
     }
     else
     {
@@ -519,8 +545,8 @@ int RookAdditonalEvaluation(int squareIndex, int pieceIndex, int bucket, const c
                 // std::cout << "Piece: " << GetPiece(board, chess::PieceType::ROOK, chess::Color::BLACK) << std::endl;
                 // std::cout << "Mask: " << FileMasks[squareIndex] << std::endl;
                 // std::cout << "SemiOpenFileRookBonus white" << std::endl;
-                IncrementCoefficients(coefficients, SemiOpenFileRookBonus.index, color);
-                packedBonus += SemiOpenFileRookBonus.packed;
+                IncrementCoefficients(coefficients, SemiOpenFileRookBonus.index(bucket), color);
+                packedBonus += SemiOpenFileRookBonus.packed(bucket);
             }
         }
         else
@@ -528,8 +554,8 @@ int RookAdditonalEvaluation(int squareIndex, int pieceIndex, int bucket, const c
             if ((GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK) & FileMasks[squareIndex]) == 0) // isSemiOpenFile
             {
                 // std::cout << "SemiOpenFileRookBonus black" << std::endl;
-                IncrementCoefficients(coefficients, SemiOpenFileRookBonus.index, color);
-                packedBonus += SemiOpenFileRookBonus.packed;
+                IncrementCoefficients(coefficients, SemiOpenFileRookBonus.index(bucket), color);
+                packedBonus += SemiOpenFileRookBonus.packed(bucket);
             }
         }
     }
@@ -578,20 +604,20 @@ int KingAdditionalEvaluation(int squareIndex, int bucket, chess::Color kingSide,
         if (((GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE) | GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK)) & FileMasks[squareIndex]) == 0) // isOpenFile
         {
             // std::cout << "Open: " << (kingSide == chess::Color::WHITE ? "White" : "Black") << std::endl;
-            packedBonus += OpenFileKingPenalty.packed;
-            IncrementCoefficients(coefficients, OpenFileKingPenalty.index, kingSide);
+            packedBonus += OpenFileKingPenalty.packed(bucket);
+            IncrementCoefficients(coefficients, OpenFileKingPenalty.index(bucket), kingSide);
         }
         else if (kingSide == chess::Color::WHITE && (GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE) & FileMasks[squareIndex]) == 0) // isSemiOpenFile
         {
             // std::cout << "Semiopen: " << (kingSide == chess::Color::WHITE ? "White" : "Black") << std::endl;
-            packedBonus += SemiOpenFileKingPenalty.packed;
-            IncrementCoefficients(coefficients, SemiOpenFileKingPenalty.index, kingSide);
+            packedBonus += SemiOpenFileKingPenalty.packed(bucket);
+            IncrementCoefficients(coefficients, SemiOpenFileKingPenalty.index(bucket), kingSide);
         }
         else if (kingSide == chess::Color::BLACK && (GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK) & FileMasks[squareIndex]) == 0) // isSemiOpenFile
         {
             // std::cout << "Semiopen: "  << (kingSide == chess::Color::WHITE ? "White" : "Black") << std::endl;
-            packedBonus += SemiOpenFileKingPenalty.packed;
-            IncrementCoefficients(coefficients, SemiOpenFileKingPenalty.index, kingSide);
+            packedBonus += SemiOpenFileKingPenalty.packed(bucket);
+            IncrementCoefficients(coefficients, SemiOpenFileKingPenalty.index(bucket), kingSide);
         }
     }
 
@@ -599,9 +625,9 @@ int KingAdditionalEvaluation(int squareIndex, int bucket, chess::Color kingSide,
         chess::attacks::king(static_cast<chess::Square>(squareIndex)).getBits() &
         GetPieceSwappingEndianness(board, chess::PieceType::PAWN, kingSide));
 
-    IncrementCoefficients(coefficients, KingShieldBonus.index, kingSide, ownPawnsAroundCount);
+    IncrementCoefficients(coefficients, KingShieldBonus.index(bucket), kingSide, ownPawnsAroundCount);
 
-    return packedBonus + KingShieldBonus.packed * ownPawnsAroundCount;
+    return packedBonus + KingShieldBonus.packed(bucket) * ownPawnsAroundCount;
 }
 
 int AdditionalPieceEvaluation(int pieceSquareIndex, int pieceIndex, int bucket, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
