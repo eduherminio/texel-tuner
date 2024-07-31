@@ -14,56 +14,17 @@
 using u64 = uint64_t;
 
 // TunableSingle DoubledPawnPenalty_MG(6, -12);
-TunableSingleBucketed IsolatedPawnPenalty(std::array<i32, PSQTBucketCount>(
-    {
-        S(-20, -14),
-        S(-20, -14),
-    }));
-TunableSingleBucketed OpenFileRookBonus(std::array<i32, PSQTBucketCount>(
-    {
-        S(45, 6),
-        S(45, 6),
-    }));
-TunableSingleBucketed SemiOpenFileRookBonus(std::array<i32, PSQTBucketCount>(
-    {
-        S(15, 8),
-        S(15, 8),
-    }));
-TunableSingleBucketed QueenMobilityBonus(std::array<i32, PSQTBucketCount>(
-    {
-        S(3, 8),
-        S(3, 8),
-    }));
-TunableSingleBucketed SemiOpenFileKingPenalty(std::array<i32, PSQTBucketCount>(
-    {
-        S(-21, 17),
-        S(-21, 17),
-    }));
-TunableSingleBucketed OpenFileKingPenalty(std::array<i32, PSQTBucketCount>(
-    {
-        S(-86, 15),
-        S(-86, 15),
-    }));
-TunableSingleBucketed KingShieldBonus(std::array<i32, PSQTBucketCount>(
-    {
-        S(11, -9),
-        S(11, -9),
-    }));
-TunableSingleBucketed BishopPairBonus(std::array<i32, PSQTBucketCount>(
-    {
-        S(31, 81),
-        S(31, 81),
-    }));
-TunableSingleBucketed PieceProtectedByPawnBonus(std::array<i32, PSQTBucketCount>(
-    {
-        S(6, 11),
-        S(6, 11),
-    }));
-TunableSingleBucketed PieceAttackedByPawnPenalty(std::array<i32, PSQTBucketCount>(
-    {
-        S(-45, -18),
-        S(-45, -18),
-    }));
+TunableSingle IsolatedPawnPenalty(-20, -14);
+TunableSingle OpenFileRookBonus(45, 6);
+TunableSingle SemiOpenFileRookBonus(15, 8);
+TunableSingle QueenMobilityBonus(3, 8);
+TunableSingle SemiOpenFileKingPenalty(-21, 17);
+TunableSingle OpenFileKingPenalty(-86, 15);
+TunableSingle KingShieldBonus(11, -9);
+TunableSingle BishopPairBonus(31, 81);
+
+TunableSingle PieceProtectedByPawnBonus(6, 11);
+TunableSingle PieceAttackedByPawnPenalty(-45, -18);
 
 TunableArray PassedPawnBonus(
     chess::PieceType::PAWN,
@@ -495,8 +456,8 @@ int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, const 
 
     if ((GetPieceSwappingEndianness(board, chess::PieceType::PAWN, color) & IsolatedPawnMasks[squareIndex]) == 0) // isIsolatedPawn
     {
-        packedBonus += IsolatedPawnPenalty.packed[bucket];
-        IncrementCoefficients(coefficients, IsolatedPawnPenalty.index + bucket, color);
+        packedBonus += IsolatedPawnPenalty.packed;
+        IncrementCoefficients(coefficients, IsolatedPawnPenalty.index, color);
     }
 
     if (color == chess::Color::WHITE)
@@ -546,8 +507,8 @@ int RookAdditonalEvaluation(int squareIndex, int pieceIndex, int bucket, const c
     if (((GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE) | GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK)) & FileMasks[squareIndex]) == 0) // isOpenFile
     {
         // std::cout << "OpenFileRookBonus" << std::endl;
-        IncrementCoefficients(coefficients, OpenFileRookBonus.index + bucket, color);
-        packedBonus += OpenFileRookBonus.packed[bucket];
+        IncrementCoefficients(coefficients, OpenFileRookBonus.index, color);
+        packedBonus += OpenFileRookBonus.packed;
     }
     else
     {
@@ -558,8 +519,8 @@ int RookAdditonalEvaluation(int squareIndex, int pieceIndex, int bucket, const c
                 // std::cout << "Piece: " << GetPiece(board, chess::PieceType::ROOK, chess::Color::BLACK) << std::endl;
                 // std::cout << "Mask: " << FileMasks[squareIndex] << std::endl;
                 // std::cout << "SemiOpenFileRookBonus white" << std::endl;
-                IncrementCoefficients(coefficients, SemiOpenFileRookBonus.index + bucket, color);
-                packedBonus += SemiOpenFileRookBonus.packed[bucket];
+                IncrementCoefficients(coefficients, SemiOpenFileRookBonus.index, color);
+                packedBonus += SemiOpenFileRookBonus.packed;
             }
         }
         else
@@ -567,8 +528,8 @@ int RookAdditonalEvaluation(int squareIndex, int pieceIndex, int bucket, const c
             if ((GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK) & FileMasks[squareIndex]) == 0) // isSemiOpenFile
             {
                 // std::cout << "SemiOpenFileRookBonus black" << std::endl;
-                IncrementCoefficients(coefficients, SemiOpenFileRookBonus.index + bucket, color);
-                packedBonus += SemiOpenFileRookBonus.packed[bucket];
+                IncrementCoefficients(coefficients, SemiOpenFileRookBonus.index, color);
+                packedBonus += SemiOpenFileRookBonus.packed;
             }
         }
     }
@@ -598,9 +559,9 @@ int BishopAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, cons
 int QueenAdditionalEvaluation(int squareIndex, int bucket, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
 {
     auto mobilityCount = chess::attacks::queen(static_cast<chess::Square>(squareIndex), __builtin_bswap64(board.occ().getBits())).count();
-    IncrementCoefficients(coefficients, QueenMobilityBonus.index + bucket, color, mobilityCount);
+    IncrementCoefficients(coefficients, QueenMobilityBonus.index, color, mobilityCount);
 
-    return QueenMobilityBonus.packed[bucket] * mobilityCount;
+    return QueenMobilityBonus.packed * mobilityCount;
 }
 
 int KingAdditionalEvaluation(int squareIndex, int bucket, chess::Color kingSide, const chess::Board &board, const int pieceCount[], coefficients_t &coefficients)
@@ -617,20 +578,20 @@ int KingAdditionalEvaluation(int squareIndex, int bucket, chess::Color kingSide,
         if (((GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE) | GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK)) & FileMasks[squareIndex]) == 0) // isOpenFile
         {
             // std::cout << "Open: " << (kingSide == chess::Color::WHITE ? "White" : "Black") << std::endl;
-            packedBonus += OpenFileKingPenalty.packed[bucket];
-            IncrementCoefficients(coefficients, OpenFileKingPenalty.index + bucket, kingSide);
+            packedBonus += OpenFileKingPenalty.packed;
+            IncrementCoefficients(coefficients, OpenFileKingPenalty.index, kingSide);
         }
         else if (kingSide == chess::Color::WHITE && (GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE) & FileMasks[squareIndex]) == 0) // isSemiOpenFile
         {
             // std::cout << "Semiopen: " << (kingSide == chess::Color::WHITE ? "White" : "Black") << std::endl;
-            packedBonus += SemiOpenFileKingPenalty.packed[bucket];
-            IncrementCoefficients(coefficients, SemiOpenFileKingPenalty.index + bucket, kingSide);
+            packedBonus += SemiOpenFileKingPenalty.packed;
+            IncrementCoefficients(coefficients, SemiOpenFileKingPenalty.index, kingSide);
         }
         else if (kingSide == chess::Color::BLACK && (GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK) & FileMasks[squareIndex]) == 0) // isSemiOpenFile
         {
             // std::cout << "Semiopen: "  << (kingSide == chess::Color::WHITE ? "White" : "Black") << std::endl;
-            packedBonus += SemiOpenFileKingPenalty.packed[bucket];
-            IncrementCoefficients(coefficients, SemiOpenFileKingPenalty.index + bucket, kingSide);
+            packedBonus += SemiOpenFileKingPenalty.packed;
+            IncrementCoefficients(coefficients, SemiOpenFileKingPenalty.index, kingSide);
         }
     }
 
@@ -638,9 +599,9 @@ int KingAdditionalEvaluation(int squareIndex, int bucket, chess::Color kingSide,
         chess::attacks::king(static_cast<chess::Square>(squareIndex)).getBits() &
         GetPieceSwappingEndianness(board, chess::PieceType::PAWN, kingSide));
 
-    IncrementCoefficients(coefficients, KingShieldBonus.index + bucket, kingSide, ownPawnsAroundCount);
+    IncrementCoefficients(coefficients, KingShieldBonus.index, kingSide, ownPawnsAroundCount);
 
-    return packedBonus + KingShieldBonus.packed[bucket] * ownPawnsAroundCount;
+    return packedBonus + KingShieldBonus.packed * ownPawnsAroundCount;
 }
 
 int AdditionalPieceEvaluation(int pieceSquareIndex, int pieceIndex, int bucket, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
@@ -759,32 +720,32 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
     auto protectedPiecesByWhitePawns = chess::builtin::popcount(whitePawnAttacks & __builtin_bswap64(board.us(chess::Color::WHITE).getBits()) /*&(~GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE))*/);
     auto protectedPiecesByBlackPawns = chess::builtin::popcount(blackPawnAttacks & __builtin_bswap64(board.us(chess::Color::BLACK).getBits()) /*&(~GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK))*/);
 
-    IncrementCoefficients(coefficients, PieceProtectedByPawnBonus.index + whiteBucket, chess::Color::WHITE, protectedPiecesByWhitePawns);
-    IncrementCoefficients(coefficients, PieceProtectedByPawnBonus.index + blackBucket, chess::Color::BLACK, protectedPiecesByBlackPawns);
+    IncrementCoefficients(coefficients, PieceProtectedByPawnBonus.index, chess::Color::WHITE, protectedPiecesByWhitePawns);
+    IncrementCoefficients(coefficients, PieceProtectedByPawnBonus.index, chess::Color::BLACK, protectedPiecesByBlackPawns);
 
-    packedScore += (PieceProtectedByPawnBonus.packed[whiteBucket] * protectedPiecesByWhitePawns) -
-                   (PieceProtectedByPawnBonus.packed[blackBucket] * protectedPiecesByBlackPawns);
+    packedScore += (PieceProtectedByPawnBonus.packed * protectedPiecesByWhitePawns) -
+                   (PieceProtectedByPawnBonus.packed * protectedPiecesByBlackPawns);
 
     auto attackedPiecesByBlackPawns = chess::builtin::popcount(blackPawnAttacks & __builtin_bswap64(board.us(chess::Color::WHITE).getBits()) /*&(~GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE))*/);
     auto attackedPiecesByWhitePawns = chess::builtin::popcount(whitePawnAttacks & __builtin_bswap64(board.us(chess::Color::BLACK).getBits()) /*&(~GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK))*/);
 
     // TODO reverse?
-    IncrementCoefficients(coefficients, PieceAttackedByPawnPenalty.index + whiteBucket, chess::Color::WHITE, attackedPiecesByBlackPawns);
-    IncrementCoefficients(coefficients, PieceAttackedByPawnPenalty.index + blackBucket, chess::Color::BLACK, attackedPiecesByWhitePawns);
+    IncrementCoefficients(coefficients, PieceAttackedByPawnPenalty.index, chess::Color::WHITE, attackedPiecesByBlackPawns);
+    IncrementCoefficients(coefficients, PieceAttackedByPawnPenalty.index, chess::Color::BLACK, attackedPiecesByWhitePawns);
 
-    packedScore += (PieceAttackedByPawnPenalty.packed[whiteBucket] * attackedPiecesByBlackPawns) -
-                   (PieceAttackedByPawnPenalty.packed[blackBucket] * attackedPiecesByWhitePawns);
+    packedScore += (PieceAttackedByPawnPenalty.packed * attackedPiecesByBlackPawns) -
+                   (PieceAttackedByPawnPenalty.packed * attackedPiecesByWhitePawns);
 
     if (board.pieces(chess::PieceType::BISHOP, chess::Color::WHITE).count() >= 2)
     {
-        packedScore += BishopPairBonus.packed[whiteBucket];
-        IncrementCoefficients(coefficients, BishopPairBonus.index + whiteBucket, chess::Color::WHITE);
+        packedScore += BishopPairBonus.packed;
+        IncrementCoefficients(coefficients, BishopPairBonus.index, chess::Color::WHITE);
     }
 
     if (board.pieces(chess::PieceType::BISHOP, chess::Color::BLACK).count() >= 2)
     {
-        packedScore -= BishopPairBonus.packed[blackBucket];
-        IncrementCoefficients(coefficients, BishopPairBonus.index + blackBucket, chess::Color::BLACK);
+        packedScore -= BishopPairBonus.packed;
+        IncrementCoefficients(coefficients, BishopPairBonus.index, chess::Color::BLACK);
     }
 
     packedScore += PackedPositionalTables(whiteBucket, 5, whiteKing) +
