@@ -659,8 +659,8 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
     auto whiteKing = chess::builtin::lsb(GetPieceSwappingEndianness(board, chess::PieceType::KING, chess::Color::WHITE)).index();
     auto blackKing = chess::builtin::lsb(GetPieceSwappingEndianness(board, chess::PieceType::KING, chess::Color::BLACK)).index();
 
-    auto whiteBucket = File[whiteKing];
-    auto blackBucket = File[blackKing];
+    auto whiteBucket = whiteKing;
+    auto blackBucket = blackKing;
 
     for (int pieceIndex = 0; pieceIndex < 5; ++pieceIndex)
     {
