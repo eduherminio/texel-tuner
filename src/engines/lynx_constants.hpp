@@ -514,6 +514,8 @@ static void print_psqts_cpp(const parameters_t &parameters, std::array<std::arra
 
     ss << "}};\n";
 
+    std::cout << ss.str();
+
     // Print PSQTs
 
     std::string names[] = {"Pawn", "Knight", "Bishop", "Rook", "Queen", "King"};
