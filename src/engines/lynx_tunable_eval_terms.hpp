@@ -1,5 +1,6 @@
 // 2024-8-1 21:58:33  43
 
+#pragma once
 #include <array>
 
 constexpr static int PSQTBucketCount = 16;
