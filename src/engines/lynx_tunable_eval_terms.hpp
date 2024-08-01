@@ -1,7 +1,7 @@
 #pragma once
 #include <array>
 
-constexpr static int PSQTBucketCount = 11;
+constexpr static int PSQTBucketCount = 9;
 
 constexpr static std::array<std::array<int, 12>, PSQTBucketCount> PieceValue = {
     {
