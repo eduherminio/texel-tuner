@@ -30,7 +30,7 @@ constexpr static int EvalNormalizationCoefficient = 90;
 
 constexpr static int PSQTBucketCount = 9;
 
-constexpr static std::array<int, PSQTBucketCount> PSQTBucketLayout =
+constexpr static std::array<int, 64> PSQTBucketLayout =
 {
     7,   7,   7,   7,   8,   8,   8,   8,
     7,   7,   7,   7,   8,   8,   8,   8,
