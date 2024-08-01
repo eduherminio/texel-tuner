@@ -1,3 +1,4 @@
+#pragma once
 #include "../base.h"
 #include "../external/chess.hpp"
 #include <string>
