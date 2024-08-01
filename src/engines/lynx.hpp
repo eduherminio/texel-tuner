@@ -2,6 +2,7 @@
 #include "../config.h"
 #include "./lynx_constants.hpp"
 #include "./lynx_tunable.hpp"
+#include "lynx_tunable_eval_terms.hpp"
 #include "../external/chess.hpp"
 #include "../external/builtin.hpp"
 #include <algorithm>
