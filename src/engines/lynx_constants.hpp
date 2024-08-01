@@ -28,7 +28,19 @@ std::array<int, 6> phaseValues = {0, 1, 1, 2, 4, 0};
 
 constexpr static int EvalNormalizationCoefficient = 90;
 
-constexpr static int PSQTBucketCount = 8;
+constexpr static int PSQTBucketCount = 9;
+
+constexpr static std::array<int> PSQTBucketLayout =
+{
+    7,   7,   7,   7,   8,   8,   8,   8,
+    7,   7,   7,   7,   8,   8,   8,   8,
+    4,   4,   5,   5,   5,   5,   6,   6,
+    4,   4,   5,   5,   5,   5,   6,   6,
+    4,   4,   5,   5,   5,   5,   6,   6,
+    4,   4,   4,   4,   6,   6,   6,   6,
+    0,   0,   1,   1,   1,   2,   2,   2,
+    0,   0,   1,   1,   1,   2,   2,   2,
+};
 
 constexpr static std::array<std::array<int, 12>, PSQTBucketCount> PieceValue = {
     {
