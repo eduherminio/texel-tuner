@@ -415,7 +415,8 @@ static void print_psqts_csharp(const parameters_t &parameters, std::array<std::a
     }
     ss << std::endl;
 
-    std::cout << ss.str();
+    // No console output
+    // std::cout << ss.str();
 
     time_t rawtime;
     struct tm *timeInfo;
@@ -595,7 +596,8 @@ static void print_psqts_cpp(const parameters_t &parameters, std::array<std::arra
     }
     ss << std::endl;
 
-    std::cout << ss.str();
+    // No console output
+    // std::cout << ss.str();
 
     time_t rawtime;
     struct tm *timeInfo;
