@@ -626,6 +626,7 @@ static void print_psqts_cpp(const parameters_t &parameters, std::array<std::arra
              << " " << timeInfo->tm_hour << ":" << timeInfo->tm_min << ":" << timeInfo->tm_sec
              << "  " << print_counter << std::endl
              << std::endl
+             << "#pragma once\n"
              << "#include <array>\n"
              << std::endl
              << "constexpr static int PSQTBucketCount = " << PSQTBucketCount << ";\n"
