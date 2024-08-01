@@ -1,9 +1,10 @@
+#pragma once
 #include <array>
 #include <cmath>
 #include <fstream>
 #include <iomanip>
 #include <ctime>
-#include "lynx_tunable_eval_terms.cpp"
+#include "lynx_tunable_eval_terms.hpp"
 
 using u64 = uint64_t;
 
