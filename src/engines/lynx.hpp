@@ -709,11 +709,11 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
             packedScore -= AdditionalPieceEvaluation(pieceSquareIndex, pieceIndex, blackBucket, board, chess::Color::BLACK, coefficients);
 
             if (pieceIndex == 6)
-                IncrementCoefficients(coefficients, (48 * blackBucket) + pieceSquareIndex - 8, chess::Color::BLACK);
+                IncrementCoefficients(coefficients, (48 * blackBucket) + (pieceSquareIndex ^ 56) - 8, chess::Color::BLACK);
             else
                 IncrementCoefficients(
                     coefficients,
-                    (48 * PSQTBucketCount) + (64 * PSQTBucketCount * (tunerPieceIndex - 1)) + (64 * blackBucket) + pieceSquareIndex,
+                    (48 * PSQTBucketCount) + (64 * PSQTBucketCount * (tunerPieceIndex - 1)) + (64 * blackBucket) + (pieceSquareIndex ^ 56),
                     chess::Color::BLACK);
         }
     }
@@ -760,7 +760,7 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
 
     IncrementCoefficients(
         coefficients,
-        (48 * PSQTBucketCount) + (64 * PSQTBucketCount * 4) + (64 * blackBucket) + blackKing,
+        (48 * PSQTBucketCount) + (64 * PSQTBucketCount * 4) + (64 * blackBucket) + (blackKing ^ 56),
         chess::Color::BLACK);
 
     // Debugging eval
