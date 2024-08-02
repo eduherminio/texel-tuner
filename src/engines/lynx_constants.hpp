@@ -440,10 +440,6 @@ static void print_psqts_csharp(const parameters_t &parameters, std::array<std::a
              << "{\n";
 
         file << ss.rdbuf();
-
-        file << "}\n"
-             << std::endl
-             << "#pragma warning restore IDE0055, IDE1006 // Discard formatting and naming styles\n";
     }
     file.close();
 }
@@ -621,7 +617,8 @@ static void print_psqts_cpp(const parameters_t &parameters, std::array<std::arra
              << "constexpr static int PSQTBucketCount = " << PSQTBucketCount << ";\n"
              << std::endl;
 
-        file << ss.rdbuf();
+        file << ss.rdbuf()
+             << std::endl;
     }
     file.close();
 }
