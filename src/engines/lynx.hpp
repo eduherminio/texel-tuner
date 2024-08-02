@@ -14,54 +14,6 @@
 
 using u64 = uint64_t;
 
-// TunableSingle DoubledPawnPenalty_MG(6, -12);
-TunableSingle IsolatedPawnPenalty(-20, -15);
-TunableSingle OpenFileRookBonus(42, 4);
-TunableSingle SemiOpenFileRookBonus(15, 10);
-TunableSingle QueenMobilityBonus(1, 10);
-TunableSingle SemiOpenFileKingPenalty(-25, 7);
-TunableSingle OpenFileKingPenalty(-78, 6);
-TunableSingle KingShieldBonus(8, -5);
-TunableSingle BishopPairBonus(28, 81);
-
-TunableSingle PieceProtectedByPawnBonus(7, 11);
-TunableSingle PieceAttackedByPawnPenalty(-32, -39);
-
-TunableArray PassedPawnBonus(
-    chess::PieceType::PAWN,
-    std::vector<int>{0, 9, 5, 5, 32, 62, 321, 0},
-    std::vector<int>{0, 13, 17, 42, 65, 111, 220, 0},
-    1,
-    1);
-
-TunableArray VirtualKingMobilityBonus(
-    chess::PieceType::QUEEN,
-    std::vector<int>{0, 0, 0, 9, 30, 19, 20, 19, 17, 15, 14, 11, 10, 4, -4, -15, -25, -33, -38, -39, -26, -22, -10, 1, -13, 8, -19, -4},
-    std::vector<int>{0, 0, 0, 45, 29, 38, 31, 21, 23, 16, 16, 16, 11, 12, 13, 15, 12, 8, 5, -3, -13, -22, -34, -45, -56, -75, -93, -109},
-    0,
-    0);
-
-TunableArray KnightMobilityBonus(
-    chess::PieceType::KNIGHT,
-    std::vector<int>{0, 16, 23, 27, 29, 28, 26, 26, 25},
-    std::vector<int>{0, 19, 37, 42, 47, 50, 49, 45, 37},
-    0,
-    0);
-
-TunableArray BishopMobilityBonus(
-    chess::PieceType::BISHOP,
-    std::vector<int>{-228, 0, 27, 30, 40, 43, 52, 60, 66, 67, 69, 74, 76, 86, 0},
-    std::vector<int>{-235, 0, -36, 8, 33, 52, 74, 83, 95, 102, 106, 106, 107, 108, 0},
-    0,
-    1);
-
-TunableArray RookMobilityBonus(
-    chess::PieceType::ROOK,
-    std::vector<int>{0, 6, 8, 13, 12, 18, 19, 23, 24, 26, 31, 32, 34, 52, 57},
-    std::vector<int>{0, 28, 35, 38, 48, 50, 57, 59, 67, 71, 73, 75, 76, 68, 59},
-    0,
-    0);
-
 const int base = (64 * 6 - 16) * PSQTBucketCount; // PSQT but removing pawns from 1 and 8 rank
 static int numParameters = base +
                            // DoubledPawnPenalty.size
@@ -224,8 +176,6 @@ public:
 
         print_psqts_csharp(parameters, mobilityPieceValues);
         std::cout << "------------------------------------------------------------------------" << std::endl;
-        print_json_parameters(parameters, mobilityPieceValues);
-        std::cout << "------------------------------------------------------------------------" << std::endl;
         print_csharp_parameters(parameters, mobilityPieceValues);
         std::cout << "------------------------------------------------------------------------" << std::endl;
     }
@@ -365,6 +315,18 @@ public:
         RookMobilityBonus.to_csharp(parameters, ss, name, mobilityPieceValues);
 
         std::cout << ss.str() << std::endl;
+
+        std::ofstream file("TunableEvalParameters.cs", std::ofstream::out | std::ofstream::app | std::ofstream::ate);
+
+        if (file.is_open())
+        {
+            file << ss.rdbuf();
+
+            file << "}\n"
+                 << std::endl
+                 << "#pragma warning restore IDE0055, IDE1006 // Discard formatting and naming styles\n";
+        }
+        file.close();
     }
 
     static void print_cpp_parameters(const parameters_t &parameters, const std::array<std::array<tune_t, 12>, PSQTBucketCount> &mobilityPieceValues)
@@ -423,6 +385,14 @@ public:
         RookMobilityBonus.to_cpp(parameters, ss, name, mobilityPieceValues);
 
         std::cout << ss.str() << std::endl;
+
+    std::ofstream file("tunable_eval_terms.cpp", std::ofstream::out | std::ofstream::app | std::ofstream::ate);
+
+    if (file.is_open())
+    {
+        file << ss.rdbuf();
+    }
+    file.close();
     }
 };
 
