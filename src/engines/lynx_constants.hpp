@@ -35,14 +35,14 @@ std::array<int, 6> phaseValues = {0, 1, 1, 2, 4, 0};
 constexpr static int EvalNormalizationCoefficient = 90;
 
 constexpr static std::array<int, 64> PSQTBucketLayout = {
-    8, 9, 10, 11, 12, 13, 14, 15,
-    8, 9, 10, 11, 12, 13, 14, 15,
-    8, 9, 10, 11, 12, 13, 14, 15,
-    8, 9, 10, 11, 12, 13, 14, 15,
-    0, 1, 2, 3, 4, 5, 6, 7,
-    0, 1, 2, 3, 4, 5, 6, 7,
-    0, 1, 2, 3, 4, 5, 6, 7,
-    0, 1, 2, 3, 4, 5, 6, 7, //
+    9,  9,  9,  9, 10, 10, 10, 10,
+    9,  9,  9,  9, 10, 10, 10, 10,
+    7,  7,  6,  6,  6,  6,  8,  8,
+    7,  7,  6,  6,  6,  6,  8,  8,
+    4,  4,  4,  6,  6,  5,  5,  5,
+    4,  4,  4,  1,  1,  5,  5,  5,
+    0,  0,  1,  1,  1,  3,  3,  3,
+    0,  0,  1,  2,  1,  3,  3,  3
 };
 
 constexpr static std::array<std::array<std::array<int, 64>, PSQTBucketCount>, 6> MiddleGamePositionalWhiteTables = {
