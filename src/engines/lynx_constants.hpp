@@ -461,7 +461,7 @@ static void print_psqts_csharp(const parameters_t &parameters, std::array<std::a
     }
 }
 
-static void print_psqts_cpp(const parameters_t &parameters, std::array<std::array<tune_t, 12>, PSQTBucketCount> &existingPieceValues)
+static void print_psqts_cpp(const parameters_t &parameters, std::array<std::array<tune_t, 12>, PSQTBucketCount> &existingPieceValues, bool isFinal = false)
 {
     ++print_counter;
 
@@ -527,7 +527,10 @@ static void print_psqts_cpp(const parameters_t &parameters, std::array<std::arra
 
     ss << "}};\n";
 
-    std::cout << ss.str();
+    if (isFinal)
+    {
+        std::cout << ss.str();
+    }
 
     // Print PSQTs
 

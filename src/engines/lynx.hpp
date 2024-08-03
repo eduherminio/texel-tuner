@@ -164,27 +164,38 @@ public:
         return mobilityPieceValues;
     }
 
-    static void print_parameters(const parameters_t &parameters, bool isInitial = false)
+    static void print_parameters(const parameters_t &parameters, bool isInitial = false, bool isFinal = false)
     {
         auto mobilityPieceValues = extract_mobility_offset(parameters, isInitial);
 
-        std::cout << "------------------------------------------------------------------------" << std::endl;
-        print_psqts_cpp(parameters, mobilityPieceValues);
-        std::cout << "------------------------------------------------------------------------" << std::endl;
-        print_cpp_parameters(parameters, mobilityPieceValues);
-        std::cout << "------------------------------------------------------------------------" << std::endl;
+        print_psqts_cpp(parameters, mobilityPieceValues, true);
+        if (isFinal)
+        {
+            std::cout << "------------------------------------------------------------------------" << std::endl;
+        }
+        print_cpp_parameters(parameters, mobilityPieceValues, isFinal);
+        if (isFinal)
+        {
+            std::cout << "------------------------------------------------------------------------" << std::endl;
+        }
 
         print_psqts_csharp(parameters, mobilityPieceValues);
-        std::cout << "------------------------------------------------------------------------" << std::endl;
-        print_csharp_parameters(parameters, mobilityPieceValues);
-        std::cout << "------------------------------------------------------------------------" << std::endl;
+        if (isFinal)
+        {
+            std::cout << "------------------------------------------------------------------------" << std::endl;
+        }
+        print_csharp_parameters(parameters, mobilityPieceValues, isFinal);
+        if (isFinal)
+        {
+            std::cout << "------------------------------------------------------------------------" << std::endl;
+        }
     }
 
     static void print_step_parameters(const parameters_t &parameters)
     {
         auto mobilityPieceValues = extract_mobility_offset(parameters, false);
 
-        print_psqts_cpp(parameters, mobilityPieceValues);
+        print_psqts_cpp(parameters, mobilityPieceValues, true);
         // print_cpp_parameters(parameters, mobilityPieceValues);
     }
 
@@ -261,7 +272,7 @@ public:
                   << std::endl;
     }
 
-    static void print_csharp_parameters(const parameters_t &parameters, const std::array<std::array<tune_t, 12>, PSQTBucketCount> &mobilityPieceValues)
+    static void print_csharp_parameters(const parameters_t &parameters, const std::array<std::array<tune_t, 12>, PSQTBucketCount> &mobilityPieceValues, bool isFinal = false)
     {
         std::stringstream ss;
         std::string name;
@@ -314,7 +325,10 @@ public:
         name = NAME(RookMobilityBonus);
         RookMobilityBonus.to_csharp(parameters, ss, name, mobilityPieceValues);
 
-        std::cout << ss.str() << std::endl;
+        if (isFinal)
+        {
+            std::cout << ss.str() << std::endl;
+        }
 
         std::string filename = "TunableEvalParameters-" + std::to_string(print_counter) + ".cs";
         std::ofstream file(filename, std::ofstream::out | std::ofstream::app | std::ofstream::ate);
@@ -330,7 +344,7 @@ public:
         file.close();
     }
 
-    static void print_cpp_parameters(const parameters_t &parameters, const std::array<std::array<tune_t, 12>, PSQTBucketCount> &mobilityPieceValues)
+    static void print_cpp_parameters(const parameters_t &parameters, const std::array<std::array<tune_t, 12>, PSQTBucketCount> &mobilityPieceValues, bool isFinal = false)
     {
         std::stringstream ss;
         std::string name;
@@ -385,7 +399,10 @@ public:
         name = NAME(RookMobilityBonus);
         RookMobilityBonus.to_cpp(parameters, ss, name, mobilityPieceValues);
 
-        std::cout << ss.str() << std::endl;
+        if (isFinal)
+        {
+            std::cout << ss.str() << std::endl;
+        }
 
         std::string filename = "tunable_eval_terms-" + std::to_string(print_counter) + ".cpp";
         std::ofstream file(filename, std::ofstream::out | std::ofstream::app | std::ofstream::ate);
