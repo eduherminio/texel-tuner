@@ -435,7 +435,7 @@ static void print_psqts_csharp(const parameters_t &parameters, std::array<std::a
     time(&rawtime);
     timeInfo = localtime(&rawtime);
 
-    std::string filename ="TunableEvalParameters-"+ std::to_string(print_counter) + ".cs";
+    std::string filename = "TunableEvalParameters-" + std::to_string(print_counter) + ".cs";
     std::ofstream file(filename, std::ofstream::out | std::ofstream::trunc);
 
     if (file.is_open())
@@ -452,8 +452,13 @@ static void print_psqts_csharp(const parameters_t &parameters, std::array<std::a
              << "{\n";
 
         file << ss.rdbuf();
+
+        file.close();
     }
-    file.close();
+    else
+    {
+        std::cout << "Error opening " + filename << std::endl;
+    }
 }
 
 static void print_psqts_cpp(const parameters_t &parameters, std::array<std::array<tune_t, 12>, PSQTBucketCount> &existingPieceValues)
@@ -631,6 +636,11 @@ static void print_psqts_cpp(const parameters_t &parameters, std::array<std::arra
 
         file << ss.rdbuf()
              << std::endl;
+
+        file.close();
     }
-    file.close();
+    else
+    {
+        std::cout << "Error opening " + filename << std::endl;
+    }
 }
