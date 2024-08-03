@@ -8,7 +8,7 @@
 
 using u64 = uint64_t;
 
-static int print_counter;
+static int print_counter = -2;
 
 constexpr int32_t Pack(const int16_t mg, const int16_t eg)
 {
