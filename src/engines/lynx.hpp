@@ -316,7 +316,8 @@ public:
 
         std::cout << ss.str() << std::endl;
 
-        std::ofstream file("TunableEvalParameters.cs", std::ofstream::out | std::ofstream::app | std::ofstream::ate);
+        std::string filename = "TunableEvalParameters-" + std::to_string(print_counter) + ".cs";
+        std::ofstream file(filename, std::ofstream::out | std::ofstream::app | std::ofstream::ate);
 
         if (file.is_open())
         {
@@ -386,13 +387,14 @@ public:
 
         std::cout << ss.str() << std::endl;
 
-    std::ofstream file("tunable_eval_terms.cpp", std::ofstream::out | std::ofstream::app | std::ofstream::ate);
+        std::string filename = "tunable_eval_terms-" + std::to_string(print_counter) + ".cpp";
+        std::ofstream file(filename, std::ofstream::out | std::ofstream::app | std::ofstream::ate);
 
-    if (file.is_open())
-    {
-        file << ss.rdbuf();
-    }
-    file.close();
+        if (file.is_open())
+        {
+            file << ss.rdbuf();
+        }
+        file.close();
     }
 };
 
