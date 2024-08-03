@@ -35,14 +35,14 @@ std::array<int, 6> phaseValues = {0, 1, 1, 2, 4, 0};
 constexpr static int EvalNormalizationCoefficient = 90;
 
 constexpr static std::array<int, 64> PSQTBucketLayout = {
-    8, 9, 10, 11, 12, 13, 14, 15,
-    8, 9, 10, 11, 12, 13, 14, 15,
-    8, 9, 10, 11, 12, 13, 14, 15,
-    8, 9, 10, 11, 12, 13, 14, 15,
-    0, 1, 2, 3, 4, 5, 6, 7,
-    0, 1, 2, 3, 4, 5, 6, 7,
-    0, 1, 2, 3, 4, 5, 6, 7,
-    0, 1, 2, 3, 4, 5, 6, 7, //
+    3, 4, 5, 6, 7, 8, 9, 10,
+    3, 4, 5, 6, 7, 8, 9, 10,
+    3, 4, 5, 6, 7, 8, 9, 10,
+    3, 4, 5, 6, 7, 8, 9, 10,
+    3, 4, 5, 6, 7, 8, 9, 10,
+    3, 4, 5, 6, 7, 8, 9, 10,
+    0, 0, 1, 1, 1, 2, 2, 2,
+    0, 0, 1, 1, 1, 2, 2, 2, //
 };
 
 constexpr static std::array<std::array<std::array<int, 64>, PSQTBucketCount>, 6> MiddleGamePositionalWhiteTables = {
@@ -435,7 +435,7 @@ static void print_psqts_csharp(const parameters_t &parameters, std::array<std::a
     time(&rawtime);
     timeInfo = localtime(&rawtime);
 
-    std::string filename ="TunableEvalParameters-"+ std::to_string(print_counter) + ".cs";
+    std::string filename = "TunableEvalParameters-" + std::to_string(print_counter) + ".cs";
     std::ofstream file(filename, std::ofstream::out | std::ofstream::trunc);
 
     if (file.is_open())
