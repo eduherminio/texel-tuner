@@ -40,7 +40,7 @@ public:
 
     void to_csharp(const parameters_t &parameters, std::stringstream &ss, const std::string &name)
     {
-        ss << "\tpublic static readonly TaperedEvaluationTerm " << name << " = new(" << std::round(parameters[index][0]) << ", " << std::round(parameters[index][1]) << ");\n\n";
+        ss << "\tpublic static TaperedEvaluationTerm " << name << " { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; } = new(" << std::round(parameters[index][0]) << ", " << std::round(parameters[index][1]) << ");\n\n";
     }
 
     void to_cpp(const parameters_t &parameters, std::stringstream &ss, const std::string &name)
@@ -88,7 +88,7 @@ public:
     void to_csharp(const parameters_t &parameters, std::stringstream &ss, const std::string &name)
     {
 
-        ss << "\tpublic TaperedEvaluationTerm[] " << name << " { get; set; } =" << std::endl
+        ss << "\tpublic static TaperedEvaluationTerm[] " << name << " { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; } =" << std::endl
            << "\t[" << std::endl;
 
         for (int i = 0; i < size; ++i)
