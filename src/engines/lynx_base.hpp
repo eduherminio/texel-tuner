@@ -1,3 +1,3 @@
 #pragma once
 
-constexpr static int PSQTBucketCount = 11;
+constexpr static int PSQTBucketCount = 9;
