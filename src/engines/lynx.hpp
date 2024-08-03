@@ -185,7 +185,7 @@ public:
         auto mobilityPieceValues = extract_mobility_offset(parameters, false);
 
         print_psqts_cpp(parameters, mobilityPieceValues);
-        print_cpp_parameters(parameters, mobilityPieceValues);
+        // print_cpp_parameters(parameters, mobilityPieceValues);
     }
 
     static void print_json_parameters(const parameters_t &parameters, const std::array<std::array<tune_t, 12>, PSQTBucketCount> &mobilityPieceValues)
