@@ -1189,3 +1189,50 @@ constexpr static std::array<std::array<int, 64>, PSQTBucketCount> EndGameKingTab
 			0, 0, 0, 0, 0, 0, 0, 0 //
 		},
 	}};
+
+TunableSingle IsolatedPawnPenalty(-20, -14);
+TunableSingle OpenFileRookBonus(45, 7);
+TunableSingle SemiOpenFileRookBonus(16, 9);
+TunableSingle QueenMobilityBonus(2, 8);
+TunableSingle SemiOpenFileKingPenalty(-17, 14);
+TunableSingle OpenFileKingPenalty(-80, 10);
+TunableSingle KingShieldBonus(15, -12);
+TunableSingle BishopPairBonus(31, 82);
+
+TunableSingle PieceProtectedByPawnBonus(10, 11);
+TunableSingle PieceAttackedByPawnPenalty(-45, -21);
+
+TunableArray PassedPawnBonus(
+	chess::PieceType::PAWN,
+	std::vector<int>{0, 7, -2, -2, 22, 40, 146, 0},
+	std::vector<int>{0, 13, 19, 45, 79, 166, 220, 0},
+	1,
+	1);
+
+TunableArray VirtualKingMobilityBonus(
+	chess::PieceType::QUEEN,
+	std::vector<int>{0, 0, 0, 27, 45, 23, 24, 24, 20, 16, 13, 7, 5, -3, -13, -23, -30, -39, -44, -46, -32, -23, -21, -12, -16, 8, -38, -1},
+	std::vector<int>{0, 0, 0, 26, 5, 24, 16, 6, 10, 8, 9, 14, 11, 14, 15, 17, 13, 10, 7, -1, -10, -19, -28, -38, -48, -68, -74, -92},
+	0,
+	0);
+
+TunableArray KnightMobilityBonus(
+	chess::PieceType::KNIGHT,
+	std::vector<int>{0, 22, 29, 34, 36, 34, 32, 32, 33},
+	std::vector<int>{0, -2, 11, 10, 15, 21, 22, 22, 17},
+	0,
+	0);
+
+TunableArray BishopMobilityBonus(
+	chess::PieceType::BISHOP,
+	std::vector<int>{-268, 0, 23, 28, 42, 47, 61, 70, 77, 78, 83, 87, 87, 112, 0},
+	std::vector<int>{-276, 0, -12, 26, 45, 59, 80, 89, 101, 108, 114, 114, 114, 112, 0},
+	0,
+	1);
+
+TunableArray RookMobilityBonus(
+	chess::PieceType::ROOK,
+	std::vector<int>{0, 8, 13, 17, 16, 22, 23, 26, 26, 28, 32, 34, 34, 49, 46},
+	std::vector<int>{0, 26, 29, 35, 44, 47, 52, 56, 67, 73, 75, 77, 81, 78, 75},
+	0,
+	0);
