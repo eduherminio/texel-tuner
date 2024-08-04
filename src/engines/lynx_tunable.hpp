@@ -267,7 +267,7 @@ public:
             throw std::invalid_argument("wrong size provided: " + size);
         }
 
-        ss << "\tpublic " << variable_name << " " << name << " { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; } = new(\n";
+        ss << "\tpublic static " << variable_name << " " << name << " { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; } = new(\n";
         for (int rank = 0; rank < start; ++rank)
         {
             ss << "\t\tnew(0, 0),\n";
