@@ -8,7 +8,7 @@
 
 using u64 = uint64_t;
 
-static int print_counter;
+static int print_counter = -2;
 
 constexpr int32_t Pack(const int16_t mg, const int16_t eg)
 {
@@ -435,7 +435,8 @@ static void print_psqts_csharp(const parameters_t &parameters, std::array<std::a
     time(&rawtime);
     timeInfo = localtime(&rawtime);
 
-    std::ofstream file("TunableEvalParameters.cs", std::ofstream::out | std::ofstream::trunc);
+    std::string filename = "TunableEvalParameters-" + std::to_string(print_counter) + ".cs";
+    std::ofstream file(filename, std::ofstream::out | std::ofstream::trunc);
 
     if (file.is_open())
     {
@@ -452,14 +453,15 @@ static void print_psqts_csharp(const parameters_t &parameters, std::array<std::a
 
         file << ss.rdbuf();
 
-        file << "}\n"
-             << std::endl
-             << "#pragma warning restore IDE0055, IDE1006 // Discard formatting and naming styles\n";
+        file.close();
     }
-    file.close();
+    else
+    {
+        std::cout << "Error opening " + filename << std::endl;
+    }
 }
 
-static void print_psqts_cpp(const parameters_t &parameters, std::array<std::array<tune_t, 12>, PSQTBucketCount> &existingPieceValues)
+static void print_psqts_cpp(const parameters_t &parameters, std::array<std::array<tune_t, 12>, PSQTBucketCount> &existingPieceValues, bool isFinal = false)
 {
     ++print_counter;
 
@@ -525,7 +527,10 @@ static void print_psqts_cpp(const parameters_t &parameters, std::array<std::arra
 
     ss << "}};\n";
 
-    std::cout << ss.str();
+    if (isFinal)
+    {
+        std::cout << ss.str();
+    }
 
     // Print PSQTs
 
@@ -618,7 +623,8 @@ static void print_psqts_cpp(const parameters_t &parameters, std::array<std::arra
     time(&rawtime);
     timeInfo = localtime(&rawtime);
 
-    std::ofstream file("tunable_eval_terms.cpp", std::ofstream::out | std::ofstream::trunc);
+    std::string filename = "tunable_eval_terms-" + std::to_string(print_counter) + ".cpp";
+    std::ofstream file(filename, std::ofstream::out | std::ofstream::trunc);
 
     if (file.is_open())
     {
@@ -628,11 +634,16 @@ static void print_psqts_cpp(const parameters_t &parameters, std::array<std::arra
              << std::endl
              << "#pragma once\n"
              << "#include <array>\n"
-             << std::endl
-             << "constexpr static int PSQTBucketCount = " << PSQTBucketCount << ";\n"
+             << "#include \"lynx_tunable.hpp\"\n"
              << std::endl;
 
-        file << ss.rdbuf();
+        file << ss.rdbuf()
+             << std::endl;
+
+        file.close();
     }
-    file.close();
+    else
+    {
+        std::cout << "Error opening " + filename << std::endl;
+    }
 }

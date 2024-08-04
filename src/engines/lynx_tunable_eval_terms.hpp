@@ -2,8 +2,7 @@
 
 #pragma once
 #include <array>
-
-constexpr static int PSQTBucketCount = 16;
+#include "lynx_tunable.hpp"
 
 constexpr static std::array<std::array<int, 12>, PSQTBucketCount> PieceValue = {
 	{
@@ -2072,4 +2071,52 @@ constexpr static std::array<std::array<int, 64>, PSQTBucketCount> EndGameKingTab
 			   0,	   0,	   0,	   0,	   0,	   0,	   0,	   0	//
 		},
 	}};
+
+// TunableSingle DoubledPawnPenalty_MG(6, -12);
+TunableSingle IsolatedPawnPenalty(-19, -15);
+TunableSingle OpenFileRookBonus(45, 6);
+TunableSingle SemiOpenFileRookBonus(15, 10);
+TunableSingle QueenMobilityBonus(-0, 17);
+TunableSingle SemiOpenFileKingPenalty(-23, 5);
+TunableSingle OpenFileKingPenalty(-86, 1);
+TunableSingle KingShieldBonus(8, -4);
+TunableSingle BishopPairBonus(32, 80);
+
+TunableSingle PieceProtectedByPawnBonus(10, 11);
+TunableSingle PieceAttackedByPawnPenalty(-45, -23);
+
+TunableArray PassedPawnBonus(
+        chess::PieceType::PAWN,
+        std::vector<int>{0, 6, -0, -0, 25, 35, 257, 0},
+        std::vector<int>{0, 15, 21, 46, 71, 129, 248, 0},
+        1,
+        1);
+
+TunableArray VirtualKingMobilityBonus(
+        chess::PieceType::QUEEN,
+        std::vector<int>{0, 0, 0, 24, 43, 28, 29, 28, 24, 19, 16, 10, 8, -0, -10, -20, -27, -39, -43, -47, -34, -25, -22, -8, -26, 2, -42, -14},
+        std::vector<int>{0, 0, 0, 31, 11, 30, 21, 10, 12, 9, 10, 14, 9, 11, 12, 13, 9, 5, 3, -4, -13, -21, -29, -39, -46, -64, -66, -80},
+        0,
+        0);
+
+TunableArray KnightMobilityBonus(
+        chess::PieceType::KNIGHT,
+        std::vector<int>{0, 23, 30, 35, 37, 35, 34, 33, 34},
+        std::vector<int>{0, -8, 4, 3, 6, 11, 11, 9, 3},
+        0,
+        0);
+
+TunableArray BishopMobilityBonus(
+        chess::PieceType::BISHOP,
+        std::vector<int>{-236, 0, 23, 28, 43, 48, 62, 70, 78, 79, 84, 88, 86, 104, 0},
+        std::vector<int>{-243, 0, -16, 21, 40, 54, 74, 83, 95, 102, 108, 107, 110, 111, 0},
+        0,
+        1);
+
+TunableArray RookMobilityBonus(
+        chess::PieceType::ROOK,
+        std::vector<int>{0, 9, 13, 18, 16, 22, 23, 26, 26, 28, 32, 34, 34, 48, 46},
+        std::vector<int>{0, 25, 30, 34, 42, 44, 50, 53, 61, 66, 68, 70, 75, 71, 66},
+        0,
+        0);
 

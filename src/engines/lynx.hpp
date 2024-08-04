@@ -14,54 +14,6 @@
 
 using u64 = uint64_t;
 
-// TunableSingle DoubledPawnPenalty_MG(6, -12);
-TunableSingle IsolatedPawnPenalty(-19, -15);
-TunableSingle OpenFileRookBonus(45, 6);
-TunableSingle SemiOpenFileRookBonus(15, 10);
-TunableSingle QueenMobilityBonus(-0, 17);
-TunableSingle SemiOpenFileKingPenalty(-23, 5);
-TunableSingle OpenFileKingPenalty(-86, 1);
-TunableSingle KingShieldBonus(8, -4);
-TunableSingle BishopPairBonus(32, 80);
-
-TunableSingle PieceProtectedByPawnBonus(10, 11);
-TunableSingle PieceAttackedByPawnPenalty(-45, -23);
-
-TunableArray PassedPawnBonus(
-        chess::PieceType::PAWN,
-        std::vector<int>{0, 6, -0, -0, 25, 35, 257, 0},
-        std::vector<int>{0, 15, 21, 46, 71, 129, 248, 0},
-        1,
-        1);
-
-TunableArray VirtualKingMobilityBonus(
-        chess::PieceType::QUEEN,
-        std::vector<int>{0, 0, 0, 24, 43, 28, 29, 28, 24, 19, 16, 10, 8, -0, -10, -20, -27, -39, -43, -47, -34, -25, -22, -8, -26, 2, -42, -14},
-        std::vector<int>{0, 0, 0, 31, 11, 30, 21, 10, 12, 9, 10, 14, 9, 11, 12, 13, 9, 5, 3, -4, -13, -21, -29, -39, -46, -64, -66, -80},
-        0,
-        0);
-
-TunableArray KnightMobilityBonus(
-        chess::PieceType::KNIGHT,
-        std::vector<int>{0, 23, 30, 35, 37, 35, 34, 33, 34},
-        std::vector<int>{0, -8, 4, 3, 6, 11, 11, 9, 3},
-        0,
-        0);
-
-TunableArray BishopMobilityBonus(
-        chess::PieceType::BISHOP,
-        std::vector<int>{-236, 0, 23, 28, 43, 48, 62, 70, 78, 79, 84, 88, 86, 104, 0},
-        std::vector<int>{-243, 0, -16, 21, 40, 54, 74, 83, 95, 102, 108, 107, 110, 111, 0},
-        0,
-        1);
-
-TunableArray RookMobilityBonus(
-        chess::PieceType::ROOK,
-        std::vector<int>{0, 9, 13, 18, 16, 22, 23, 26, 26, 28, 32, 34, 34, 48, 46},
-        std::vector<int>{0, 25, 30, 34, 42, 44, 50, 53, 61, 66, 68, 70, 75, 71, 66},
-        0,
-        0);
-
 const int base = (64 * 6 - 16) * PSQTBucketCount; // PSQT but removing pawns from 1 and 8 rank
 static int numParameters = base +
                            // DoubledPawnPenalty.size
@@ -212,30 +164,39 @@ public:
         return mobilityPieceValues;
     }
 
-    static void print_parameters(const parameters_t &parameters, bool isInitial = false)
+    static void print_parameters(const parameters_t &parameters, bool isInitial = false, bool isFinal = false)
     {
         auto mobilityPieceValues = extract_mobility_offset(parameters, isInitial);
 
-        std::cout << "------------------------------------------------------------------------" << std::endl;
-        print_psqts_cpp(parameters, mobilityPieceValues);
-        std::cout << "------------------------------------------------------------------------" << std::endl;
-        print_cpp_parameters(parameters, mobilityPieceValues);
-        std::cout << "------------------------------------------------------------------------" << std::endl;
+        print_psqts_cpp(parameters, mobilityPieceValues, true);
+        if (isFinal)
+        {
+            std::cout << "------------------------------------------------------------------------" << std::endl;
+        }
+        print_cpp_parameters(parameters, mobilityPieceValues, isFinal);
+        if (isFinal)
+        {
+            std::cout << "------------------------------------------------------------------------" << std::endl;
+        }
 
         print_psqts_csharp(parameters, mobilityPieceValues);
-        std::cout << "------------------------------------------------------------------------" << std::endl;
-        print_json_parameters(parameters, mobilityPieceValues);
-        std::cout << "------------------------------------------------------------------------" << std::endl;
-        print_csharp_parameters(parameters, mobilityPieceValues);
-        std::cout << "------------------------------------------------------------------------" << std::endl;
+        if (isFinal)
+        {
+            std::cout << "------------------------------------------------------------------------" << std::endl;
+        }
+        print_csharp_parameters(parameters, mobilityPieceValues, isFinal);
+        if (isFinal)
+        {
+            std::cout << "------------------------------------------------------------------------" << std::endl;
+        }
     }
 
     static void print_step_parameters(const parameters_t &parameters)
     {
         auto mobilityPieceValues = extract_mobility_offset(parameters, false);
 
-        print_psqts_cpp(parameters, mobilityPieceValues);
-        print_cpp_parameters(parameters, mobilityPieceValues);
+        print_psqts_cpp(parameters, mobilityPieceValues, true);
+        // print_cpp_parameters(parameters, mobilityPieceValues);
     }
 
     static void print_json_parameters(const parameters_t &parameters, const std::array<std::array<tune_t, 12>, PSQTBucketCount> &mobilityPieceValues)
@@ -311,7 +272,7 @@ public:
                   << std::endl;
     }
 
-    static void print_csharp_parameters(const parameters_t &parameters, const std::array<std::array<tune_t, 12>, PSQTBucketCount> &mobilityPieceValues)
+    static void print_csharp_parameters(const parameters_t &parameters, const std::array<std::array<tune_t, 12>, PSQTBucketCount> &mobilityPieceValues, bool isFinal = false)
     {
         std::stringstream ss;
         std::string name;
@@ -364,10 +325,26 @@ public:
         name = NAME(RookMobilityBonus);
         RookMobilityBonus.to_csharp(parameters, ss, name, mobilityPieceValues);
 
-        std::cout << ss.str() << std::endl;
+        if (isFinal)
+        {
+            std::cout << ss.str() << std::endl;
+        }
+
+        std::string filename = "TunableEvalParameters-" + std::to_string(print_counter) + ".cs";
+        std::ofstream file(filename, std::ofstream::out | std::ofstream::app | std::ofstream::ate);
+
+        if (file.is_open())
+        {
+            file << ss.rdbuf();
+
+            file << "}\n"
+                 << std::endl
+                 << "#pragma warning restore IDE0055, IDE1006 // Discard formatting and naming styles\n";
+        }
+        file.close();
     }
 
-    static void print_cpp_parameters(const parameters_t &parameters, const std::array<std::array<tune_t, 12>, PSQTBucketCount> &mobilityPieceValues)
+    static void print_cpp_parameters(const parameters_t &parameters, const std::array<std::array<tune_t, 12>, PSQTBucketCount> &mobilityPieceValues, bool isFinal = false)
     {
         std::stringstream ss;
         std::string name;
@@ -422,7 +399,19 @@ public:
         name = NAME(RookMobilityBonus);
         RookMobilityBonus.to_cpp(parameters, ss, name, mobilityPieceValues);
 
-        std::cout << ss.str() << std::endl;
+        if (isFinal)
+        {
+            std::cout << ss.str() << std::endl;
+        }
+
+        std::string filename = "tunable_eval_terms-" + std::to_string(print_counter) + ".cpp";
+        std::ofstream file(filename, std::ofstream::out | std::ofstream::app | std::ofstream::ate);
+
+        if (file.is_open())
+        {
+            file << ss.rdbuf();
+        }
+        file.close();
     }
 };
 

@@ -1,6 +1,7 @@
 #pragma once
 #include "../base.h"
 #include "../external/chess.hpp"
+#include "lynx_base.hpp"
 #include <string>
 #include <cmath>
 #include <climits>
@@ -39,7 +40,7 @@ public:
 
     void to_csharp(const parameters_t &parameters, std::stringstream &ss, const std::string &name)
     {
-        ss << "\tpublic TaperedEvaluationTerm " << name << " { get; set; } = new(" << std::round(parameters[index][0]) << ", " << std::round(parameters[index][1]) << ");\n\n";
+        ss << "\tpublic static readonly TaperedEvaluationTerm " << name << " = new(" << std::round(parameters[index][0]) << ", " << std::round(parameters[index][1]) << ");\n\n";
     }
 
     void to_cpp(const parameters_t &parameters, std::stringstream &ss, const std::string &name)
@@ -266,7 +267,7 @@ public:
             throw std::invalid_argument("wrong size provided: " + size);
         }
 
-        ss << "\tpublic " << variable_name << " " << name << " { get; set; } = new(\n";
+        ss << "\tpublic " << variable_name << " " << name << " { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; } = new(\n";
         for (int rank = 0; rank < start; ++rank)
         {
             ss << "\t\tnew(0, 0),\n";
