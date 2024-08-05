@@ -26,6 +26,6 @@ constexpr bool print_data_entries = false;
 constexpr bool print_eval = false;
 constexpr bool complete_step_ouput = true;
 constexpr int32_t data_load_print_interval = 10000;
-constexpr int32_t print_step_interval = 500;
+constexpr int32_t print_step_interval = 1000;
 
 #endif // !CONFIG_H
