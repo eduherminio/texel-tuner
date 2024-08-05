@@ -88,7 +88,7 @@ public:
     void to_csharp(const parameters_t &parameters, std::stringstream &ss, const std::string &name)
     {
 
-        ss << "\tpublic TaperedEvaluationTerm[] " << name << " { get; set; } =" << std::endl
+        ss << "\tpublic static readonly TaperedEvaluationTerm[] " << name << " { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; } =" << std::endl
            << "\t[" << std::endl;
 
         for (int i = 0; i < size; ++i)
