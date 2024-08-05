@@ -1,4 +1,5 @@
 #pragma once
+#include <array>
 
 constexpr static int PSQTBucketCount = 24;
 
