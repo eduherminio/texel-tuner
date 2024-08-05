@@ -424,8 +424,11 @@ static void print_psqts_csharp(const parameters_t &parameters, std::array<std::a
     time(&rawtime);
     timeInfo = localtime(&rawtime);
 
-    std::string filename = "TunableEvalParameters-" + std::to_string(print_counter) + ".cs";
-    std::ofstream file(filename, std::ofstream::out | std::ofstream::trunc);
+    std::string suffix = std::to_string(print_counter);
+    suffix = "aggregated";
+
+    std::string filename = "TunableEvalParameters-" + suffix + ".cs";
+    std::ofstream file(filename, std::ofstream::out | std::ofstream::app);
 
     if (file.is_open())
     {
@@ -614,8 +617,11 @@ static void print_psqts_cpp(const parameters_t &parameters, std::array<std::arra
     time(&rawtime);
     timeInfo = localtime(&rawtime);
 
-    std::string filename = "tunable_eval_terms-" + std::to_string(print_counter) + ".cpp";
-    std::ofstream file(filename, std::ofstream::out | std::ofstream::trunc);
+    std::string suffix = std::to_string(print_counter);
+    suffix = "aggregated";
+
+    std::string filename = "tunable_eval_terms-" + suffix + ".cpp";
+    std::ofstream file(filename, std::ofstream::out | std::ofstream::app);
 
     if (file.is_open())
     {

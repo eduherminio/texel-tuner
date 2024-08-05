@@ -330,7 +330,10 @@ public:
             std::cout << ss.str() << std::endl;
         }
 
-        std::string filename = "TunableEvalParameters-" + std::to_string(print_counter) + ".cs";
+        std::string suffix = std::to_string(print_counter);
+        suffix = "aggregated";
+
+        std::string filename = "TunableEvalParameters-" + suffix + ".cs";
         std::ofstream file(filename, std::ofstream::out | std::ofstream::app | std::ofstream::ate);
 
         if (file.is_open())
@@ -404,7 +407,10 @@ public:
             std::cout << ss.str() << std::endl;
         }
 
-        std::string filename = "tunable_eval_terms-" + std::to_string(print_counter) + ".cpp";
+        std::string suffix = std::to_string(print_counter);
+        suffix = "aggregated";
+
+        std::string filename = "tunable_eval_terms-" + suffix + ".cpp";
         std::ofstream file(filename, std::ofstream::out | std::ofstream::app | std::ofstream::ate);
 
         if (file.is_open())
