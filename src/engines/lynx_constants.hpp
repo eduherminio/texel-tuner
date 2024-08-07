@@ -511,7 +511,7 @@ static void print_psqts_cpp(const parameters_t &parameters, std::array<std::arra
             // Kings
             auto kingIndex = 5 + phase * 6;
             psqtPieceValues[bucket][kingIndex] = 0;
-            ss << "// " << std::round(existingPieceValues[bucket][kingIndex]) << "\n";
+            ss << "// (" << std::round(existingPieceValues[bucket][kingIndex]) << ") - bucket " << bucket << "\n";
         }
         ss << "\t\t},\n\t";
     }
