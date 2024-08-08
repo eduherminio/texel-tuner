@@ -2954,17 +2954,65 @@ constexpr static std::array<std::array<int, 64>, PSQTBucketCount> EndGameKingTab
 		},
 	}};
 
-TunableSingle IsolatedPawnPenalty(-19, -15);
-TunableSingle OpenFileRookBonus(44, 7);
-TunableSingle SemiOpenFileRookBonus(14, 11);
-TunableSingle QueenMobilityBonus(1, 13);
-TunableSingle SemiOpenFileKingPenalty(-23, 7);
-TunableSingle OpenFileKingPenalty(-88, 5);
-TunableSingle KingShieldBonus(27, -8);
-TunableSingle BishopPairBonus(32, 80);
+TunableSingleBucketed IsolatedPawnPenalty(std::array<i32, PSQTBucketCount>(
+	{
+		S(-21, -11),
+		S(-19, -15),
+	}));
 
-TunableSingle PieceProtectedByPawnBonus(10, 11);
-TunableSingle PieceAttackedByPawnPenalty(-45, -24);
+TunableSingleBucketed OpenFileRookBonus(std::array<i32, PSQTBucketCount>(
+	{
+		S(67, -7),
+		S(43, 9),
+	}));
+
+TunableSingleBucketed SemiOpenFileRookBonus(std::array<i32, PSQTBucketCount>(
+	{
+		S(25, 3),
+		S(14, 8),
+	}));
+
+TunableSingleBucketed QueenMobilityBonus(std::array<i32, PSQTBucketCount>(
+	{
+		S(5, 9),
+		S(3, 8),
+	}));
+
+TunableSingleBucketed SemiOpenFileKingPenalty(std::array<i32, PSQTBucketCount>(
+	{
+		S(-10, 23),
+		S(-22, 15),
+	}));
+
+TunableSingleBucketed OpenFileKingPenalty(std::array<i32, PSQTBucketCount>(
+	{
+		S(-91, 17),
+		S(-84, 15),
+	}));
+
+TunableSingleBucketed KingShieldBonus(std::array<i32, PSQTBucketCount>(
+	{
+		S(17, -10),
+		S(11, -9),
+	}));
+
+TunableSingleBucketed BishopPairBonus(std::array<i32, PSQTBucketCount>(
+	{
+		S(30, 79),
+		S(31, 82),
+	}));
+
+TunableSingleBucketed PieceProtectedByPawnBonus(std::array<i32, PSQTBucketCount>(
+	{
+		S(9, 7),
+		S(6, 12),
+	}));
+
+TunableSingleBucketed PieceAttackedByPawnPenalty(std::array<i32, PSQTBucketCount>(
+	{
+		S(-41, -24),
+		S(-46, -17),
+	}));
 
 TunableArray PassedPawnBonus(
 	chess::PieceType::PAWN,
