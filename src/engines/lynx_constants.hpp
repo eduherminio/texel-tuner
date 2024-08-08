@@ -96,6 +96,20 @@ constexpr int PackedPositionalTables(int bucket, int piece, int square)
         EndGamePositionalWhiteTables[piece][bucket][square] * coefficient);
 }
 
+constexpr int PackedEnemyKingTables(chess::Color color, int bucket, int square)
+{
+    int coefficient = 1;
+    if (color == chess::Color::BLACK)
+    {
+        square ^= 56;
+        coefficient = -1;
+    }
+
+    return Pack(
+        MiddleGameEnemyKingTable[bucket][square] * coefficient,
+        EndGameEnemyKingTable[bucket][square] * coefficient);
+}
+
 constexpr static std::array<int, 64> File = {
     0, 1, 2, 3, 4, 5, 6, 7,
     0, 1, 2, 3, 4, 5, 6, 7,
@@ -379,6 +393,7 @@ static void print_psqts_csharp(const parameters_t &parameters, std::array<std::a
         }
     }
 
+    // Rest of pieces
     for (int piece = 1; piece < 6; ++piece)
     {
         for (int phase = 0; phase <= 1; ++phase)
@@ -413,6 +428,39 @@ static void print_psqts_csharp(const parameters_t &parameters, std::array<std::a
             }
         }
     }
+
+    // Enemy king
+    for (int phase = 0; phase <= 1; ++phase)
+    {
+        for (int bucket = 0; bucket < PSQTBucketCount; ++bucket)
+        {
+            if (bucket == 0)
+            {
+                ss << "\n\tinternal static readonly short[][] " << (phase == 0 ? "MiddleGame" : "EndGame") << "EnemyKing" << "Table =\n\t[\n";
+            }
+
+            ss << "\t\t[\n\t\t\t";
+
+            for (int square = 0; square < 64; ++square)
+            {
+                ss << std::setw(4) << std::round(parameters[(48 * PSQTBucketCount) +     // 64 - 16, since we're only tuning 48 pawn values
+                                                                   (64 * PSQTBucketCount * 5) + // piece - 1 since we already took pawns into account
+                                                                   (64 * bucket) + square][phase])
+                          << ",";
+                if (square % 8 == 7)
+                    ss << "\n\t\t";
+                if (square != 63)
+                    ss << "\t";
+            }
+            ss << "],\n";
+
+            if (bucket == PSQTBucketCount - 1)
+            {
+                ss << "\t];\n";
+            }
+        }
+    }
+
     ss << std::endl;
 
     // No console output
@@ -564,6 +612,7 @@ static void print_psqts_cpp(const parameters_t &parameters, std::array<std::arra
         }
     }
 
+    // Rest of pieces
     for (int piece = 1; piece < 6; ++piece)
     {
         for (int phase = 0; phase <= 1; ++phase)
@@ -603,6 +652,44 @@ static void print_psqts_cpp(const parameters_t &parameters, std::array<std::arra
             }
         }
     }
+    
+    // Enemy king
+    for (int phase = 0; phase <= 1; ++phase)
+    {
+        for (int bucket = 0; bucket < PSQTBucketCount; ++bucket)
+        {
+            if (bucket == 0)
+            {
+                ss << "\nconstexpr static std::array<std::array<int, 64>, PSQTBucketCount> " << (phase == 0 ? "MiddleGame" : "EndGame") << "EnemyKing" << "Table = {\n\t{\n\t";
+            }
+
+            ss << "\t{\n\t\t\t";
+
+            for (int square = 0; square < 64; ++square)
+            {
+                ss << std::setw(4) << std::round(parameters[(48 * PSQTBucketCount) +               // 64 - 16, since we're only tuning 48 pawn values
+                                                                   (64 * PSQTBucketCount * 5) + // piece - 1 since we already took pawns into account
+                                                                   (64 * bucket) + square][phase]);
+                if (square != 63)
+                {
+                    ss << ",";
+
+                    if (square % 8 == 7)
+                        ss << "\n\t\t";
+
+                    ss << "\t";
+                }
+            }
+
+            ss << "\t//\n\t\t},\n\t";
+
+            if (bucket == PSQTBucketCount - 1)
+            {
+                ss << "}};\n";
+            }
+        }
+    }
+    
     ss << std::endl;
 
     // No console output

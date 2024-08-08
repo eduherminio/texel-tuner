@@ -14,7 +14,7 @@
 
 using u64 = uint64_t;
 
-const int base = (64 * 6 - 16) * PSQTBucketCount; // PSQT but removing pawns from 1 and 8 rank
+const int base = (64 * 7 - 16) * PSQTBucketCount; // Own piece PSQTs but removing pawns from 1 and 8 rank + enemy king PSQT
 static int numParameters = base +
                            // DoubledPawnPenalty.size
                            IsolatedPawnPenalty.size +
@@ -90,6 +90,15 @@ public:
             {
                 for (int square = 0; square < 64; ++square)
                     result.push_back({(double)MiddleGamePositionalTables(bucket, piece, square), (double)EndGamePositionalTables(bucket, piece, square)});
+            }
+        }
+
+        // Enemy K
+        {
+            for (int bucket = 0; bucket < PSQTBucketCount; ++bucket)
+            {
+                for (int square = 0; square < 64; ++square)
+                    result.push_back({(double)MiddleGameEnemyKingTable[bucket][square], (double)EndGameEnemyKingTable[bucket][square]});
             }
         }
 
@@ -750,6 +759,19 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
     IncrementCoefficients(
         coefficients,
         (48 * PSQTBucketCount) + (64 * PSQTBucketCount * 4) + (64 * blackBucket) + (blackKing ^ 56),
+        chess::Color::BLACK);
+
+    packedScore += PackedEnemyKingTables(chess::Color::WHITE, whiteBucket, blackKing) +
+                   PackedEnemyKingTables(chess::Color::BLACK, blackBucket, whiteKing);
+
+    IncrementCoefficients(
+        coefficients,
+        (48 * PSQTBucketCount) + (64 * PSQTBucketCount * 5) + (64 * whiteBucket) + blackKing,
+        chess::Color::WHITE);
+
+    IncrementCoefficients(
+        coefficients,
+        (48 * PSQTBucketCount) + (64 * PSQTBucketCount * 5) + (64 * blackBucket) + whiteKing,
         chess::Color::BLACK);
 
     // Debugging eval
