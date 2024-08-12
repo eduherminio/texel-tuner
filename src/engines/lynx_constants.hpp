@@ -339,7 +339,7 @@ static void print_psqts_csharp(const parameters_t &parameters, std::array<std::a
 
         ss << "\n\t];\n";
     }
-    
+
     // Print PSQTs
 
     std::string names[] = {"Pawn", "Knight", "Bishop", "Rook", "Queen", "King"};
@@ -432,8 +432,6 @@ static void print_psqts_csharp(const parameters_t &parameters, std::array<std::a
         file << "// " << timeInfo->tm_year + 1900 << "-" << timeInfo->tm_mon + 1 << "-" << timeInfo->tm_mday
              << " " << timeInfo->tm_hour << ":" << timeInfo->tm_min << ":" << timeInfo->tm_sec
              << "  " << print_counter << std::endl
-             << std::endl
-             << "using System.Runtime.CompilerServices;\n"
              << std::endl
              << "namespace Lynx;\n"
              << std::endl
