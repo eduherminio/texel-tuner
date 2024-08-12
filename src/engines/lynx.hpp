@@ -280,6 +280,9 @@ public:
         // name = NAME(DoubledPawnPenalty);
         // DoubledPawnPenalty.to_json(parameters, ss, name);
 
+        ss << "public static class EvaluationParams" << std::endl
+           << "{" << std::endl;
+
         name = NAME(IsolatedPawnPenalty);
         IsolatedPawnPenalty.to_csharp(parameters, ss, name);
 

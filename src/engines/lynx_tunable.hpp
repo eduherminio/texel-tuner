@@ -88,7 +88,7 @@ public:
     void to_csharp(const parameters_t &parameters, std::stringstream &ss, const std::string &name)
     {
 
-        ss << "\tpublic static readonly TaperedEvaluationTerm[] " << name << " { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; } =" << std::endl
+        ss << "\tpublic static readonly TaperedEvaluationTerm[] " << name << " =" << std::endl
            << "\t[" << std::endl;
 
         for (int i = 0; i < size; ++i)
@@ -267,7 +267,7 @@ public:
             throw std::invalid_argument("wrong size provided: " + size);
         }
 
-        ss << "\tpublic static " << variable_name << " " << name << " { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; } = new(\n";
+        ss << "\tpublic static readonly " << variable_name << " " << name << " = new(\n";
         for (int rank = 0; rank < start; ++rank)
         {
             ss << "\t\tnew(0, 0),\n";

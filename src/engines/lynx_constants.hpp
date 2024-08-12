@@ -339,7 +339,7 @@ static void print_psqts_csharp(const parameters_t &parameters, std::array<std::a
 
         ss << "\n\t];\n";
     }
-
+    
     // Print PSQTs
 
     std::string names[] = {"Pawn", "Knight", "Bishop", "Rook", "Queen", "King"};
@@ -413,7 +413,7 @@ static void print_psqts_csharp(const parameters_t &parameters, std::array<std::a
             }
         }
     }
-    ss << std::endl;
+    ss << "}\n\n";
 
     // No console output
     // std::cout << ss.str();
