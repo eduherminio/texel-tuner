@@ -14,7 +14,7 @@
 
 using u64 = uint64_t;
 
-const int base = (64 * 6 - 16) * PSQTBucketCount; // PSQT but removing pawns from 1 and 8 rank
+const int base = (64 * 6 - 16) * PSQTBucketCount * 2; // PSQT but removing pawns from 1 and 8 rank
 static int numParameters = base +
                            // DoubledPawnPenalty.size
                            IsolatedPawnPenalty.size +
@@ -49,6 +49,9 @@ public:
         assert(MiddleGamePositionalWhiteTables.size() == 6);
         assert(EndGamePositionalWhiteTables.size() == 6);
 
+        assert(MiddleGameEnemyPositionalWhiteTables.size() == 6);
+        assert(EndGameEnemyPositionalWhiteTables.size() == 6);
+
         for (int bucket = 0; bucket < PSQTBucketCount; ++bucket)
         {
             for (int p = 0; p < 6; ++p)
@@ -58,6 +61,19 @@ public:
                     assert(MiddleGamePositionalTables(bucket, p, sq) == MiddleGamePositionalWhiteTables[p][bucket][sq]);
                     assert(MiddleGamePositionalTables(bucket, p + 6, sq) == -MiddleGamePositionalWhiteTables[p][bucket][sq ^ 56]);
                     assert(MiddleGamePositionalTables(bucket, p, sq) == -MiddleGamePositionalTables(bucket, p + 6, sq ^ 56));
+                }
+            }
+        }
+
+        for (int bucket = 0; bucket < PSQTBucketCount; ++bucket)
+        {
+            for (int p = 0; p < 6; ++p)
+            {
+                for (int sq = 0; sq < 64; ++sq)
+                {
+                    assert(MiddleGameEnemyPositionalTables(bucket, p, sq) == MiddleGameEnemyPositionalWhiteTables[p][bucket][sq]);
+                    assert(MiddleGameEnemyPositionalTables(bucket, p + 6, sq) == -MiddleGameEnemyPositionalWhiteTables[p][bucket][sq ^ 56]);
+                    assert(MiddleGameEnemyPositionalTables(bucket, p, sq) == -MiddleGameEnemyPositionalTables(bucket, p + 6, sq ^ 56));
                 }
             }
         }
@@ -90,6 +106,37 @@ public:
             {
                 for (int square = 0; square < 64; ++square)
                     result.push_back({(double)MiddleGamePositionalTables(bucket, piece, square), (double)EndGamePositionalTables(bucket, piece, square)});
+            }
+        }
+
+        // Pawns related to enemy king
+        {
+            const int piece = 0;
+            for (int bucket = 0; bucket < PSQTBucketCount; ++bucket)
+            {
+                for (int square = 8; square < 56; ++square)
+                    result.push_back({(double)MiddleGameEnemyPositionalTables(bucket, piece, square) + EnemyPieceValue[bucket][piece], (double)EndGameEnemyPositionalTables(bucket, piece, square) + EnemyPieceValue[bucket][piece + 5]});
+            }
+        }
+
+        // N, B, R, Q related to enemy king
+        for (int piece = 1; piece < 5; ++piece)
+        {
+            for (int bucket = 0; bucket < PSQTBucketCount; ++bucket)
+            {
+                for (int square = 0; square < 64; ++square)
+                    result.push_back({(double)MiddleGameEnemyPositionalTables(bucket, piece, square) + EnemyPieceValue[bucket][piece], (double)EndGameEnemyPositionalTables(bucket, piece, square) + EnemyPieceValue[bucket][piece + 5]});
+            }
+        }
+
+        // K related to enemy king
+        {
+            const int piece = 5;
+
+            for (int bucket = 0; bucket < PSQTBucketCount; ++bucket)
+            {
+                for (int square = 0; square < 64; ++square)
+                    result.push_back({(double)MiddleGameEnemyPositionalTables(bucket, piece, square), (double)EndGameEnemyPositionalTables(bucket, piece, square)});
             }
         }
 
@@ -665,7 +712,8 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
             auto pieceSquareIndex = chess::builtin::lsb(bitboard).index();
             ResetLS1B(bitboard);
 
-            packedScore += PackedPositionalTables(whiteBucket, pieceIndex, pieceSquareIndex) + PackedPieceValue(whiteBucket, pieceIndex);
+            packedScore += PackedPositionalTables(whiteBucket, pieceIndex, pieceSquareIndex) + PackedPieceValue(whiteBucket, pieceIndex) +
+                           PackedEnemyPositionalTables(blackBucket, pieceIndex, pieceSquareIndex) + PackedEnemyPieceValue(blackBucket, pieceIndex);
             gamePhase += phaseValues[pieceIndex];
 
             ++pieceCount[pieceIndex];
@@ -678,6 +726,16 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
                 IncrementCoefficients(
                     coefficients,
                     (48 * PSQTBucketCount) + (64 * PSQTBucketCount * (pieceIndex - 1)) + (64 * whiteBucket) + pieceSquareIndex,
+                    chess::Color::WHITE);
+
+            if (pieceIndex == 0)
+                IncrementCoefficients(coefficients,
+                                      base / 2 + (48 * blackBucket) + pieceSquareIndex - 8,
+                                      chess::Color::WHITE);
+            else
+                IncrementCoefficients(
+                    coefficients,
+                    base / 2 + (48 * PSQTBucketCount) + (64 * PSQTBucketCount * (pieceIndex - 1)) + (64 * blackBucket) + pieceSquareIndex,
                     chess::Color::WHITE);
         }
     }
@@ -693,7 +751,8 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
             auto pieceSquareIndex = chess::builtin::lsb(bitboard).index();
             ResetLS1B(bitboard);
 
-            packedScore += PackedPositionalTables(blackBucket, pieceIndex, pieceSquareIndex) - PackedPieceValue(blackBucket, tunerPieceIndex);
+            packedScore += PackedPositionalTables(blackBucket, pieceIndex, pieceSquareIndex) - PackedPieceValue(blackBucket, tunerPieceIndex) +
+                           PackedEnemyPositionalTables(whiteBucket, pieceIndex, pieceSquareIndex) - PackedEnemyPieceValue(whiteBucket, tunerPieceIndex);
             gamePhase += phaseValues[tunerPieceIndex];
 
             ++pieceCount[pieceIndex];
@@ -706,6 +765,16 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
                 IncrementCoefficients(
                     coefficients,
                     (48 * PSQTBucketCount) + (64 * PSQTBucketCount * (tunerPieceIndex - 1)) + (64 * blackBucket) + (pieceSquareIndex ^ 56),
+                    chess::Color::BLACK);
+
+            if (pieceIndex == 6)
+                IncrementCoefficients(coefficients,
+                                      base / 2 + (48 * whiteBucket) + (pieceSquareIndex ^ 56) - 8,
+                                      chess::Color::BLACK);
+            else
+                IncrementCoefficients(
+                    coefficients,
+                    base / 2 + (48 * PSQTBucketCount) + (64 * PSQTBucketCount * (tunerPieceIndex - 1)) + (64 * whiteBucket) + (pieceSquareIndex ^ 56),
                     chess::Color::BLACK);
         }
     }
@@ -742,6 +811,8 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
 
     packedScore += PackedPositionalTables(whiteBucket, 5, whiteKing) +
                    PackedPositionalTables(blackBucket, 11, blackKing) +
+                   PackedPositionalTables(blackBucket, 11, blackKing) +
+                   PackedPositionalTables(whiteBucket, 11, blackKing) +
                    KingAdditionalEvaluation(whiteKing, whiteBucket, chess::Color::WHITE, board, pieceCount, coefficients) -
                    KingAdditionalEvaluation(blackKing, blackBucket, chess::Color::BLACK, board, pieceCount, coefficients);
 
@@ -753,6 +824,16 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
     IncrementCoefficients(
         coefficients,
         (48 * PSQTBucketCount) + (64 * PSQTBucketCount * 4) + (64 * blackBucket) + (blackKing ^ 56),
+        chess::Color::BLACK);
+
+    IncrementCoefficients(
+        coefficients,
+        base / 2 + (48 * PSQTBucketCount) + (64 * PSQTBucketCount * 4) + (64 * blackBucket) + whiteKing,
+        chess::Color::WHITE);
+
+    IncrementCoefficients(
+        coefficients,
+        base / 2 + (48 * PSQTBucketCount) + (64 * PSQTBucketCount * 4) + (64 * whiteBucket) + (blackKing ^ 56),
         chess::Color::BLACK);
 
     // Debugging eval
