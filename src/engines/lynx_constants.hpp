@@ -475,7 +475,7 @@ static void print_psqts_csharp(const parameters_t &parameters, std::array<std::a
             }
         }
     }
-    
+
     ss << "\n\n";
 
     auto base = (64 * 6 - 16) * PSQTBucketCount * 2;
@@ -562,7 +562,7 @@ static void print_psqts_csharp(const parameters_t &parameters, std::array<std::a
             {
                 if (bucket == 0)
                 {
-                    ss << "\n\tinternal static readonly short[][] " << (phase == 0 ? "MiddleGame" : "EndGame") << names[piece] << "EnemyTable =\n\t[\n";
+                    ss << "\n\tinternal static readonly short[][] " << (phase == 0 ? "MiddleGame" : "EndGame") << "Enemy" << names[piece] << "Table =\n\t[\n";
                 }
 
                 ss << "\t\t[\n\t\t\t";
@@ -596,7 +596,7 @@ static void print_psqts_csharp(const parameters_t &parameters, std::array<std::a
             {
                 if (bucket == 0)
                 {
-                    ss << "\n\tinternal static readonly short[][] " << (phase == 0 ? "MiddleGame" : "EndGame") << names[piece] << "EnemyTable =\n\t[\n";
+                    ss << "\n\tinternal static readonly short[][] " << (phase == 0 ? "MiddleGame" : "EndGame") << "Enemy" << names[piece] << "Table =\n\t[\n";
                 }
 
                 ss << "\t\t[\n\t\t\t";
