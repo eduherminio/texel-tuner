@@ -811,8 +811,8 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
 
     packedScore += PackedPositionalTables(whiteBucket, 5, whiteKing) +
                    PackedPositionalTables(blackBucket, 11, blackKing) +
-                   PackedPositionalTables(blackBucket, 11, blackKing) +
-                   PackedPositionalTables(whiteBucket, 11, blackKing) +
+                   PackedEnemyPositionalTables(blackBucket, 5, whiteKing) +
+                   PackedEnemyPositionalTables(whiteBucket, 11, blackKing) +
                    KingAdditionalEvaluation(whiteKing, whiteBucket, chess::Color::WHITE, board, pieceCount, coefficients) -
                    KingAdditionalEvaluation(blackKing, blackBucket, chess::Color::BLACK, board, pieceCount, coefficients);
 
