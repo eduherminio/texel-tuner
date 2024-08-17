@@ -46,88 +46,61 @@ public:
     {
         parameters_t result{};
 
-        assert(MiddleGamePositionalWhiteTables.size() == 6);
-        assert(EndGamePositionalWhiteTables.size() == 6);
+        assert(MiddleGamePositionalWhiteTables.size() == 2);
+        assert(MiddleGamePositionalWhiteTables[0].size() == 6);
+        assert(MiddleGamePositionalWhiteTables[1].size() == 6);
 
-        assert(MiddleGameEnemyPositionalWhiteTables.size() == 6);
-        assert(EndGameEnemyPositionalWhiteTables.size() == 6);
+        assert(EndGamePositionalWhiteTables.size() == 2);
+        assert(EndGamePositionalWhiteTables[0].size() == 6);
+        assert(EndGamePositionalWhiteTables[1].size() == 6);
 
-        for (int bucket = 0; bucket < PSQTBucketCount; ++bucket)
+        for (int friendEnemy = 0; friendEnemy < 2; ++friendEnemy)
         {
-            for (int p = 0; p < 6; ++p)
+            for (int bucket = 0; bucket < PSQTBucketCount; ++bucket)
             {
-                for (int sq = 0; sq < 64; ++sq)
+                for (int p = 0; p < 6; ++p)
                 {
-                    assert(MiddleGamePositionalTables(bucket, p, sq) == MiddleGamePositionalWhiteTables[p][bucket][sq]);
-                    assert(MiddleGamePositionalTables(bucket, p + 6, sq) == -MiddleGamePositionalWhiteTables[p][bucket][sq ^ 56]);
-                    assert(MiddleGamePositionalTables(bucket, p, sq) == -MiddleGamePositionalTables(bucket, p + 6, sq ^ 56));
-
-                    assert(MiddleGameEnemyPositionalTables(bucket, p, sq) == MiddleGameEnemyPositionalWhiteTables[p][bucket][sq]);
-                    assert(MiddleGameEnemyPositionalTables(bucket, p + 6, sq) == -MiddleGameEnemyPositionalWhiteTables[p][bucket][sq ^ 56]);
-                    assert(MiddleGameEnemyPositionalTables(bucket, p, sq) == -MiddleGameEnemyPositionalTables(bucket, p + 6, sq ^ 56));
+                    for (int sq = 0; sq < 64; ++sq)
+                    {
+                        assert(MiddleGamePositionalTables(friendEnemy, bucket, p, sq) == MiddleGamePositionalWhiteTables[friendEnemy][p][bucket][sq]);
+                        assert(MiddleGamePositionalTables(friendEnemy, bucket, p + 6, sq) == -MiddleGamePositionalWhiteTables[friendEnemy][p][bucket][sq ^ 56]);
+                        assert(MiddleGamePositionalTables(friendEnemy, bucket, p, sq) == -MiddleGamePositionalTables(friendEnemy, bucket, p + 6, sq ^ 56));
+                    }
                 }
             }
         }
 
-        // Pawns
+        for (int friendEnemy = 0; friendEnemy < 2; ++friendEnemy)
         {
-            const int piece = 0;
-            for (int bucket = 0; bucket < PSQTBucketCount; ++bucket)
+            // Pawns
             {
-                for (int square = 8; square < 56; ++square)
-                    result.push_back({(double)MiddleGamePositionalTables(bucket, piece, square) + PieceValue[bucket][piece], (double)EndGamePositionalTables(bucket, piece, square) + PieceValue[bucket][piece + 5]});
+                const int piece = 0;
+                for (int bucket = 0; bucket < PSQTBucketCount; ++bucket)
+                {
+                    for (int square = 8; square < 56; ++square)
+                        result.push_back({(double)MiddleGamePositionalTables(friendEnemy, bucket, piece, square) + PieceValue[friendEnemy][bucket][piece], (double)EndGamePositionalTables(friendEnemy, bucket, piece, square) + PieceValue[friendEnemy][bucket][piece + 5]});
+                }
             }
-        }
 
-        // N, B, R, Q
-        for (int piece = 1; piece < 5; ++piece)
-        {
-            for (int bucket = 0; bucket < PSQTBucketCount; ++bucket)
+            // N, B, R, Q
+            for (int piece = 1; piece < 5; ++piece)
             {
-                for (int square = 0; square < 64; ++square)
-                    result.push_back({(double)MiddleGamePositionalTables(bucket, piece, square) + PieceValue[bucket][piece], (double)EndGamePositionalTables(bucket, piece, square) + PieceValue[bucket][piece + 5]});
+                for (int bucket = 0; bucket < PSQTBucketCount; ++bucket)
+                {
+                    for (int square = 0; square < 64; ++square)
+                        result.push_back({(double)MiddleGamePositionalTables(friendEnemy, bucket, piece, square) + PieceValue[friendEnemy][bucket][piece], (double)EndGamePositionalTables(friendEnemy, bucket, piece, square) + PieceValue[friendEnemy][bucket][piece + 5]});
+                }
             }
-        }
 
-        // K
-        {
-            const int piece = 5;
-
-            for (int bucket = 0; bucket < PSQTBucketCount; ++bucket)
+            // K
             {
-                for (int square = 0; square < 64; ++square)
-                    result.push_back({(double)MiddleGamePositionalTables(bucket, piece, square), (double)EndGamePositionalTables(bucket, piece, square)});
-            }
-        }
+                const int piece = 5;
 
-        // Pawns related to enemy king
-        {
-            const int piece = 0;
-            for (int bucket = 0; bucket < PSQTBucketCount; ++bucket)
-            {
-                for (int square = 8; square < 56; ++square)
-                    result.push_back({(double)MiddleGameEnemyPositionalTables(bucket, piece, square) + EnemyPieceValue[bucket][piece], (double)EndGameEnemyPositionalTables(bucket, piece, square) + EnemyPieceValue[bucket][piece + 5]});
-            }
-        }
-
-        // N, B, R, Q related to enemy king
-        for (int piece = 1; piece < 5; ++piece)
-        {
-            for (int bucket = 0; bucket < PSQTBucketCount; ++bucket)
-            {
-                for (int square = 0; square < 64; ++square)
-                    result.push_back({(double)MiddleGameEnemyPositionalTables(bucket, piece, square) + EnemyPieceValue[bucket][piece], (double)EndGameEnemyPositionalTables(bucket, piece, square) + EnemyPieceValue[bucket][piece + 5]});
-            }
-        }
-
-        // K related to enemy king
-        {
-            const int piece = 5;
-
-            for (int bucket = 0; bucket < PSQTBucketCount; ++bucket)
-            {
-                for (int square = 0; square < 64; ++square)
-                    result.push_back({(double)MiddleGameEnemyPositionalTables(bucket, piece, square), (double)EndGameEnemyPositionalTables(bucket, piece, square)});
+                for (int bucket = 0; bucket < PSQTBucketCount; ++bucket)
+                {
+                    for (int square = 0; square < 64; ++square)
+                        result.push_back({(double)MiddleGamePositionalTables(friendEnemy, bucket, piece, square), (double)EndGamePositionalTables(friendEnemy, bucket, piece, square)});
+                }
             }
         }
 
@@ -703,8 +676,8 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
             auto pieceSquareIndex = chess::builtin::lsb(bitboard).index();
             ResetLS1B(bitboard);
 
-            packedScore += PackedPositionalTables(whiteBucket, pieceIndex, pieceSquareIndex) + PackedPieceValue(whiteBucket, pieceIndex) +
-                           PackedEnemyPositionalTables(blackBucket, pieceIndex, pieceSquareIndex) + PackedEnemyPieceValue(blackBucket, pieceIndex);
+            packedScore += PackedPositionalTables(0, whiteBucket, pieceIndex, pieceSquareIndex) + PackedPieceValue(0, whiteBucket, pieceIndex) +
+                           PackedPositionalTables(1, blackBucket, pieceIndex, pieceSquareIndex) + PackedPieceValue(1, blackBucket, pieceIndex);
             gamePhase += phaseValues[pieceIndex];
 
             ++pieceCount[pieceIndex];
@@ -747,8 +720,8 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
             auto pieceSquareIndex = chess::builtin::lsb(bitboard).index();
             ResetLS1B(bitboard);
 
-            packedScore += PackedPositionalTables(blackBucket, pieceIndex, pieceSquareIndex) - PackedPieceValue(blackBucket, tunerPieceIndex) +
-                           PackedEnemyPositionalTables(whiteBucket, pieceIndex, pieceSquareIndex) - PackedEnemyPieceValue(whiteBucket, tunerPieceIndex);
+            packedScore += PackedPositionalTables(0, blackBucket, pieceIndex, pieceSquareIndex) - PackedPieceValue(0, blackBucket, tunerPieceIndex) +
+                           PackedPositionalTables(1, whiteBucket, pieceIndex, pieceSquareIndex) - PackedPieceValue(1, whiteBucket, tunerPieceIndex);
             gamePhase += phaseValues[tunerPieceIndex];
 
             ++pieceCount[pieceIndex];
@@ -762,7 +735,7 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
                                       chess::Color::BLACK);
 
                 IncrementCoefficients(coefficients,
-                                       enemyKingBaseIndex + (48 * whiteBucket) + (pieceSquareIndex ^ 56) - 8,
+                                      enemyKingBaseIndex + (48 * whiteBucket) + (pieceSquareIndex ^ 56) - 8,
                                       chess::Color::BLACK);
             }
             else
@@ -810,10 +783,10 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
         IncrementCoefficients(coefficients, BishopPairBonus.index, chess::Color::BLACK);
     }
 
-    packedScore += PackedPositionalTables(whiteBucket, 5, whiteKing) +
-                   PackedPositionalTables(blackBucket, 11, blackKing) +
-                   PackedEnemyPositionalTables(blackBucket, 5, whiteKing) +
-                   PackedEnemyPositionalTables(whiteBucket, 11, blackKing) +
+    packedScore += PackedPositionalTables(0, whiteBucket, 5, whiteKing) +
+                   PackedPositionalTables(0, blackBucket, 11, blackKing) +
+                   PackedPositionalTables(1, blackBucket, 5, whiteKing) +
+                   PackedPositionalTables(1, whiteBucket, 11, blackKing) +
                    KingAdditionalEvaluation(whiteKing, whiteBucket, chess::Color::WHITE, board, pieceCount, coefficients) -
                    KingAdditionalEvaluation(blackKing, blackBucket, chess::Color::BLACK, board, pieceCount, coefficients);
 
