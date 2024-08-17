@@ -14,9 +14,8 @@
 
 using u64 = uint64_t;
 
-const int base = (64 * 6 - 16) * PSQTBucketCount * 2; // PSQT but removing pawns from 1 and 8 rank
-const int enemyKingBase = base / 2;
-static int numParameters = base +
+const int enemyKingBaseIndex = psqtIndexCount / 2;
+static int numParameters = psqtIndexCount +
                            // DoubledPawnPenalty.size
                            IsolatedPawnPenalty.size +
                            OpenFileRookBonus.size +
@@ -62,16 +61,7 @@ public:
                     assert(MiddleGamePositionalTables(bucket, p, sq) == MiddleGamePositionalWhiteTables[p][bucket][sq]);
                     assert(MiddleGamePositionalTables(bucket, p + 6, sq) == -MiddleGamePositionalWhiteTables[p][bucket][sq ^ 56]);
                     assert(MiddleGamePositionalTables(bucket, p, sq) == -MiddleGamePositionalTables(bucket, p + 6, sq ^ 56));
-                }
-            }
-        }
 
-        for (int bucket = 0; bucket < PSQTBucketCount; ++bucket)
-        {
-            for (int p = 0; p < 6; ++p)
-            {
-                for (int sq = 0; sq < 64; ++sq)
-                {
                     assert(MiddleGameEnemyPositionalTables(bucket, p, sq) == MiddleGameEnemyPositionalWhiteTables[p][bucket][sq]);
                     assert(MiddleGameEnemyPositionalTables(bucket, p + 6, sq) == -MiddleGameEnemyPositionalWhiteTables[p][bucket][sq ^ 56]);
                     assert(MiddleGameEnemyPositionalTables(bucket, p, sq) == -MiddleGameEnemyPositionalTables(bucket, p + 6, sq ^ 56));
@@ -728,7 +718,7 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
                                       chess::Color::WHITE);
 
                 IncrementCoefficients(coefficients,
-                                      enemyKingBase + (48 * blackBucket) + pieceSquareIndex - 8,
+                                      enemyKingBaseIndex + (48 * blackBucket) + pieceSquareIndex - 8,
                                       chess::Color::WHITE);
             }
             else
@@ -740,7 +730,7 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
 
                 IncrementCoefficients(
                     coefficients,
-                    enemyKingBase + (48 * PSQTBucketCount) + (64 * PSQTBucketCount * (pieceIndex - 1)) + (64 * blackBucket) + pieceSquareIndex,
+                    enemyKingBaseIndex + (48 * PSQTBucketCount) + (64 * PSQTBucketCount * (pieceIndex - 1)) + (64 * blackBucket) + pieceSquareIndex,
                     chess::Color::WHITE);
             }
         }
@@ -772,7 +762,7 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
                                       chess::Color::BLACK);
 
                 IncrementCoefficients(coefficients,
-                                       enemyKingBase + (48 * whiteBucket) + (pieceSquareIndex ^ 56) - 8,
+                                       enemyKingBaseIndex + (48 * whiteBucket) + (pieceSquareIndex ^ 56) - 8,
                                       chess::Color::BLACK);
             }
             else
@@ -784,7 +774,7 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
 
                 IncrementCoefficients(
                     coefficients,
-                    enemyKingBase + (48 * PSQTBucketCount) + (64 * PSQTBucketCount * (tunerPieceIndex - 1)) + (64 * whiteBucket) + (pieceSquareIndex ^ 56),
+                    enemyKingBaseIndex + (48 * PSQTBucketCount) + (64 * PSQTBucketCount * (tunerPieceIndex - 1)) + (64 * whiteBucket) + (pieceSquareIndex ^ 56),
                     chess::Color::BLACK);
             }
         }
@@ -839,12 +829,12 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
 
     IncrementCoefficients(
         coefficients,
-        enemyKingBase + (48 * PSQTBucketCount) + (64 * PSQTBucketCount * 4) + (64 * blackBucket) + whiteKing,
+        enemyKingBaseIndex + (48 * PSQTBucketCount) + (64 * PSQTBucketCount * 4) + (64 * blackBucket) + whiteKing,
         chess::Color::WHITE);
 
     IncrementCoefficients(
         coefficients,
-        enemyKingBase + (48 * PSQTBucketCount) + (64 * PSQTBucketCount * 4) + (64 * whiteBucket) + (blackKing ^ 56),
+        enemyKingBaseIndex + (48 * PSQTBucketCount) + (64 * PSQTBucketCount * 4) + (64 * whiteBucket) + (blackKing ^ 56),
         chess::Color::BLACK);
 
     // Debugging eval
