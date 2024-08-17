@@ -321,7 +321,12 @@ static void print_psqts_csharp(const parameters_t &parameters, std::array<std::a
                 //           << existingPieceValues[0][pieceIndex] << "==" << existingPieceValues[1][pieceIndex] << std::endl;
 
                 psqtPieceValues[bucket][pieceIndex] = average;
-                ss << "+" << std::round(average + existingPieceValues[bucket][pieceIndex]) << ", ";
+                auto value = std::round(average + existingPieceValues[bucket][pieceIndex]);
+                if (value > 0)
+                {
+                    ss << "+";
+                }
+                ss << value << ", ";
             }
 
             // Kings
@@ -332,7 +337,17 @@ static void print_psqts_csharp(const parameters_t &parameters, std::array<std::a
             for (int piece = 0; piece < 5; ++piece)
             {
                 auto pieceIndex = piece + phase * 6;
-                ss << "-" << std::round(psqtPieceValues[bucket][pieceIndex] + existingPieceValues[bucket][pieceIndex]) << ", ";
+                auto value = std::round(psqtPieceValues[bucket][pieceIndex] + existingPieceValues[bucket][pieceIndex]);
+                if (value > 0)
+                {
+                    ss << "-";
+                }
+                else if (value < 0)
+                {
+                    ss << "+";
+                    value = -value;
+                }
+                ss << value << ", ";
             }
             ss << std::round(psqtPieceValues[bucket][kingIndex] + existingPieceValues[bucket][kingIndex]) << "\n\t\t],";
         }
