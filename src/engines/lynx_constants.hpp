@@ -286,23 +286,22 @@ static void print_psqts_csharp(const parameters_t &parameters, std::array<std::a
 
     std::array<std::array<std::array<tune_t, 12>, 2>, PSQTBucketCount> psqtPieceValues;
 
-    for (int friendEnemy = 0; friendEnemy < 2; ++friendEnemy)
+    // Extract and print pieces values
+    for (int phase = 0; phase <= 1; ++phase)
     {
-        auto friendEnemyIndexOffset = friendEnemy * psqtIndexCount / 2;
-
-        // Extract and print pieces values
-        for (int phase = 0; phase <= 1; ++phase)
+        for (int friendEnemy = 0; friendEnemy < 2; ++friendEnemy)
         {
+            auto friendEnemyIndexOffset = friendEnemy * psqtIndexCount / 2;
             if (friendEnemy == 0)
             {
                 if (phase == 0)
-                    ss << "\tinternal static readonly short[][] MiddleGamePieceValues =\n\t[";
+                    ss << "\tinternal static readonly short[][][] MiddleGamePieceValues =\n\t[";
 
                 else
-                    ss << "\n\tinternal static readonly short[][] EndGamePieceValues =\n\t[";
+                    ss << "\n\tinternal static readonly short[][][] EndGamePieceValues =\n\t[";
             }
 
-            ss << "\n\t\t[\n\t\t\t";
+            ss << "\n\t\t[";
             for (int bucket = 0; bucket < PSQTBucketCount; ++bucket)
             {
                 ss << "\n\t\t\t[\n\t\t\t\t";
@@ -376,18 +375,16 @@ static void print_psqts_csharp(const parameters_t &parameters, std::array<std::a
                              ? existingPieceValues[bucket][pieceIndex]
                              : 0));
 
-                    if (value > 0)
-                    {
-                        value = -value;
-                    }
+                    value = -value;
 
                     ss << std::showpos << value << std::noshowpos << ", ";
                 }
                 ss << std::round(psqtPieceValues[friendEnemy][bucket][kingIndex] + extraKingValues) << "\n\t\t\t],";
             }
 
-            ss << "\n\t];\n";
+            ss << "\n\t\t],\n";
         }
+        ss << "\t];\n";
     }
 
     // Print PSQTs
@@ -467,7 +464,8 @@ static void print_psqts_csharp(const parameters_t &parameters, std::array<std::a
             }
         }
     }
-    ss << "\n\n";
+
+    ss << "}\n\n";
 
     // No console output
     // std::cout << ss.str();
