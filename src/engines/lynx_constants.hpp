@@ -279,12 +279,12 @@ const int MaxEval = PositiveCheckmateDetectionLimit - 1;
     return ShiftLeft(ShiftDown(board));
 }
 
-static void print_psqts_csharp(const parameters_t &parameters, std::array<std::array<tune_t, 12>, PSQTBucketCount> &existingPieceValues)
+static void print_psqts_csharp(const parameters_t &parameters, const std::array<std::array<tune_t, 12>, PSQTBucketCount> &existingPieceValues)
 {
     std::stringstream ss;
     std::string names[] = {"Pawn", "Knight", "Bishop", "Rook", "Queen", "King"};
 
-    std::array<std::array<std::array<tune_t, 12>, 2>, PSQTBucketCount> psqtPieceValues;
+    std::array<std::array<std::array<std::array<tune_t, 12>, PSQTBucketCount>, 2>, 2> psqtPieceValues;
 
     // Extract and print pieces values
     for (int phase = 0; phase <= 1; ++phase)
@@ -318,7 +318,7 @@ static void print_psqts_csharp(const parameters_t &parameters, std::array<std::a
                     auto average = (pawnSum / 48.0);
                     auto pieceIndex = phase * 6;
 
-                    psqtPieceValues[friendEnemy][bucket][pieceIndex] = average;
+                    psqtPieceValues[friendEnemy][phase][bucket][pieceIndex] = average;
 
                     auto value = std::round(
                         average +
@@ -350,7 +350,7 @@ static void print_psqts_csharp(const parameters_t &parameters, std::array<std::a
                     // ss << std::endl
                     //           << existingPieceValues[0][pieceIndex] << "==" << existingPieceValues[1][pieceIndex] << std::endl;
 
-                    psqtPieceValues[friendEnemy][bucket][pieceIndex] = average;
+                    psqtPieceValues[friendEnemy][phase][bucket][pieceIndex] = average;
                     auto value = std::round(
                         average +
                         (friendEnemy == 0
@@ -362,15 +362,15 @@ static void print_psqts_csharp(const parameters_t &parameters, std::array<std::a
 
                 // Kings
                 auto kingIndex = 5 + phase * 6;
-                psqtPieceValues[friendEnemy][bucket][kingIndex] = 0;
+                psqtPieceValues[friendEnemy][phase][bucket][kingIndex] = 0;
                 auto extraKingValues = friendEnemy == 0 ? existingPieceValues[bucket][kingIndex] : 0;
-                ss << psqtPieceValues[friendEnemy][bucket][kingIndex] + extraKingValues << ",\n\t\t\t\t";
+                ss << psqtPieceValues[friendEnemy][phase][bucket][kingIndex] + extraKingValues << ",\n\t\t\t\t";
 
                 for (int piece = 0; piece < 5; ++piece)
                 {
                     auto pieceIndex = piece + phase * 6;
                     auto value = std::round(
-                        psqtPieceValues[friendEnemy][bucket][pieceIndex] +
+                        psqtPieceValues[friendEnemy][phase][bucket][pieceIndex] +
                         (friendEnemy == 0
                              ? existingPieceValues[bucket][pieceIndex]
                              : 0));
@@ -379,7 +379,7 @@ static void print_psqts_csharp(const parameters_t &parameters, std::array<std::a
 
                     ss << std::showpos << value << std::noshowpos << ", ";
                 }
-                ss << std::round(psqtPieceValues[friendEnemy][bucket][kingIndex] + extraKingValues) << "\n\t\t\t],";
+                ss << std::round(psqtPieceValues[friendEnemy][phase][bucket][kingIndex] + extraKingValues) << "\n\t\t\t],";
             }
 
             ss << "\n\t\t],\n";
@@ -411,7 +411,7 @@ static void print_psqts_csharp(const parameters_t &parameters, std::array<std::a
 
                     for (int square = 0; square < 48; ++square)
                     {
-                        ss << std::setw(4) << std::round(parameters[friendEnemyIndexOffset + 48 * bucket + square][phase] - psqtPieceValues[friendEnemy][bucket][phase * 6]) << ",";
+                        ss << std::setw(4) << std::round(parameters[friendEnemyIndexOffset + 48 * bucket + square][phase] - psqtPieceValues[friendEnemy][phase][bucket][phase * 6]) << ",";
                         if (square % 8 == 7)
                             ss << "\n\t\t";
                         if (square != 47)
@@ -447,7 +447,7 @@ static void print_psqts_csharp(const parameters_t &parameters, std::array<std::a
                         ss << std::setw(4) << std::round(parameters[friendEnemyIndexOffset + (48 * PSQTBucketCount) + // 64 - 16, since we're only tuning 48 pawn values
                                                                     (64 * PSQTBucketCount) * (piece - 1) +            // piece - 1 since we already took pawns into account
                                                                     (64 * bucket) + square][phase] -
-                                                         psqtPieceValues[friendEnemy][bucket][piece + phase * 6])
+                                                         psqtPieceValues[friendEnemy][phase][bucket][piece + phase * 6])
                            << ",";
                         if (square % 8 == 7)
                             ss << "\n\t\t";
@@ -502,13 +502,13 @@ static void print_psqts_csharp(const parameters_t &parameters, std::array<std::a
     }
 }
 
-static void print_psqts_cpp(const parameters_t &parameters, std::array<std::array<tune_t, 12>, PSQTBucketCount> &existingPieceValues, bool isFinal = false)
+static void print_psqts_cpp(const parameters_t &parameters, const std::array<std::array<tune_t, 12>, PSQTBucketCount> &existingPieceValues, bool isFinal = false)
 {
     ++print_counter;
 
     std::stringstream ss;
     std::string names[] = {"Pawn", "Knight", "Bishop", "Rook", "Queen", "King"};
-    std::array<std::array<std::array<tune_t, 12>, PSQTBucketCount>, 2> psqtPieceValues;
+    std::array<std::array<std::array<std::array<tune_t, 12>, PSQTBucketCount>, 2>, 2> psqtPieceValues;
 
     ss << "constexpr static std::array<std::array<std::array<int, 12>, PSQTBucketCount>, 2> PieceValue = {{\n\n";
 
@@ -538,7 +538,7 @@ static void print_psqts_cpp(const parameters_t &parameters, std::array<std::arra
                     auto average = (pawnSum / 48.0);
                     auto pieceIndex = phase * 6;
 
-                    psqtPieceValues[friendEnemy][bucket][pieceIndex] = average;
+                    psqtPieceValues[friendEnemy][phase][bucket][pieceIndex] = average;
 
                     auto value = std::round(
                         average +
@@ -567,7 +567,7 @@ static void print_psqts_cpp(const parameters_t &parameters, std::array<std::arra
                     auto average = (sum / 64.0);
                     auto pieceIndex = piece + phase * 6;
 
-                    psqtPieceValues[friendEnemy][bucket][pieceIndex] = average;
+                    psqtPieceValues[friendEnemy][phase][bucket][pieceIndex] = average;
                     auto value = std::round(
                         average +
                         (friendEnemy == 0
@@ -579,10 +579,10 @@ static void print_psqts_cpp(const parameters_t &parameters, std::array<std::arra
 
                 // Kings
                 auto kingIndex = 5 + phase * 6;
-                psqtPieceValues[friendEnemy][bucket][kingIndex] = 0;
+                psqtPieceValues[friendEnemy][phase][bucket][kingIndex] = 0;
                 auto extraKingValues = friendEnemy == 0 ? existingPieceValues[bucket][kingIndex] : 0;
 
-                ss << "// (" << std::round(psqtPieceValues[friendEnemy][bucket][kingIndex] + extraKingValues) << ") - bucket " << bucket << "\n";
+                ss << "// (" << std::round(psqtPieceValues[friendEnemy][phase][bucket][kingIndex] + extraKingValues) << ") - bucket " << bucket << "\n";
             }
             ss << "\t\t},\n\t";
         }
@@ -621,7 +621,7 @@ static void print_psqts_cpp(const parameters_t &parameters, std::array<std::arra
 
                     for (int square = 0; square < 48; ++square)
                     {
-                        ss << std::setw(4) << std::round(parameters[friendEnemyIndexOffset + 48 * bucket + square][phase] - psqtPieceValues[friendEnemy][bucket][phase * 6]) << ",";
+                        ss << std::setw(4) << std::round(parameters[friendEnemyIndexOffset + 48 * bucket + square][phase] - psqtPieceValues[friendEnemy][phase][bucket][phase * 6]) << ",";
                         if (square % 8 == 7)
                             ss << "\n\t\t";
                         if (square != 47)
@@ -659,7 +659,7 @@ static void print_psqts_cpp(const parameters_t &parameters, std::array<std::arra
                         ss << std::setw(4) << std::round(parameters[friendEnemyIndexOffset + (48 * PSQTBucketCount) + // 64 - 16, since we're only tuning 48 pawn values
                                                                     (64 * PSQTBucketCount) * (piece - 1) +            // piece - 1 since we already took pawns into account
                                                                     (64 * bucket) + square][phase] -
-                                                         psqtPieceValues[friendEnemy][bucket][piece + phase * 6]); // We substract the 16 non-tuned pawn valeus
+                                                         psqtPieceValues[friendEnemy][phase][bucket][piece + phase * 6]); // We substract the 16 non-tuned pawn valeus
                         if (square != 63)
                         {
                             ss << ",";
