@@ -327,11 +327,7 @@ static void print_psqts_csharp(const parameters_t &parameters, std::array<std::a
                              ? existingPieceValues[bucket][pieceIndex]
                              : 0));
 
-                    if (value > 0)
-                    {
-                        ss << "+";
-                    }
-                    ss << value << ", ";
+                    ss << std::showpos << value << std::noshowpos << ", ";
                 }
 
                 for (int piece = 1; piece < 5; ++piece)
@@ -362,16 +358,7 @@ static void print_psqts_csharp(const parameters_t &parameters, std::array<std::a
                              ? existingPieceValues[bucket][pieceIndex]
                              : 0));
 
-                    if (value > 0)
-                    {
-                        ss << "-";
-                    }
-                    else if (value < 0)
-                    {
-                        ss << "+";
-                        value = -value;
-                    }
-                    ss << value << ", ";
+                    ss << std::showpos << value << std::noshowpos << ", ";
                 }
 
                 // Kings
@@ -391,14 +378,10 @@ static void print_psqts_csharp(const parameters_t &parameters, std::array<std::a
 
                     if (value > 0)
                     {
-                        ss << "-";
-                    }
-                    else if (value < 0)
-                    {
-                        ss << "+";
                         value = -value;
                     }
-                    ss << value << ", ";
+
+                    ss << std::showpos << value << std::noshowpos << ", ";
                 }
                 ss << std::round(psqtPieceValues[friendEnemy][bucket][kingIndex] + extraKingValues) << "\n\t\t\t],";
             }
@@ -565,11 +548,7 @@ static void print_psqts_cpp(const parameters_t &parameters, std::array<std::arra
                              ? existingPieceValues[bucket][pieceIndex]
                              : 0));
 
-                    if (value > 0)
-                    {
-                        ss << "+";
-                    }
-                    ss << value << ", ";
+                    ss << std::showpos << value << std::noshowpos << ", ";
                 }
 
                 for (int piece = 1; piece < 5; ++piece)
@@ -597,16 +576,7 @@ static void print_psqts_cpp(const parameters_t &parameters, std::array<std::arra
                              ? existingPieceValues[bucket][pieceIndex]
                              : 0));
 
-                    if (value > 0)
-                    {
-                        ss << "-";
-                    }
-                    else if (value < 0)
-                    {
-                        ss << "+";
-                        value = -value;
-                    }
-                    ss << value << ", ";
+                    ss << std::showpos << value << std::noshowpos << ", ";
                 }
 
                 // Kings
@@ -619,7 +589,7 @@ static void print_psqts_cpp(const parameters_t &parameters, std::array<std::arra
             ss << "\t\t},\n\t";
         }
 
-        ss << "}},\n"; 
+        ss << "}},\n";
     }
 
     ss << "}};\n";
