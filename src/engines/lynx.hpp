@@ -819,68 +819,62 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
 
     // Check if drawn position due to lack of material
 
-    int totalPawnsCount = INT_MIN;
-
-    if (gamePhase <= 3)
-    {
-        totalPawnsCount = board.pieces(chess::PieceType::PAWN, chess::Color::WHITE).count() +
+    int totalPawnsCount = board.pieces(chess::PieceType::PAWN, chess::Color::WHITE).count() +
                           board.pieces(chess::PieceType::PAWN, chess::Color::BLACK).count();
 
-        if (totalPawnsCount == 0)
+    if (gamePhase <= 3 && totalPawnsCount == 0)
+    {
+        switch (gamePhase)
         {
+        // case 5:
+        //     {
+        //         // RB vs R, RN vs R - escale it down due to the chances of it being a draw
+        //         if (pieceCount[(int)Piece.R] == 1 && pieceCount[(int)Piece.r] == 1)
+        //         {
+        //             packedScore >>= 1; // /2
+        //         }
 
-            switch (gamePhase)
-            {
-            // case 5:
-            //     {
-            //         // RB vs R, RN vs R - escale it down due to the chances of it being a draw
-            //         if (pieceCount[(int)Piece.R] == 1 && pieceCount[(int)Piece.r] == 1)
-            //         {
-            //             packedScore >>= 1; // /2
-            //         }
+        //        break;
+        //    }
+        case 3:
+        {
+            auto winningSideOffset = PieceOffset(packedScore >= 0);
 
-            //        break;
-            //    }
-            case 3:
-            {
-                auto winningSideOffset = PieceOffset(packedScore >= 0);
-
-                if (pieceCount[1 + winningSideOffset] == 2) // NN vs N, NN vs B
-                {
-                    return EvalResult{
-                        std::move(coefficients),
-                        (double)0};
-                }
-
-                // Without rooks, only BB vs N is a win and BN vs N can have some chances
-                // Not taking that into account here though, we would need this to rule them out: `pieceCount[(int)Piece.b - winningSideOffset] == 1 || pieceCount[(int)Piece.B + winningSideOffset] <= 1`
-                // if (pieceCount[(int)Piece.R + winningSideOffset] == 0)  // BN vs B, NN vs B, BB vs B, BN vs N, NN vs N
-                //{
-                //    packedScore >>= 1; // /2
-                //}
-
-                break;
-            }
-            case 2:
-            {
-                if (pieceCount[1] + pieceCount[7] == 2     // NN vs -, N vs N
-                    || pieceCount[1] + pieceCount[2] == 1) // B vs N, B vs B
-                {
-                    return EvalResult{
-                        std::move(coefficients),
-                        (double)0};
-                }
-
-                break;
-            }
-            case 1:
-            case 0:
+            if (pieceCount[1 + winningSideOffset] == 2) // NN vs N, NN vs B
             {
                 return EvalResult{
                     std::move(coefficients),
                     (double)0};
             }
+
+            // Without rooks, only BB vs N is a win and BN vs N can have some chances
+            // Not taking that into account here though, we would need this to rule them out: `pieceCount[(int)Piece.b - winningSideOffset] == 1 || pieceCount[(int)Piece.B + winningSideOffset] <= 1`
+            // if (pieceCount[(int)Piece.R + winningSideOffset] == 0)  // BN vs B, NN vs B, BB vs B, BN vs N, NN vs N
+            //{
+            //    packedScore >>= 1; // /2
+            //}
+
+            break;
+        }
+        case 2:
+        {
+            if (pieceCount[1] + pieceCount[7] == 2     // NN vs -, N vs N
+                || pieceCount[1] + pieceCount[2] == 1) // B vs N, B vs B
+            {
+                return EvalResult{
+                    std::move(coefficients),
+                    (double)0};
             }
+
+            break;
+        }
+        case 1:
+        case 0:
+        {
+            return EvalResult{
+                std::move(coefficients),
+                (double)0};
+        }
         }
     }
 
@@ -897,21 +891,7 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
     auto endGameScore = UnpackEG(packedScore);
     int eval = ((middleGameScore * gamePhase) + (endGameScore * endGamePhase)) / maxPhase;
 
-    if (gamePhase <= 3)
-    {
-        auto pawnScalingPenalty = 16 - totalPawnsCount;
-
-        if (eval > 1)
-        {
-            pawnScalingPenalty = std::min(eval - 1, pawnScalingPenalty);
-            eval -= pawnScalingPenalty;
-        }
-        else if (eval < -1)
-        {
-            pawnScalingPenalty = std::min(-eval - 1, pawnScalingPenalty);
-            eval += pawnScalingPenalty;
-        }
-    }
+    eval = (int)(eval * ((80 + (totalPawnsCount * 7)) / 128.0));
 
     eval = std::clamp(eval, MinEval, MaxEval);
 
