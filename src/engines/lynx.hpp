@@ -1,8 +1,11 @@
 #include "../base.h"
+#include "../config.h"
 #include "./lynx_constants.hpp"
 #include "./lynx_tunable.hpp"
+#include "lynx_tunable_eval_terms.hpp"
 #include "../external/chess.hpp"
 #include "../external/builtin.hpp"
+#include <algorithm>
 #include <cassert>
 #include <array>
 #include <bit>
@@ -11,45 +14,8 @@
 
 using u64 = uint64_t;
 
-// TunableSingle DoubledPawnPenalty_MG(6, -12);
-TunableSingle IsolatedPawnPenalty(-21, -18);
-TunableSingle OpenFileRookBonus(45, 7);
-TunableSingle SemiOpenFileRookBonus(15, 8);
-TunableSingle SemiOpenFileKingPenalty(-39, 21);
-TunableSingle OpenFileKingPenalty(-105, 8);
-TunableSingle KingShieldBonus(17, -5);
-TunableSingle BishopPairBonus(31, 80);
-
-TunableArray PassedPawnBonus(
-        std::vector<int>{0, 2, -11, -11, 20, 60, 99, 0},
-        std::vector<int>{0, 13, 19, 47, 80, 156, 224, 0},
-        8,
-        1,
-        1);
-
-TunableArray BishopMobilityBonus(
-        std::vector<int>{0, 196, 207, 218, 232, 240, 255, 266, 275, 276, 282, 284, 285, 314, 0},
-        std::vector<int>{0, 163, 163, 202, 218, 232, 252, 262, 274, 280, 286, 282, 282, 276, 0},
-        15,
-        0,
-        1);
-
-TunableArray RookMobilityBonus(
-        std::vector<int>{296, 302, 308, 311, 310, 317, 320, 325, 327, 330, 335, 337, 338, 350, 348},
-        std::vector<int>{364, 398, 400, 407, 418, 421, 426, 431, 443, 449, 451, 453, 457, 457, 455},
-        15,
-        0,
-        0);
-
-TunableArray QueenMobilityBonus(
-    std::vector<int>{0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2},
-    std::vector<int>{0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2},
-    28,
-    0, // Skipping mobility 0, 1 and 2
-    0);
-
-const int base = 64 * 6 - 16; // PSQT but removing pawns from 1 and 8 rank
-static int numParameters = base +
+const int enemyKingBaseIndex = psqtIndexCount / 2;
+static int numParameters = psqtIndexCount +
                            // DoubledPawnPenalty.size
                            IsolatedPawnPenalty.size +
                            OpenFileRookBonus.size +
@@ -57,12 +23,15 @@ static int numParameters = base +
                            SemiOpenFileKingPenalty.size +
                            OpenFileKingPenalty.size +
                            BishopPairBonus.size +
+                           PieceProtectedByPawnBonus.size +
+                           PieceAttackedByPawnPenalty.size +
                            KingShieldBonus.size +
-                           (PassedPawnBonus.size - PassedPawnBonus.start - PassedPawnBonus.end) +               // 6, removing 1 and 8 rank values
-                           (BishopMobilityBonus.size - BishopMobilityBonus.start - BishopMobilityBonus.end) +   // 14, removing count 14
-                           (RookMobilityBonus.size - RookMobilityBonus.start - RookMobilityBonus.end) +         // 15
-                           (QueenMobilityBonus.size - QueenMobilityBonus.start - QueenMobilityBonus.end);       // 24, removing count 0, 1 and 2
-;
+                           PassedPawnBonus.tunableSize +          // 6, removing 1 and 8 rank values
+                           VirtualKingMobilityBonus.tunableSize + // 28
+                           KnightMobilityBonus.tunableSize +      // 9
+                           BishopMobilityBonus.tunableSize +      // 14, removing end
+                           RookMobilityBonus.tunableSize +        // 15
+                           QueenMobilityBonus.tunableSize;
 
 class Lynx
 {
@@ -76,39 +45,62 @@ public:
     {
         parameters_t result{};
 
-        assert(MiddleGamePositionalWhiteTables.size() == 6);
-        assert(EndGamePositionalWhiteTables.size() == 6);
+        assert(MiddleGamePositionalWhiteTables.size() == 2);
+        assert(MiddleGamePositionalWhiteTables[0].size() == 6);
+        assert(MiddleGamePositionalWhiteTables[1].size() == 6);
 
-        for (int p = 0; p < 6; ++p)
+        assert(EndGamePositionalWhiteTables.size() == 2);
+        assert(EndGamePositionalWhiteTables[0].size() == 6);
+        assert(EndGamePositionalWhiteTables[1].size() == 6);
+
+        for (int friendEnemy = 0; friendEnemy < 2; ++friendEnemy)
         {
-            for (int sq = 0; sq < 64; ++sq)
+            for (int bucket = 0; bucket < PSQTBucketCount; ++bucket)
             {
-                assert(MiddleGamePositionalTables(p, sq) == MiddleGamePositionalWhiteTables[p][sq]);
-                assert(MiddleGamePositionalTables(p + 6, sq) == -MiddleGamePositionalWhiteTables[p][sq ^ 56]);
-                assert(MiddleGamePositionalTables(p, sq) == -MiddleGamePositionalTables(p + 6, sq ^ 56));
+                for (int p = 0; p < 6; ++p)
+                {
+                    for (int sq = 0; sq < 64; ++sq)
+                    {
+                        assert(MiddleGamePositionalTables(friendEnemy, bucket, p, sq) == MiddleGamePositionalWhiteTables[friendEnemy][p][bucket][sq]);
+                        assert(MiddleGamePositionalTables(friendEnemy, bucket, p + 6, sq) == -MiddleGamePositionalWhiteTables[friendEnemy][p][bucket][sq ^ 56]);
+                        assert(MiddleGamePositionalTables(friendEnemy, bucket, p, sq) == -MiddleGamePositionalTables(friendEnemy, bucket, p + 6, sq ^ 56));
+                    }
+                }
             }
         }
 
-        // Pawns
+        for (int friendEnemy = 0; friendEnemy < 2; ++friendEnemy)
         {
-            const int piece = 0;
+            // Pawns
+            {
+                const int piece = 0;
+                for (int bucket = 0; bucket < PSQTBucketCount; ++bucket)
+                {
+                    for (int square = 8; square < 56; ++square)
+                        result.push_back({(double)MiddleGamePositionalTables(friendEnemy, bucket, piece, square) + PieceValue[friendEnemy][bucket][piece], (double)EndGamePositionalTables(friendEnemy, bucket, piece, square) + PieceValue[friendEnemy][bucket][piece + 5]});
+                }
+            }
 
-            for (int square = 8; square < 56; ++square)
-                result.push_back({(double)MiddleGamePositionalTables(piece, square) + PieceValue[piece], (double)EndGamePositionalTables(piece, square) + PieceValue[piece + 5]});
-        }
-        // N, B, R, Q
-        for (int piece = 1; piece < 5; ++piece)
-        {
-            for (int square = 0; square < 64; ++square)
-                result.push_back({(double)MiddleGamePositionalTables(piece, square) + PieceValue[piece], (double)EndGamePositionalTables(piece, square) + PieceValue[piece + 5]});
-        }
+            // N, B, R, Q
+            for (int piece = 1; piece < 5; ++piece)
+            {
+                for (int bucket = 0; bucket < PSQTBucketCount; ++bucket)
+                {
+                    for (int square = 0; square < 64; ++square)
+                        result.push_back({(double)MiddleGamePositionalTables(friendEnemy, bucket, piece, square) + PieceValue[friendEnemy][bucket][piece], (double)EndGamePositionalTables(friendEnemy, bucket, piece, square) + PieceValue[friendEnemy][bucket][piece + 5]});
+                }
+            }
 
-        // K
-        {
-            const int piece = 5;
+            // K
+            {
+                const int piece = 5;
 
-            for (int square = 0; square < 64; ++square)
-                result.push_back({(double)MiddleGamePositionalTables(piece, square), (double)EndGamePositionalTables(piece, square)});
+                for (int bucket = 0; bucket < PSQTBucketCount; ++bucket)
+                {
+                    for (int square = 0; square < 64; ++square)
+                        result.push_back({(double)MiddleGamePositionalTables(friendEnemy, bucket, piece, square), (double)EndGamePositionalTables(friendEnemy, bucket, piece, square)});
+                }
+            }
         }
 
         // DoubledPawnPenalty.add(result);
@@ -119,11 +111,21 @@ public:
         OpenFileKingPenalty.add(result);
         KingShieldBonus.add(result);
         BishopPairBonus.add(result);
+        PieceProtectedByPawnBonus.add(result);
+        PieceAttackedByPawnPenalty.add(result);
 
         PassedPawnBonus.add(result);
+        VirtualKingMobilityBonus.add(result);
+        KnightMobilityBonus.add(result);
         BishopMobilityBonus.add(result);
         RookMobilityBonus.add(result);
         QueenMobilityBonus.add(result);
+
+        assert(PassedPawnBonus.tunableSize == 6);
+        assert(VirtualKingMobilityBonus.tunableSize == 28);
+        assert(KnightMobilityBonus.tunableSize == 9);
+        assert(BishopMobilityBonus.tunableSize == 14);
+        assert(RookMobilityBonus.tunableSize == 15);
 
         std::cout << result.size() << " == " << numParameters << std::endl;
         assert(result.size() == numParameters);
@@ -142,23 +144,76 @@ public:
 
     static int NormalizeScore(int score);
 
-    static int round(double value)
+    static std::array<std::array<tune_t, 12>, PSQTBucketCount> extract_mobility_offset(const parameters_t &parameters, bool isInitial)
     {
-        return std::round(value);
+        std::array<std::array<tune_t, 12>, PSQTBucketCount> mobilityPieceValues;
+
+        auto knightMobility = KnightMobilityBonus.extract_offset(parameters);
+        auto bishopMobility = BishopMobilityBonus.extract_offset(parameters);
+        auto rookMobility = RookMobilityBonus.extract_offset(parameters);
+        auto queenMobility = QueenMobilityBonus.extract_offset(parameters);
+
+        for (int b = 0; b < PSQTBucketCount; ++b)
+        {
+            mobilityPieceValues[b].fill(0);
+
+            if (isInitial)
+            {
+                continue;
+            }
+
+            mobilityPieceValues[b][KnightMobilityBonus.pieceIndex] = knightMobility[0];
+            mobilityPieceValues[b][KnightMobilityBonus.pieceIndex + 6] = knightMobility[1];
+
+            mobilityPieceValues[b][BishopMobilityBonus.pieceIndex] = bishopMobility[0];
+            mobilityPieceValues[b][BishopMobilityBonus.pieceIndex + 6] = bishopMobility[1];
+
+            mobilityPieceValues[b][RookMobilityBonus.pieceIndex] = rookMobility[0];
+            mobilityPieceValues[b][RookMobilityBonus.pieceIndex + 6] = rookMobility[1];
+
+            mobilityPieceValues[b][QueenMobilityBonus.pieceIndex] = queenMobility[0];
+            mobilityPieceValues[b][QueenMobilityBonus.pieceIndex + 6] = queenMobility[1];
+        }
+
+        return mobilityPieceValues;
     }
 
-    static void print_parameters(const parameters_t &parameters)
+    static void print_parameters(const parameters_t &parameters, bool isInitial = false, bool isFinal = false)
     {
-        print_psqts(parameters);
-        print_json_parameters(parameters);
+        auto mobilityPieceValues = extract_mobility_offset(parameters, isInitial);
+
+        print_psqts_cpp(parameters, mobilityPieceValues, true);
+        if (isFinal)
+        {
+            std::cout << "------------------------------------------------------------------------" << std::endl;
+        }
+        print_cpp_parameters(parameters, mobilityPieceValues, isFinal);
+        if (isFinal)
+        {
+            std::cout << "------------------------------------------------------------------------" << std::endl;
+        }
+
+        print_psqts_csharp(parameters, mobilityPieceValues);
+        if (isFinal)
+        {
+            std::cout << "------------------------------------------------------------------------" << std::endl;
+        }
+        print_csharp_parameters(parameters, mobilityPieceValues, isFinal);
+        if (isFinal)
+        {
+            std::cout << "------------------------------------------------------------------------" << std::endl;
+        }
     }
 
-    static void print_psqt(const parameters_t &parameters)
+    static void print_step_parameters(const parameters_t &parameters)
     {
-        print_psqts(parameters);
+        auto mobilityPieceValues = extract_mobility_offset(parameters, false);
+
+        print_psqts_cpp(parameters, mobilityPieceValues, true);
+        // print_cpp_parameters(parameters, mobilityPieceValues);
     }
 
-    static void print_json_parameters(const parameters_t &parameters)
+    static void print_json_parameters(const parameters_t &parameters, const std::array<std::array<tune_t, 12>, PSQTBucketCount> &mobilityPieceValues)
     {
         std::stringstream ss;
         std::string name;
@@ -195,32 +250,52 @@ public:
         BishopPairBonus.to_json(parameters, ss, name);
         ss << ",\n";
 
+        name = NAME(PieceProtectedByPawnBonus);
+        PieceProtectedByPawnBonus.to_json(parameters, ss, name);
+        ss << ",\n";
+
+        name = NAME(PieceAttackedByPawnPenalty);
+        PieceAttackedByPawnPenalty.to_json(parameters, ss, name);
+        ss << ",\n";
+
         name = NAME(PassedPawnBonus);
         PassedPawnBonus.to_json(parameters, ss, name);
         ss << ",\n";
 
+        name = NAME(VirtualKingMobilityBonus);
+        VirtualKingMobilityBonus.to_json(parameters, ss, name);
+        ss << ",\n";
+
+        name = NAME(KnightMobilityBonus);
+        KnightMobilityBonus.to_json(parameters, ss, name, mobilityPieceValues);
+        ss << ",\n";
+
         name = NAME(BishopMobilityBonus);
-        BishopMobilityBonus.to_json(parameters, ss, name);
+        BishopMobilityBonus.to_json(parameters, ss, name, mobilityPieceValues);
         ss << ",\n";
 
         name = NAME(RookMobilityBonus);
-        RookMobilityBonus.to_json(parameters, ss, name);
+        RookMobilityBonus.to_json(parameters, ss, name, mobilityPieceValues);
         ss << ",\n";
 
         name = NAME(QueenMobilityBonus);
-        QueenMobilityBonus.to_json(parameters, ss, name);
+        QueenMobilityBonus.to_json(parameters, ss, name, mobilityPieceValues);
+        ss << ",\n";
 
         std::cout << ss.str() << std::endl
                   << std::endl;
     }
 
-    static void print_csharp_parameters(const parameters_t &parameters)
+    static void print_csharp_parameters(const parameters_t &parameters, const std::array<std::array<tune_t, 12>, PSQTBucketCount> &mobilityPieceValues, bool isFinal = false)
     {
         std::stringstream ss;
         std::string name;
 
         // name = NAME(DoubledPawnPenalty);
         // DoubledPawnPenalty.to_json(parameters, ss, name);
+
+        ss << "public static class EvaluationParams" << std::endl
+           << "{" << std::endl;
 
         name = NAME(IsolatedPawnPenalty);
         IsolatedPawnPenalty.to_csharp(parameters, ss, name);
@@ -243,22 +318,50 @@ public:
         name = NAME(BishopPairBonus);
         BishopPairBonus.to_csharp(parameters, ss, name);
 
+        name = NAME(PieceProtectedByPawnBonus);
+        PieceProtectedByPawnBonus.to_csharp(parameters, ss, name);
+
+        name = NAME(PieceAttackedByPawnPenalty);
+        PieceAttackedByPawnPenalty.to_csharp(parameters, ss, name);
+
         name = NAME(PassedPawnBonus);
         PassedPawnBonus.to_csharp(parameters, ss, name);
 
+        name = NAME(VirtualKingMobilityBonus);
+        VirtualKingMobilityBonus.to_csharp(parameters, ss, name);
+
+        name = NAME(KnightMobilityBonus);
+        KnightMobilityBonus.to_csharp(parameters, ss, name, mobilityPieceValues);
+
         name = NAME(BishopMobilityBonus);
-        BishopMobilityBonus.to_csharp(parameters, ss, name);
+        BishopMobilityBonus.to_csharp(parameters, ss, name, mobilityPieceValues);
 
         name = NAME(RookMobilityBonus);
-        RookMobilityBonus.to_csharp(parameters, ss, name);
+        RookMobilityBonus.to_csharp(parameters, ss, name, mobilityPieceValues);
 
         name = NAME(QueenMobilityBonus);
-        QueenMobilityBonus.to_csharp(parameters, ss, name);
+        QueenMobilityBonus.to_csharp(parameters, ss, name, mobilityPieceValues);
 
-        std::cout << ss.str() << std::endl;
+        if (isFinal)
+        {
+            std::cout << ss.str() << std::endl;
+        }
+
+        std::string filename = "TunableEvalParameters-" + std::to_string(print_counter) + ".cs";
+        std::ofstream file(filename, std::ofstream::out | std::ofstream::app | std::ofstream::ate);
+
+        if (file.is_open())
+        {
+            file << ss.rdbuf();
+
+            file << "}\n"
+                 << std::endl
+                 << "#pragma warning restore IDE0055, IDE1006 // Discard formatting and naming styles\n";
+        }
+        file.close();
     }
 
-    static void print_cpp_parameters(const parameters_t &parameters)
+    static void print_cpp_parameters(const parameters_t &parameters, const std::array<std::array<tune_t, 12>, PSQTBucketCount> &mobilityPieceValues, bool isFinal = false)
     {
         std::stringstream ss;
         std::string name;
@@ -288,19 +391,44 @@ public:
         BishopPairBonus.to_cpp(parameters, ss, name);
         ss << "\n";
 
+        name = NAME(PieceProtectedByPawnBonus);
+        PieceProtectedByPawnBonus.to_cpp(parameters, ss, name);
+
+        name = NAME(PieceAttackedByPawnPenalty);
+        PieceAttackedByPawnPenalty.to_cpp(parameters, ss, name);
+        ss << "\n";
+
         name = NAME(PassedPawnBonus);
         PassedPawnBonus.to_cpp(parameters, ss, name);
 
+        name = NAME(VirtualKingMobilityBonus);
+        VirtualKingMobilityBonus.to_cpp(parameters, ss, name);
+
+        name = NAME(KnightMobilityBonus);
+        KnightMobilityBonus.to_cpp(parameters, ss, name, mobilityPieceValues);
+
         name = NAME(BishopMobilityBonus);
-        BishopMobilityBonus.to_cpp(parameters, ss, name);
+        BishopMobilityBonus.to_cpp(parameters, ss, name, mobilityPieceValues);
 
         name = NAME(RookMobilityBonus);
-        RookMobilityBonus.to_cpp(parameters, ss, name);
+        RookMobilityBonus.to_cpp(parameters, ss, name, mobilityPieceValues);
 
         name = NAME(QueenMobilityBonus);
-        QueenMobilityBonus.to_cpp(parameters, ss, name);
+        QueenMobilityBonus.to_cpp(parameters, ss, name, mobilityPieceValues);
 
-        std::cout << ss.str() << std::endl;
+        if (isFinal)
+        {
+            std::cout << ss.str() << std::endl;
+        }
+
+        std::string filename = "tunable_eval_terms-" + std::to_string(print_counter) + ".cpp";
+        std::ofstream file(filename, std::ofstream::out | std::ofstream::app | std::ofstream::ate);
+
+        if (file.is_open())
+        {
+            file << ss.rdbuf();
+        }
+        file.close();
     }
 };
 
@@ -323,7 +451,7 @@ void ResetLS1B(std::uint64_t &board)
     board &= (board - 1);
 }
 
-int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
+int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
 {
     int packedBonus = 0;
     // auto doublePawnsCount = chess::builtin::popcount(GetPieceSwappingEndianness(board, chess::PieceType::PAWN, color) & (FileMasks[squareIndex]));
@@ -373,7 +501,7 @@ int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, const chess::Board
     return packedBonus;
 }
 
-int RookAdditonalEvaluation(int squareIndex, int pieceIndex, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
+int RookAdditonalEvaluation(int squareIndex, int pieceIndex, int bucket, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
 {
     auto mobilityCount = chess::builtin::popcount(
         chess::attacks::rook(static_cast<chess::Square>(squareIndex), __builtin_bswap64(board.occ().getBits())).getBits() &
@@ -416,7 +544,18 @@ int RookAdditonalEvaluation(int squareIndex, int pieceIndex, const chess::Board 
     return packedBonus;
 }
 
-int BishopAdditionalEvaluation(int squareIndex, int pieceIndex, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
+int KnightAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
+{
+    auto mobilityCount = chess::builtin::popcount(
+        chess::attacks::knight(static_cast<chess::Square>(squareIndex)).getBits() &
+        (~__builtin_bswap64(board.us(color).getBits())));
+
+    IncrementCoefficients(coefficients, KnightMobilityBonus.index + mobilityCount, color);
+
+    return KnightMobilityBonus.packed[mobilityCount];
+}
+
+int BishopAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
 {
     auto mobilityCount = chess::attacks::bishop(static_cast<chess::Square>(squareIndex), __builtin_bswap64(board.occ().getBits())).count();
     IncrementCoefficients(coefficients, BishopMobilityBonus.index + mobilityCount, color);
@@ -424,9 +563,9 @@ int BishopAdditionalEvaluation(int squareIndex, int pieceIndex, const chess::Boa
     return BishopMobilityBonus.packed[mobilityCount];
 }
 
-int QueenAdditionalEvaluation(int squareIndex, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
+int QueenAdditionalEvaluation(int squareIndex, int bucket, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
 {
-    auto mobilityCount =  chess::builtin::popcount(
+    auto mobilityCount = chess::builtin::popcount(
         chess::attacks::queen(static_cast<chess::Square>(squareIndex), __builtin_bswap64(board.occ().getBits())).getBits() &
         (~__builtin_bswap64(board.us(color).getBits())));
 
@@ -435,9 +574,13 @@ int QueenAdditionalEvaluation(int squareIndex, const chess::Board &board, const 
     return QueenMobilityBonus.packed[mobilityCount];
 }
 
-int KingAdditionalEvaluation(int squareIndex, chess::Color kingSide, const chess::Board &board, const int pieceCount[], coefficients_t &coefficients)
+int KingAdditionalEvaluation(int squareIndex, int bucket, chess::Color kingSide, const chess::Board &board, const int pieceCount[], coefficients_t &coefficients)
 {
-    int packedBonus = 0;
+    auto mobilityCount = chess::attacks::queen(static_cast<chess::Square>(squareIndex), __builtin_bswap64(board.occ().getBits())).count();
+    IncrementCoefficients(coefficients, VirtualKingMobilityBonus.index + mobilityCount, kingSide);
+
+    int packedBonus = VirtualKingMobilityBonus.packed[mobilityCount];
+
     auto kingSideOffset = kingSide == chess::Color::WHITE ? 0 : 6;
 
     if (pieceCount[9 - kingSideOffset] + pieceCount[10 - kingSideOffset] != 0) // areThereOppositeSideRooksOrQueens
@@ -462,29 +605,38 @@ int KingAdditionalEvaluation(int squareIndex, chess::Color kingSide, const chess
         }
     }
 
-    auto ownPiecesAroundCount = chess::builtin::popcount(chess::attacks::king(static_cast<chess::Square>(squareIndex)).getBits() & __builtin_bswap64(board.us(kingSide).getBits()));
-    IncrementCoefficients(coefficients, KingShieldBonus.index, kingSide, ownPiecesAroundCount);
+    auto ownPawnsAroundCount = chess::builtin::popcount(
+        chess::attacks::king(static_cast<chess::Square>(squareIndex)).getBits() &
+        GetPieceSwappingEndianness(board, chess::PieceType::PAWN, kingSide));
 
-    return packedBonus + KingShieldBonus.packed * ownPiecesAroundCount;
+    IncrementCoefficients(coefficients, KingShieldBonus.index, kingSide, ownPawnsAroundCount);
+
+    return packedBonus + KingShieldBonus.packed * ownPawnsAroundCount;
 }
 
-int AdditionalPieceEvaluation(int pieceSquareIndex, int pieceIndex, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
+int AdditionalPieceEvaluation(int pieceSquareIndex, int pieceIndex, int bucket, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
 {
     switch (pieceIndex)
     {
     case 0:
     case 6:
-        return PawnAdditionalEvaluation(pieceSquareIndex, pieceIndex, board, color, coefficients);
+        return PawnAdditionalEvaluation(pieceSquareIndex, pieceIndex, bucket, board, color, coefficients);
+
+    case 1:
+    case 7:
+        return KnightAdditionalEvaluation(pieceSquareIndex, pieceIndex, bucket, board, color, coefficients);
+
     case 3:
     case 9:
-        return RookAdditonalEvaluation(pieceSquareIndex, pieceIndex, board, color, coefficients);
+        return RookAdditonalEvaluation(pieceSquareIndex, pieceIndex, bucket, board, color, coefficients);
+
     case 2:
     case 8:
-        return BishopAdditionalEvaluation(pieceSquareIndex, pieceIndex, board, color, coefficients);
+        return BishopAdditionalEvaluation(pieceSquareIndex, pieceIndex, bucket, board, color, coefficients);
 
     case 4:
     case 10:
-        return QueenAdditionalEvaluation(pieceSquareIndex, board, color, coefficients);
+        return QueenAdditionalEvaluation(pieceSquareIndex, bucket, board, color, coefficients);
 
     default:
         return 0;
@@ -508,6 +660,18 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
     int packedScore = 0;
     int gamePhase = 0;
 
+    auto whitePawns = GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE);
+    auto whitePawnAttacks = ShiftUpLeft(whitePawns) | ShiftUpRight(whitePawns);
+
+    auto blackPawns = GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK);
+    auto blackPawnAttacks = ShiftDownLeft(blackPawns) | ShiftDownRight(blackPawns);
+
+    auto whiteKing = chess::builtin::lsb(GetPieceSwappingEndianness(board, chess::PieceType::KING, chess::Color::WHITE)).index();
+    auto blackKing = chess::builtin::lsb(GetPieceSwappingEndianness(board, chess::PieceType::KING, chess::Color::BLACK)).index();
+
+    auto whiteBucket = PSQTBucketLayout[whiteKing];
+    auto blackBucket = PSQTBucketLayout[blackKing ^ 56];
+
     for (int pieceIndex = 0; pieceIndex < 5; ++pieceIndex)
     {
         // Bitboard copy that we 'empty'
@@ -518,17 +682,36 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
             auto pieceSquareIndex = chess::builtin::lsb(bitboard).index();
             ResetLS1B(bitboard);
 
-            packedScore += PackedPositionalTables(pieceIndex, pieceSquareIndex) + PackedPieceValue[pieceIndex];
+            packedScore += PackedPositionalTables(0, whiteBucket, pieceIndex, pieceSquareIndex) + PackedPieceValue(0, whiteBucket, pieceIndex) +
+                           PackedPositionalTables(1, blackBucket, pieceIndex, pieceSquareIndex) + PackedPieceValue(1, blackBucket, pieceIndex);
             gamePhase += phaseValues[pieceIndex];
 
             ++pieceCount[pieceIndex];
 
-            packedScore += AdditionalPieceEvaluation(pieceSquareIndex, pieceIndex, board, chess::Color::WHITE, coefficients);
+            packedScore += AdditionalPieceEvaluation(pieceSquareIndex, pieceIndex, whiteBucket, board, chess::Color::WHITE, coefficients);
 
             if (pieceIndex == 0)
-                IncrementCoefficients(coefficients, pieceSquareIndex - 8, chess::Color::WHITE);
+            {
+                IncrementCoefficients(coefficients,
+                                      (48 * whiteBucket) + pieceSquareIndex - 8,
+                                      chess::Color::WHITE);
+
+                IncrementCoefficients(coefficients,
+                                      enemyKingBaseIndex + (48 * blackBucket) + pieceSquareIndex - 8,
+                                      chess::Color::WHITE);
+            }
             else
-                IncrementCoefficients(coefficients, 64 * pieceIndex + pieceSquareIndex - 16, chess::Color::WHITE);
+            {
+                IncrementCoefficients(
+                    coefficients,
+                    (48 * PSQTBucketCount) + (64 * PSQTBucketCount * (pieceIndex - 1)) + (64 * whiteBucket) + pieceSquareIndex,
+                    chess::Color::WHITE);
+
+                IncrementCoefficients(
+                    coefficients,
+                    enemyKingBaseIndex + (48 * PSQTBucketCount) + (64 * PSQTBucketCount * (pieceIndex - 1)) + (64 * blackBucket) + pieceSquareIndex,
+                    chess::Color::WHITE);
+            }
         }
     }
 
@@ -543,19 +726,56 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
             auto pieceSquareIndex = chess::builtin::lsb(bitboard).index();
             ResetLS1B(bitboard);
 
-            packedScore += PackedPositionalTables(pieceIndex, pieceSquareIndex) - PackedPieceValue[tunerPieceIndex];
+            packedScore += PackedPositionalTables(0, blackBucket, pieceIndex, pieceSquareIndex) - PackedPieceValue(0, blackBucket, tunerPieceIndex) +
+                           PackedPositionalTables(1, whiteBucket, pieceIndex, pieceSquareIndex) - PackedPieceValue(1, whiteBucket, tunerPieceIndex);
             gamePhase += phaseValues[tunerPieceIndex];
 
             ++pieceCount[pieceIndex];
 
-            packedScore -= AdditionalPieceEvaluation(pieceSquareIndex, pieceIndex, board, chess::Color::BLACK, coefficients);
+            packedScore -= AdditionalPieceEvaluation(pieceSquareIndex, pieceIndex, blackBucket, board, chess::Color::BLACK, coefficients);
 
             if (pieceIndex == 6)
-                IncrementCoefficients(coefficients, pieceSquareIndex - 8, chess::Color::BLACK);
+            {
+                IncrementCoefficients(coefficients,
+                                      (48 * blackBucket) + (pieceSquareIndex ^ 56) - 8,
+                                      chess::Color::BLACK);
+
+                IncrementCoefficients(coefficients,
+                                      enemyKingBaseIndex + (48 * whiteBucket) + (pieceSquareIndex ^ 56) - 8,
+                                      chess::Color::BLACK);
+            }
             else
-                IncrementCoefficients(coefficients, 64 * tunerPieceIndex + pieceSquareIndex - 16, chess::Color::BLACK);
+            {
+                IncrementCoefficients(
+                    coefficients,
+                    (48 * PSQTBucketCount) + (64 * PSQTBucketCount * (tunerPieceIndex - 1)) + (64 * blackBucket) + (pieceSquareIndex ^ 56),
+                    chess::Color::BLACK);
+
+                IncrementCoefficients(
+                    coefficients,
+                    enemyKingBaseIndex + (48 * PSQTBucketCount) + (64 * PSQTBucketCount * (tunerPieceIndex - 1)) + (64 * whiteBucket) + (pieceSquareIndex ^ 56),
+                    chess::Color::BLACK);
+            }
         }
     }
+
+    auto protectedPiecesByWhitePawns = chess::builtin::popcount(whitePawnAttacks & __builtin_bswap64(board.us(chess::Color::WHITE).getBits()) /*&(~GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE))*/);
+    auto protectedPiecesByBlackPawns = chess::builtin::popcount(blackPawnAttacks & __builtin_bswap64(board.us(chess::Color::BLACK).getBits()) /*&(~GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK))*/);
+
+    IncrementCoefficients(coefficients, PieceProtectedByPawnBonus.index, chess::Color::WHITE, protectedPiecesByWhitePawns);
+    IncrementCoefficients(coefficients, PieceProtectedByPawnBonus.index, chess::Color::BLACK, protectedPiecesByBlackPawns);
+
+    packedScore += (PieceProtectedByPawnBonus.packed * protectedPiecesByWhitePawns) -
+                   (PieceProtectedByPawnBonus.packed * protectedPiecesByBlackPawns);
+
+    auto attackedPiecesByBlackPawns = chess::builtin::popcount(blackPawnAttacks & __builtin_bswap64(board.us(chess::Color::WHITE).getBits()) /*&(~GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE))*/);
+    auto attackedPiecesByWhitePawns = chess::builtin::popcount(whitePawnAttacks & __builtin_bswap64(board.us(chess::Color::BLACK).getBits()) /*&(~GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK))*/);
+
+    IncrementCoefficients(coefficients, PieceAttackedByPawnPenalty.index, chess::Color::WHITE, attackedPiecesByBlackPawns);
+    IncrementCoefficients(coefficients, PieceAttackedByPawnPenalty.index, chess::Color::BLACK, attackedPiecesByWhitePawns);
+
+    packedScore += (PieceAttackedByPawnPenalty.packed * attackedPiecesByBlackPawns) -
+                   (PieceAttackedByPawnPenalty.packed * attackedPiecesByWhitePawns);
 
     if (board.pieces(chess::PieceType::BISHOP, chess::Color::WHITE).count() >= 2)
     {
@@ -569,15 +789,32 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
         IncrementCoefficients(coefficients, BishopPairBonus.index, chess::Color::BLACK);
     }
 
-    auto whiteKing = chess::builtin::lsb(GetPieceSwappingEndianness(board, chess::PieceType::KING, chess::Color::WHITE)).index();
-    auto blackKing = chess::builtin::lsb(GetPieceSwappingEndianness(board, chess::PieceType::KING, chess::Color::BLACK)).index();
-    packedScore += PackedPositionalTables(5, whiteKing) +
-                   PackedPositionalTables(11, blackKing) +
-                   KingAdditionalEvaluation(whiteKing, chess::Color::WHITE, board, pieceCount, coefficients) -
-                   KingAdditionalEvaluation(blackKing, chess::Color::BLACK, board, pieceCount, coefficients);
+    packedScore += PackedPositionalTables(0, whiteBucket, 5, whiteKing) +
+                   PackedPositionalTables(0, blackBucket, 11, blackKing) +
+                   PackedPositionalTables(1, blackBucket, 5, whiteKing) +
+                   PackedPositionalTables(1, whiteBucket, 11, blackKing) +
+                   KingAdditionalEvaluation(whiteKing, whiteBucket, chess::Color::WHITE, board, pieceCount, coefficients) -
+                   KingAdditionalEvaluation(blackKing, blackBucket, chess::Color::BLACK, board, pieceCount, coefficients);
 
-    IncrementCoefficients(coefficients, 64 * 5 + whiteKing - 16, chess::Color::WHITE);
-    IncrementCoefficients(coefficients, 64 * 5 + blackKing - 16, chess::Color::BLACK);
+    IncrementCoefficients(
+        coefficients,
+        (48 * PSQTBucketCount) + (64 * PSQTBucketCount * 4) + (64 * whiteBucket) + whiteKing,
+        chess::Color::WHITE);
+
+    IncrementCoefficients(
+        coefficients,
+        (48 * PSQTBucketCount) + (64 * PSQTBucketCount * 4) + (64 * blackBucket) + (blackKing ^ 56),
+        chess::Color::BLACK);
+
+    IncrementCoefficients(
+        coefficients,
+        enemyKingBaseIndex + (48 * PSQTBucketCount) + (64 * PSQTBucketCount * 4) + (64 * blackBucket) + whiteKing,
+        chess::Color::WHITE);
+
+    IncrementCoefficients(
+        coefficients,
+        enemyKingBaseIndex + (48 * PSQTBucketCount) + (64 * PSQTBucketCount * 4) + (64 * whiteBucket) + (blackKing ^ 56),
+        chess::Color::BLACK);
 
     // Debugging eval
     // return EvalResult{
@@ -588,59 +825,68 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
 
     // Check if drawn position due to lack of material
 
-    if (gamePhase <= 3 && pieceCount[0] == 0 && pieceCount[6] == 0)
+    int totalPawnsCount = INT_MIN;
+
+    if (gamePhase <= 3)
     {
-        switch (gamePhase)
-        {
-        // case 5:
-        //     {
-        //         // RB vs R, RN vs R - escale it down due to the chances of it being a draw
-        //         if (pieceCount[(int)Piece.R] == 1 && pieceCount[(int)Piece.r] == 1)
-        //         {
-        //             packedScore >>= 1; // /2
-        //         }
+        totalPawnsCount = board.pieces(chess::PieceType::PAWN, chess::Color::WHITE).count() +
+                          board.pieces(chess::PieceType::PAWN, chess::Color::BLACK).count();
 
-        //        break;
-        //    }
-        case 3:
+        if (totalPawnsCount == 0)
         {
-            auto winningSideOffset = PieceOffset(packedScore >= 0);
 
-            if (pieceCount[1 + winningSideOffset] == 2) // NN vs N, NN vs B
+            switch (gamePhase)
+            {
+            // case 5:
+            //     {
+            //         // RB vs R, RN vs R - escale it down due to the chances of it being a draw
+            //         if (pieceCount[(int)Piece.R] == 1 && pieceCount[(int)Piece.r] == 1)
+            //         {
+            //             packedScore >>= 1; // /2
+            //         }
+
+            //        break;
+            //    }
+            case 3:
+            {
+                auto winningSideOffset = PieceOffset(packedScore >= 0);
+
+                if (pieceCount[1 + winningSideOffset] == 2) // NN vs N, NN vs B
+                {
+                    return EvalResult{
+                        std::move(coefficients),
+                        (double)0};
+                }
+
+                // Without rooks, only BB vs N is a win and BN vs N can have some chances
+                // Not taking that into account here though, we would need this to rule them out: `pieceCount[(int)Piece.b - winningSideOffset] == 1 || pieceCount[(int)Piece.B + winningSideOffset] <= 1`
+                // if (pieceCount[(int)Piece.R + winningSideOffset] == 0)  // BN vs B, NN vs B, BB vs B, BN vs N, NN vs N
+                //{
+                //    packedScore >>= 1; // /2
+                //}
+
+                break;
+            }
+            case 2:
+            {
+                if (pieceCount[1] + pieceCount[7] == 2     // NN vs -, N vs N
+                    || pieceCount[1] + pieceCount[2] == 1) // B vs N, B vs B
+                {
+                    return EvalResult{
+                        std::move(coefficients),
+                        (double)0};
+                }
+
+                break;
+            }
+            case 1:
+            case 0:
             {
                 return EvalResult{
                     std::move(coefficients),
                     (double)0};
             }
-
-            // Without rooks, only BB vs N is a win and BN vs N can have some chances
-            // Not taking that into account here though, we would need this to rule them out: `pieceCount[(int)Piece.b - winningSideOffset] == 1 || pieceCount[(int)Piece.B + winningSideOffset] <= 1`
-            // if (pieceCount[(int)Piece.R + winningSideOffset] == 0)  // BN vs B, NN vs B, BB vs B, BN vs N, NN vs N
-            //{
-            //    packedScore >>= 1; // /2
-            //}
-
-            break;
-        }
-        case 2:
-        {
-            if (pieceCount[1] + pieceCount[7] == 2     // NN vs -, N vs N
-                || pieceCount[1] + pieceCount[2] == 1) // B vs N, B vs B
-            {
-                return EvalResult{
-                    std::move(coefficients),
-                    (double)0};
             }
-
-            break;
-        }
-        case 1:
-        case 0:
-        {
-            return EvalResult{
-                std::move(coefficients),
-                (double)0};
-        }
         }
     }
 
@@ -656,7 +902,24 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
     auto middleGameScore = UnpackMG(packedScore);
     auto endGameScore = UnpackEG(packedScore);
     int eval = ((middleGameScore * gamePhase) + (endGameScore * endGamePhase)) / maxPhase;
-    // eval = ((middleGameScore * gamePhase) + (endGameScore * endGamePhase));
+
+    if (gamePhase <= 3)
+    {
+        auto pawnScalingPenalty = 16 - totalPawnsCount;
+
+        if (eval > 1)
+        {
+            pawnScalingPenalty = std::min(eval - 1, pawnScalingPenalty);
+            eval -= pawnScalingPenalty;
+        }
+        else if (eval < -1)
+        {
+            pawnScalingPenalty = std::min(-eval - 1, pawnScalingPenalty);
+            eval += pawnScalingPenalty;
+        }
+    }
+
+    eval = std::clamp(eval, MinEval, MaxEval);
 
     // Always white's perspective
     return EvalResult{

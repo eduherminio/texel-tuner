@@ -830,7 +830,7 @@ void Tuner::run(const std::vector<DataSource>& sources)
     if constexpr (!print_eval)
     {
         cout << "Initial parameters:" << endl;
-        TuneEval::print_parameters(parameters);
+        TuneEval::print_parameters(parameters, true);
     }
 
     vector<Entry> entries;
@@ -872,7 +872,7 @@ void Tuner::run(const std::vector<DataSource>& sources)
     }
 
     cout << "Initial parameters:" << endl;
-    TuneEval::print_parameters(parameters);
+    TuneEval::print_parameters(parameters, true);
 
     tune_t K;
     if constexpr (preferred_k <= 0)
@@ -939,11 +939,21 @@ void Tuner::run(const std::vector<DataSource>& sources)
             print_elapsed(start);
             cout << "🔽 Epoch " << epoch << " (" << epochs_per_second << " eps), error " << error << ", LR " << learning_rate << "\n"
                  << endl;
-            TuneEval::print_psqt(parameters);
-            TuneEval::print_cpp_parameters(parameters);
-            cout << "🔼 Epoch " << epoch << " (" << epochs_per_second << " eps), error " << error << ", LR " << learning_rate << "\n"
-                 << endl;
-            cout << "---------------------------------------------------------------------------------------" << endl;
+
+            if(epoch % print_step_interval == 0)
+            {
+                if constexpr (complete_step_ouput)
+                {
+                    TuneEval::print_parameters(parameters);
+                }
+                else
+                {
+                    TuneEval::print_step_parameters(parameters);
+                }
+                cout << "🔼 Epoch " << epoch << " (" << epochs_per_second << " eps), error " << error << ", LR " << learning_rate << "\n"
+                     << endl;
+                cout << "---------------------------------------------------------------------------------------" << endl;
+            }
         }
 
         if(epoch % learning_rate_drop_interval == 0)
@@ -952,8 +962,7 @@ void Tuner::run(const std::vector<DataSource>& sources)
         }
     }
 
-    TuneEval::print_csharp_parameters(parameters);
-    TuneEval::print_json_parameters(parameters);
+    TuneEval::print_parameters(parameters, false, true);
 
     thread_pool.stop();
 }
