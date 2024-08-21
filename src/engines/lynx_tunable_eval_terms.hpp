@@ -5944,9 +5944,25 @@ TunableArray BishopMobilityBonus(
     0,
     1);
 
-TunableArray RookMobilityBonus(
+// TunableArray RookMobilityBonus(
+//     chess::PieceType::ROOK,
+//     // std::array<std::vector<int>, PSQTBucketCount>{
+//         std::vector<int>{0, 9, 13, 18, 18, 24, 25, 28, 29, 31, 35, 37, 38, 54, 56},
+//     // },
+//     // std::array<std::vector<int>, PSQTBucketCount>{
+//         std::vector<int>{0, 22, 29, 32, 38, 42, 47, 50, 57, 63, 65, 67, 70, 66, 61},
+//     // },
+//     0,
+//     0);
+
+
+TunableArrayBucketed RookMobilityBonus(
     chess::PieceType::ROOK,
-    std::vector<int>{0, 9, 13, 18, 18, 24, 25, 28, 29, 31, 35, 37, 38, 54, 56},
-    std::vector<int>{0, 22, 29, 32, 38, 42, 47, 50, 57, 63, 65, 67, 70, 66, 61},
+    std::array<std::vector<int>, PSQTBucketCount>{
+        std::vector<int>{0, 9, 13, 18, 18, 24, 25, 28, 29, 31, 35, 37, 38, 54, 56},
+    },
+    std::array<std::vector<int>, PSQTBucketCount>{
+        std::vector<int>{0, 22, 29, 32, 38, 42, 47, 50, 57, 63, 65, 67, 70, 66, 61},
+    },
     0,
     0);

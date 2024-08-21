@@ -31,7 +31,7 @@ static int numParameters = psqtIndexCount +
                            VirtualKingMobilityBonus.tunableSize + // 28
                            KnightMobilityBonus.tunableSize +      // 9
                            BishopMobilityBonus.tunableSize +      // 14, removing end
-                           RookMobilityBonus.tunableSize          // 15
+                           RookMobilityBonus.size                 // 15
     ;
 
 class Lynx
@@ -126,7 +126,7 @@ public:
         assert(VirtualKingMobilityBonus.tunableSize == 28);
         assert(KnightMobilityBonus.tunableSize == 9);
         assert(BishopMobilityBonus.tunableSize == 14);
-        assert(RookMobilityBonus.tunableSize == 15);
+        assert(RookMobilityBonus.bucketTunableSize == 15);
 
         std::cout << result.size() << " == " << numParameters << std::endl;
         assert(result.size() == numParameters);
@@ -208,79 +208,6 @@ public:
 
         print_psqts_cpp(parameters, mobilityPieceValues, true);
         // print_cpp_parameters(parameters, mobilityPieceValues);
-    }
-
-    static void print_json_parameters(const parameters_t &parameters, const std::array<std::array<tune_t, 12>, PSQTBucketCount> &mobilityPieceValues)
-    {
-        std::stringstream ss;
-        std::string name;
-
-        // name = NAME(DoubledPawnPenalty);
-        // DoubledPawnPenalty.to_json(parameters, ss, name);
-        // ss << ",\n";
-
-        name = NAME(IsolatedPawnPenalty);
-        IsolatedPawnPenalty.to_json(parameters, ss, name);
-        ss << ",\n";
-
-        name = NAME(OpenFileRookBonus);
-        OpenFileRookBonus.to_json(parameters, ss, name);
-        ss << ",\n";
-
-        name = NAME(SemiOpenFileRookBonus);
-        SemiOpenFileRookBonus.to_json(parameters, ss, name);
-        ss << ",\n";
-
-        name = NAME(QueenMobilityBonus);
-        QueenMobilityBonus.to_json(parameters, ss, name);
-        ss << ",\n";
-
-        name = NAME(SemiOpenFileKingPenalty);
-        SemiOpenFileKingPenalty.to_json(parameters, ss, name);
-        ss << ",\n";
-
-        name = NAME(OpenFileKingPenalty);
-        OpenFileKingPenalty.to_json(parameters, ss, name);
-        ss << ",\n";
-
-        name = NAME(KingShieldBonus);
-        KingShieldBonus.to_json(parameters, ss, name);
-        ss << ",\n";
-
-        name = NAME(BishopPairBonus);
-        BishopPairBonus.to_json(parameters, ss, name);
-        ss << ",\n";
-
-        name = NAME(PieceProtectedByPawnBonus);
-        PieceProtectedByPawnBonus.to_json(parameters, ss, name);
-        ss << ",\n";
-
-        name = NAME(PieceAttackedByPawnPenalty);
-        PieceAttackedByPawnPenalty.to_json(parameters, ss, name);
-        ss << ",\n";
-
-        name = NAME(PassedPawnBonus);
-        PassedPawnBonus.to_json(parameters, ss, name);
-        ss << ",\n";
-
-        name = NAME(VirtualKingMobilityBonus);
-        VirtualKingMobilityBonus.to_json(parameters, ss, name);
-        ss << ",\n";
-
-        name = NAME(KnightMobilityBonus);
-        KnightMobilityBonus.to_json(parameters, ss, name, mobilityPieceValues);
-        ss << ",\n";
-
-        name = NAME(BishopMobilityBonus);
-        BishopMobilityBonus.to_json(parameters, ss, name, mobilityPieceValues);
-        ss << ",\n";
-
-        name = NAME(RookMobilityBonus);
-        RookMobilityBonus.to_json(parameters, ss, name, mobilityPieceValues);
-        ss << ",\n";
-
-        std::cout << ss.str() << std::endl
-                  << std::endl;
     }
 
     static void print_csharp_parameters(const parameters_t &parameters, const std::array<std::array<tune_t, 12>, PSQTBucketCount> &mobilityPieceValues, bool isFinal = false)
@@ -504,9 +431,9 @@ int RookAdditonalEvaluation(int squareIndex, int pieceIndex, int bucket, const c
         chess::attacks::rook(static_cast<chess::Square>(squareIndex), __builtin_bswap64(board.occ().getBits())).getBits() &
         (~__builtin_bswap64(board.us(color).getBits())));
 
-    IncrementCoefficients(coefficients, RookMobilityBonus.index + mobilityCount, color);
+    IncrementCoefficients(coefficients, RookMobilityBonus.index(bucket, mobilityCount), color);
 
-    int packedBonus = RookMobilityBonus.packed[mobilityCount];
+    int packedBonus = RookMobilityBonus.packed(bucket, mobilityCount);
 
     if (((GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE) | GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK)) & FileMasks[squareIndex]) == 0) // isOpenFile
     {
