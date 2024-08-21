@@ -423,7 +423,7 @@ public:
             assert(mg[i].size() == eg[i].size());
         }
 
-        bucketSize = mg.size();
+        bucketSize = mg[0].size();
         size = PSQTBucketCount * bucketSize;
         bucketTunableSize = bucketSize - start - end;
 
@@ -432,9 +432,22 @@ public:
         {
             _packed[bucket] = std::vector<i32>(bucketSize);
 
-            for (int rank = 0 + start; rank < size - end; ++rank)
+            if (_mg[bucket].size() == 0)
             {
-                _packed[bucket][rank] = S(mg[bucket][rank], eg[bucket][rank]);
+                _mg[bucket] = std::vector<i32>(bucketSize, 0);
+                std::fill(_mg[bucket].begin(), _mg[bucket].end(), 0);
+                std::cout << "[WARN] empty bucket " << bucket << " mg" << std::endl;
+            }
+            if (_eg[bucket].size() == 0)
+            {
+                _eg[bucket] = std::vector<i32>(bucketSize, 0);
+                std::fill(_eg[bucket].begin(), _eg[bucket].end(), 0);
+                std::cout << "[WARN] empty bucket " << bucket << " eg" << std::endl;
+            }
+
+            for (int rank = 0 + start; rank < bucketSize - end; ++rank)
+            {
+                _packed[bucket][rank] = S(_mg[bucket][rank], _eg[bucket][rank]);
             }
         }
     }
