@@ -31,7 +31,7 @@ static int numParameters = psqtIndexCount +
                            VirtualKingMobilityBonus.tunableSize + // 28
                            KnightMobilityBonus.tunableSize +      // 9
                            BishopMobilityBonus.tunableSize +      // 14, removing end
-                           RookMobilityBonus.size                 // 15
+                           RookMobilityBonus.tunableSize          // 15
     ;
 
 class Lynx
@@ -126,7 +126,7 @@ public:
         assert(VirtualKingMobilityBonus.tunableSize == 28);
         assert(KnightMobilityBonus.tunableSize == 9);
         assert(BishopMobilityBonus.tunableSize == 14);
-        assert(RookMobilityBonus.bucketTunableSize == 15);
+        assert(RookMobilityBonus.tunableSize == 15);
 
         std::cout << result.size() << " == " << numParameters << std::endl;
         assert(result.size() == numParameters);
@@ -431,9 +431,9 @@ int RookAdditonalEvaluation(int squareIndex, int pieceIndex, int bucket, const c
         chess::attacks::rook(static_cast<chess::Square>(squareIndex), __builtin_bswap64(board.occ().getBits())).getBits() &
         (~__builtin_bswap64(board.us(color).getBits())));
 
-    IncrementCoefficients(coefficients, RookMobilityBonus.index(bucket, mobilityCount), color);
+    IncrementCoefficients(coefficients, RookMobilityBonus.index + mobilityCount, color);
 
-    int packedBonus = RookMobilityBonus.packed(bucket, mobilityCount);
+    int packedBonus = RookMobilityBonus.packed[mobilityCount];
 
     if (((GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE) | GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK)) & FileMasks[squareIndex]) == 0) // isOpenFile
     {
