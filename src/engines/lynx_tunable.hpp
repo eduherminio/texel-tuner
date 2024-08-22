@@ -404,8 +404,8 @@ public:
     i32 start;
 
     TunableArrayBucketed(chess::PieceType piece, const std::array<std::vector<i32>, PSQTBucketCount> mg, const std::array<std::vector<i32>, PSQTBucketCount> eg)
+        : TunableArrayBucketed(piece, mg, eg, 0)
     {
-        TunableArrayBucketed(piece, mg, eg, 0);
     }
 
     TunableArrayBucketed(chess::PieceType piece, const std::array<std::vector<i32>, PSQTBucketCount> mg, const std::array<std::vector<i32>, PSQTBucketCount> eg, i32 start)
@@ -425,6 +425,7 @@ public:
         bucketSize = mg[0].size();
         size = PSQTBucketCount * bucketSize;
         bucketTunableSize = bucketSize - start;
+        std::cout << bucketSize << "-" << start << "=" << bucketTunableSize << std::endl;
 
         _packed = std::array<std::vector<i32>, PSQTBucketCount>();
         for (int bucket = 0; bucket < PSQTBucketCount; ++bucket)
@@ -520,7 +521,7 @@ public:
         {
             variable_name = "TaperedEvaluationTermByCount8";
         }
-        else if (bucketSize == 15)
+        else if (bucketSize == 14 || bucketSize == 15)
         {
             variable_name = "TaperedEvaluationTermByCount14";
         }
@@ -628,6 +629,6 @@ public:
             ss << "\n\t}},\n";
         }
 
-        ss << "\t" << start << ",\n";
+        ss << "\t" << start << ");\n";
     }
 };
