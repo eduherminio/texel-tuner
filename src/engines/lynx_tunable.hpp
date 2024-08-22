@@ -40,7 +40,7 @@ public:
 
     void to_csharp(const parameters_t &parameters, std::stringstream &ss, const std::string &name)
     {
-        ss << "\tpublic static readonly TaperedEvaluationTerm " << name << " = new(" << std::round(parameters[index][0]) << ", " << std::round(parameters[index][1]) << ");\n\n";
+        ss << "\tpublic static readonly TaperedEvaluationTerm " << name << " = Pack(" << std::round(parameters[index][0]) << ", " << std::round(parameters[index][1]) << ");\n\n";
     }
 
     void to_cpp(const parameters_t &parameters, std::stringstream &ss, const std::string &name)
@@ -263,26 +263,26 @@ public:
             throw std::invalid_argument("wrong size provided: " + size);
         }
 
-        ss << "\tpublic static readonly " << variable_name << " " << name << " = new(\n";
+        ss << "\tpublic static readonly " << variable_name << " " << name << " =\n\t[\n";
         for (int rank = 0; rank < start; ++rank)
         {
-            ss << "\t\tnew(0, 0),\n";
+            ss << "\t\tPack(0, 0),\n";
         }
 
         for (int rank = 0; rank < size - end - start; ++rank)
         {
-            ss << "\t\tnew(" << round(parameters[index + rank][0] - mobilityPieceValues[0][pieceIndex]) << ", " << round(parameters[index + rank][1] - mobilityPieceValues[0][pieceIndex + 6]) << ")";
+            ss << "\t\tPack(" << round(parameters[index + rank][0] - mobilityPieceValues[0][pieceIndex]) << ", " << round(parameters[index + rank][1] - mobilityPieceValues[0][pieceIndex + 6]) << ")";
             if (rank == size - start - 1)
-                ss << ");";
+                ss << "\n\t];";
             else
                 ss << ",\n";
         }
 
         for (int rank = size - end; rank < size; ++rank)
         {
-            ss << "\t\tnew(0, 0)";
+            ss << "\t\tPack(0, 0)";
             if (rank == size - 1)
-                ss << ");";
+                ss << "\n\t];";
             else
                 ss << ",\n";
         }
@@ -541,12 +541,12 @@ public:
             ss << "\t\t[\n";
             for (int dimension = 0; dimension < start; ++dimension)
             {
-                ss << "\t\t\tnew(0, 0),\n";
+                ss << "\t\t\tPack(0, 0),\n";
             }
 
             for (int dimension = 0; dimension < bucketTunableSize; ++dimension)
             {
-                ss << "\t\t\tnew(" << round(parameters[index(bucket, dimension)][0] - mobilityPieceValues[0][pieceIndex]) << ", " << round(parameters[index(bucket, dimension)][1] - mobilityPieceValues[0][pieceIndex + 6]) << ")";
+                ss << "\t\t\tPack(" << round(parameters[index(bucket, dimension)][0] - mobilityPieceValues[0][pieceIndex]) << ", " << round(parameters[index(bucket, dimension)][1] - mobilityPieceValues[0][pieceIndex + 6]) << ")";
                 if (dimension == size - start - 1)
                     ss << ");";
                 else
