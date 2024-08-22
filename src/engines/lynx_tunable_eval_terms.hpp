@@ -5976,8 +5976,8 @@ TunableArrayBucketed VirtualKingMobilityBonus(
         std::vector<int>{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
         std::vector<int>{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 
-    }});
-
+    }},
+    0);
 TunableArrayBucketed KnightMobilityBonus(
     chess::PieceType::KNIGHT,
     std::array<std::vector<int>, PSQTBucketCount>{{
@@ -6031,8 +6031,8 @@ TunableArrayBucketed KnightMobilityBonus(
         std::vector<int>{0, 0, 0, 0, 0, 0, 0, 0, 0},
         std::vector<int>{0, 0, 0, 0, 0, 0, 0, 0, 0},
 
-    }});
-
+    }},
+    0);
 TunableArrayBucketed BishopMobilityBonus(
     chess::PieceType::BISHOP,
     std::array<std::vector<int>, PSQTBucketCount>{{
@@ -6086,8 +6086,8 @@ TunableArrayBucketed BishopMobilityBonus(
         std::vector<int>{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
         std::vector<int>{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 
-    }});
-
+    }},
+    0);
 TunableArrayBucketed RookMobilityBonus(
     chess::PieceType::ROOK,
     std::array<std::vector<int>, PSQTBucketCount>{{
@@ -6141,4 +6141,5 @@ TunableArrayBucketed RookMobilityBonus(
         std::vector<int>{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
         std::vector<int>{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 
-    }});
+    }},
+    0);
