@@ -402,15 +402,14 @@ public:
     i32 bucketSize;
     i32 bucketTunableSize;
     i32 start;
-    i32 end;
 
     TunableArrayBucketed(chess::PieceType piece, const std::array<std::vector<i32>, PSQTBucketCount> mg, const std::array<std::vector<i32>, PSQTBucketCount> eg)
     {
-        TunableArrayBucketed(piece, mg, eg, 0, 0);
+        TunableArrayBucketed(piece, mg, eg, 0);
     }
 
-    TunableArrayBucketed(chess::PieceType piece, const std::array<std::vector<i32>, PSQTBucketCount> mg, const std::array<std::vector<i32>, PSQTBucketCount> eg, i32 start, i32 end)
-        : pieceIndex(static_cast<int>(piece)), _mg(mg), _eg(eg), start(start), end(end)
+    TunableArrayBucketed(chess::PieceType piece, const std::array<std::vector<i32>, PSQTBucketCount> mg, const std::array<std::vector<i32>, PSQTBucketCount> eg, i32 start)
+        : pieceIndex(static_cast<int>(piece)), _mg(mg), _eg(eg), start(start)
     {
         for (auto b = 0; b < PSQTBucketCount; ++b)
         {
@@ -425,7 +424,7 @@ public:
 
         bucketSize = mg[0].size();
         size = PSQTBucketCount * bucketSize;
-        bucketTunableSize = bucketSize - start - end;
+        bucketTunableSize = bucketSize - start;
 
         _packed = std::array<std::vector<i32>, PSQTBucketCount>();
         for (int bucket = 0; bucket < PSQTBucketCount; ++bucket)
@@ -445,7 +444,7 @@ public:
                 std::cout << "[WARN] empty bucket " << bucket << " eg" << std::endl;
             }
 
-            for (int rank = 0 + start; rank < bucketSize - end; ++rank)
+            for (int rank = 0 + start; rank < bucketSize; ++rank)
             {
                 _packed[bucket][rank] = S(_mg[bucket][rank], _eg[bucket][rank]);
             }
@@ -457,7 +456,7 @@ public:
         _index = parameters.size();
         for (int bucket = 0; bucket < PSQTBucketCount; ++bucket)
         {
-            for (int rank = 0 + start; rank < bucketSize - end; ++rank)
+            for (int rank = 0 + start; rank < bucketSize; ++rank)
             {
                 parameters.push_back({(double)_mg[bucket][rank], (double)_eg[bucket][rank]});
             }
@@ -553,15 +552,6 @@ public:
                     ss << ",\n";
             }
 
-            for (int dimension = size - end; dimension < bucketSize; ++dimension)
-            {
-                ss << "\t\t\tnew(0, 0)";
-                if (dimension == bucketSize - 1)
-                    ss << ");";
-                else
-                    ss << ",\n";
-            }
-
             ss << "\t\t],\n";
         }
 
@@ -625,19 +615,10 @@ public:
                     ss << "0, ";
                 }
 
-                for (int rank = 0; rank < bucketSize - end - start; ++rank)
+                for (int rank = 0; rank < bucketSize - start; ++rank)
                 {
                     ss << std::round(parameters[index(bucket, rank)][phase] - mobilityPieceValues[0][pieceIndex + 6 * phase]);
                     if (rank == bucketSize - start - 1)
-                        ss << "},\n";
-                    else
-                        ss << ", ";
-                }
-
-                for (int dimension = size - end; dimension < size; ++dimension)
-                {
-                    ss << "0";
-                    if (dimension == size - 1)
                         ss << "},\n";
                     else
                         ss << ", ";
@@ -647,36 +628,6 @@ public:
             ss << "\n\t}},\n";
         }
 
-        // ss << "\tstd::array<std::vector<int>, PSQTBucketCount>{\n";
-        // for (int bucket = 0; bucket < PSQTBucketCount; ++bucket)
-        // {
-        //     ss << "\t\tstd::vector<int>{";
-
-        //     for (int dimension = 0; dimension < start; ++dimension)
-        //     {
-        //         ss << "0, ";
-        //     }
-
-        //     for (int dimension = 0; dimension < size - end - start; ++dimension)
-        //     {
-        //         ss << std::round(parameters[index(bucket, dimension)][1] - mobilityPieceValues[0][pieceIndex + 6]);
-        //         if (dimension == size - start - 1)
-        //             ss << "},\n";
-        //         else
-        //             ss << ", ";
-        //     }
-
-        //     for (int dimension = size - end; dimension < size; ++dimension)
-        //     {
-        //         ss << "0";
-        //         if (dimension == size - 1)
-        //             ss << "},\n";
-        //         else
-        //             ss << ", ";
-        //     }
-        // }
-
         ss << "\t" << start << ",\n";
-        ss << "\t" << end << ");\n\n";
     }
 };
