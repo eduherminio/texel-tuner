@@ -485,6 +485,8 @@ static void print_psqts_csharp(const parameters_t &parameters, const std::array<
              << " " << timeInfo->tm_hour << ":" << timeInfo->tm_min << ":" << timeInfo->tm_sec
              << "  " << print_counter << std::endl
              << std::endl
+             << "using static Utils;\n"
+             << std::endl
              << "namespace Lynx;\n"
              << std::endl
              << "#pragma warning disable IDE0055, IDE1006 // Discard formatting and naming styles\n"

@@ -483,7 +483,7 @@ public:
         for (int bucket = 0; bucket < PSQTBucketCount; ++bucket)
         {
             packed[bucket] = pair_t();
-            
+
             for (int phase = 0; phase <= 1; ++phase)
             {
                 tune_t min = std::numeric_limits<double>::max();
@@ -534,7 +534,7 @@ public:
             throw std::invalid_argument("wrong size provided: " + size);
         }
 
-        ss << "\tpublic static readonly " << variable_name << " " << name << "[] = \n\t[\n";
+        ss << "\tpublic static readonly " << variable_name << "[] " << name << " = \n\t[\n";
 
         for (int bucket = 0; bucket < PSQTBucketCount; ++bucket)
         {
