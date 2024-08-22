@@ -475,33 +475,33 @@ public:
     }
 
     /// Extracts first not-zero value
-    pair_t extract_offset(const parameters_t &parameters)
+    std::array<pair_t, PSQTBucketCount> extract_offset(const parameters_t &parameters)
     {
-        pair_t packed;
-        packed[0] = 0;
-        packed[1] = 0;
-
-        return packed;
+        std::array<pair_t, PSQTBucketCount> packed;
 
         // TODO revisit
+        for (int bucket = 0; bucket < PSQTBucketCount; ++bucket)
+        {
+            packed[bucket] = pair_t();
+            
+            for (int phase = 0; phase <= 1; ++phase)
+            {
+                tune_t min = std::numeric_limits<double>::max();
 
-        // for (int phase = 0; phase <= 1; ++phase)
-        // {
-        //     tune_t min = std::numeric_limits<double>::max();
+                for (int i = 0; i < size; ++i)
+                {
+                    if (parameters[index(bucket, i)][phase] != 0)
+                    {
+                        min = parameters[index(bucket, i)][phase];
+                        packed[bucket][phase] = min;
 
-        //     for (int i = 0; i < size; ++i)
-        //     {
-        //         if (parameters[index + i][phase] != 0)
-        //         {
-        //             min = parameters[index + i][phase];
-        //             packed[phase] = min;
+                        break;
+                    }
+                }
+            }
+        }
 
-        //             break;
-        //         }
-        //     }
-        // }
-
-        // return packed;
+        return packed;
     }
 
     void to_csharp(const parameters_t &parameters, std::stringstream &ss, const std::string &name)
