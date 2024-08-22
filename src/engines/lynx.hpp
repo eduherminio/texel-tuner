@@ -27,11 +27,11 @@ static int numParameters = psqtIndexCount +
                            PieceProtectedByPawnBonus.size +
                            PieceAttackedByPawnPenalty.size +
                            KingShieldBonus.size +
-                           PassedPawnBonus.tunableSize +          // 6, removing 1 and 8 rank values
-                           VirtualKingMobilityBonus.tunableSize + // 28
-                           KnightMobilityBonus.tunableSize +      // 9
-                           BishopMobilityBonus.tunableSize +      // 14, removing end
-                           RookMobilityBonus.size                 // 15
+                           PassedPawnBonus.tunableSize +   // 6, removing 1 and 8 rank values
+                           VirtualKingMobilityBonus.size + // 28
+                           KnightMobilityBonus.size +      // 9
+                           BishopMobilityBonus.size +      // 14
+                           RookMobilityBonus.size          // 15
     ;
 
 class Lynx
@@ -123,9 +123,9 @@ public:
         RookMobilityBonus.add(result);
 
         assert(PassedPawnBonus.tunableSize == 6);
-        assert(VirtualKingMobilityBonus.tunableSize == 28);
-        assert(KnightMobilityBonus.tunableSize == 9);
-        assert(BishopMobilityBonus.tunableSize == 14);
+        assert(VirtualKingMobilityBonus.bucketTunableSize == 28);
+        assert(KnightMobilityBonus.bucketTunableSize == 9);
+        assert(BishopMobilityBonus.bucketTunableSize == 14);
         assert(RookMobilityBonus.bucketTunableSize == 15);
 
         std::cout << result.size() << " == " << numParameters << std::endl;
@@ -474,17 +474,17 @@ int KnightAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, cons
         chess::attacks::knight(static_cast<chess::Square>(squareIndex)).getBits() &
         (~__builtin_bswap64(board.us(color).getBits())));
 
-    IncrementCoefficients(coefficients, KnightMobilityBonus.index + mobilityCount, color);
+    IncrementCoefficients(coefficients, KnightMobilityBonus.index(bucket, mobilityCount), color);
 
-    return KnightMobilityBonus.packed[mobilityCount];
+    return KnightMobilityBonus.packed(bucket, mobilityCount);
 }
 
 int BishopAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
 {
     auto mobilityCount = chess::attacks::bishop(static_cast<chess::Square>(squareIndex), __builtin_bswap64(board.occ().getBits())).count();
-    IncrementCoefficients(coefficients, BishopMobilityBonus.index + mobilityCount, color);
+    IncrementCoefficients(coefficients, BishopMobilityBonus.index(bucket, mobilityCount), color);
 
-    return BishopMobilityBonus.packed[mobilityCount];
+    return BishopMobilityBonus.packed(bucket, mobilityCount);
 }
 
 int QueenAdditionalEvaluation(int squareIndex, int bucket, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
@@ -498,9 +498,9 @@ int QueenAdditionalEvaluation(int squareIndex, int bucket, const chess::Board &b
 int KingAdditionalEvaluation(int squareIndex, int bucket, chess::Color kingSide, const chess::Board &board, const int pieceCount[], coefficients_t &coefficients)
 {
     auto mobilityCount = chess::attacks::queen(static_cast<chess::Square>(squareIndex), __builtin_bswap64(board.occ().getBits())).count();
-    IncrementCoefficients(coefficients, VirtualKingMobilityBonus.index + mobilityCount, kingSide);
+    IncrementCoefficients(coefficients, VirtualKingMobilityBonus.index(bucket, mobilityCount), kingSide);
 
-    int packedBonus = VirtualKingMobilityBonus.packed[mobilityCount];
+    int packedBonus = VirtualKingMobilityBonus.packed(bucket, mobilityCount);
 
     auto kingSideOffset = kingSide == chess::Color::WHITE ? 0 : 6;
 
