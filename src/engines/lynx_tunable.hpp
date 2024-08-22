@@ -454,7 +454,6 @@ public:
 
     void add(parameters_t &parameters)
     {
-        return;
         _index = parameters.size();
         for (int bucket = 0; bucket < PSQTBucketCount; ++bucket)
         {
@@ -512,22 +511,21 @@ public:
 
     void to_csharp(const parameters_t &parameters, std::stringstream &ss, const std::string &name, const std::array<std::array<tune_t, 12>, PSQTBucketCount> &mobilityPieceValues)
     {
-        return;
         std::string variable_name;
 
-        if (size == 8)
+        if (bucketSize == 8)
         {
             variable_name = "TaperedEvaluationTermByRank";
         }
-        else if (size == 9)
+        else if (bucketSize == 9)
         {
             variable_name = "TaperedEvaluationTermByCount8";
         }
-        else if (size == 15)
+        else if (bucketSize == 15)
         {
             variable_name = "TaperedEvaluationTermByCount14";
         }
-        else if (size == 28)
+        else if (bucketSize == 28)
         {
             variable_name = "TaperedEvaluationTermByCount27";
         }
@@ -541,30 +539,30 @@ public:
         for (int bucket = 0; bucket < PSQTBucketCount; ++bucket)
         {
             ss << "\t\t[\n";
-            for (int rank = 0; rank < start; ++rank)
+            for (int dimension = 0; dimension < start; ++dimension)
             {
-                ss << "\t\tnew(0, 0),\n";
+                ss << "\t\t\tnew(0, 0),\n";
             }
 
             for (int dimension = 0; dimension < bucketTunableSize; ++dimension)
             {
-                ss << "\t\tnew(" << round(parameters[index(bucket, dimension)][0] - mobilityPieceValues[0][pieceIndex]) << ", " << round(parameters[index(bucket, dimension)][1] - mobilityPieceValues[0][pieceIndex + 6]) << ")";
+                ss << "\t\t\tnew(" << round(parameters[index(bucket, dimension)][0] - mobilityPieceValues[0][pieceIndex]) << ", " << round(parameters[index(bucket, dimension)][1] - mobilityPieceValues[0][pieceIndex + 6]) << ")";
                 if (dimension == size - start - 1)
                     ss << ");";
                 else
                     ss << ",\n";
             }
 
-            for (int rank = size - end; rank < size; ++rank)
+            for (int dimension = size - end; dimension < bucketSize; ++dimension)
             {
-                ss << "\t\tnew(0, 0)";
-                if (rank == size - 1)
+                ss << "\t\t\tnew(0, 0)";
+                if (dimension == bucketSize - 1)
                     ss << ");";
                 else
                     ss << ",\n";
             }
 
-            ss << "\t\t]";
+            ss << "\t\t],\n";
         }
 
         ss << "\t];\n\n";
@@ -577,8 +575,6 @@ public:
 
     void to_cpp(const parameters_t &parameters, std::stringstream &ss, const std::string &name, const std::array<std::array<tune_t, 12>, PSQTBucketCount> &mobilityPieceValues)
     {
-        return;
-
         std::string pieceType;
         switch (pieceIndex)
         {
@@ -614,58 +610,72 @@ public:
         }
         }
 
-        ss << "TunableArray " << name << "(\n";
+        ss << "TunableArrayBucketed " << name << "(\n";
         ss << "\tchess::PieceType::" << pieceType << ",\n";
-        ss << "\tstd::vector<int>{";
-        for (int rank = 0; rank < start; ++rank)
+
+        for (int phase = 0; phase < 2; ++phase)
         {
-            ss << "0, ";
+
+            ss << "\tstd::array<std::vector<int>, PSQTBucketCount>{{\n";
+            for (int bucket = 0; bucket < PSQTBucketCount; ++bucket)
+            {
+                ss << "\t\tstd::vector<int>{";
+                for (int dimension = 0; dimension < start; ++dimension)
+                {
+                    ss << "0, ";
+                }
+
+                for (int rank = 0; rank < bucketSize - end - start; ++rank)
+                {
+                    ss << std::round(parameters[index(bucket, rank)][phase] - mobilityPieceValues[0][pieceIndex + 6 * phase]);
+                    if (rank == bucketSize - start - 1)
+                        ss << "},\n";
+                    else
+                        ss << ", ";
+                }
+
+                for (int dimension = size - end; dimension < size; ++dimension)
+                {
+                    ss << "0";
+                    if (dimension == size - 1)
+                        ss << "},\n";
+                    else
+                        ss << ", ";
+                }
+            }
+
+            ss << "\n\t}},\n";
         }
-        for (int bucket = 0; bucket < PSQTBucketCount; ++bucket)
-        {
-            for (int rank = 0; rank < size - end - start; ++rank)
-            {
-                ss << std::round(parameters[index(bucket, rank)][0] - mobilityPieceValues[0][pieceIndex]);
-                if (rank == size - start - 1)
-                    ss << "},\n";
-                else
-                    ss << ", ";
-            }
 
-            for (int rank = size - end; rank < size; ++rank)
-            {
-                ss << "0";
-                if (rank == size - 1)
-                    ss << "},\n";
-                else
-                    ss << ", ";
-            }
+        // ss << "\tstd::array<std::vector<int>, PSQTBucketCount>{\n";
+        // for (int bucket = 0; bucket < PSQTBucketCount; ++bucket)
+        // {
+        //     ss << "\t\tstd::vector<int>{";
 
-            ss << "\tstd::vector<int>{";
+        //     for (int dimension = 0; dimension < start; ++dimension)
+        //     {
+        //         ss << "0, ";
+        //     }
 
-            for (int rank = 0; rank < start; ++rank)
-            {
-                ss << "0, ";
-            }
+        //     for (int dimension = 0; dimension < size - end - start; ++dimension)
+        //     {
+        //         ss << std::round(parameters[index(bucket, dimension)][1] - mobilityPieceValues[0][pieceIndex + 6]);
+        //         if (dimension == size - start - 1)
+        //             ss << "},\n";
+        //         else
+        //             ss << ", ";
+        //     }
 
-            for (int rank = 0; rank < size - end - start; ++rank)
-            {
-                ss << std::round(parameters[index(bucket, rank)][1] - mobilityPieceValues[0][pieceIndex + 6]);
-                if (rank == size - start - 1)
-                    ss << "},\n";
-                else
-                    ss << ", ";
-            }
+        //     for (int dimension = size - end; dimension < size; ++dimension)
+        //     {
+        //         ss << "0";
+        //         if (dimension == size - 1)
+        //             ss << "},\n";
+        //         else
+        //             ss << ", ";
+        //     }
+        // }
 
-            for (int rank = size - end; rank < size; ++rank)
-            {
-                ss << "0";
-                if (rank == size - 1)
-                    ss << "},\n";
-                else
-                    ss << ", ";
-            }
-        }
         ss << "\t" << start << ",\n";
         ss << "\t" << end << ");\n\n";
     }
