@@ -17,7 +17,6 @@ using u64 = uint64_t;
 const int enemyKingBaseIndex = psqtIndexCount / 2;
 static int numParameters = psqtIndexCount +
                            // DoubledPawnPenalty.size
-                           IsolatedPawnPenalty.size +
                            OpenFileRookBonus.size +
                            SemiOpenFileRookBonus.size +
                            QueenMobilityBonus.size +
@@ -27,6 +26,7 @@ static int numParameters = psqtIndexCount +
                            PieceProtectedByPawnBonus.size +
                            PieceAttackedByPawnPenalty.size +
                            KingShieldBonus.size +
+                           IsolatedPawnPenalty.tunableSize +
                            PassedPawnBonus.tunableSize +          // 6, removing 1 and 8 rank values
                            VirtualKingMobilityBonus.tunableSize + // 28
                            KnightMobilityBonus.tunableSize +      // 9
@@ -387,8 +387,13 @@ int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, const 
 
     if ((GetPieceSwappingEndianness(board, chess::PieceType::PAWN, color) & IsolatedPawnMasks[squareIndex]) == 0) // isIsolatedPawn
     {
-        packedBonus += IsolatedPawnPenalty.packed(bucket);
-        IncrementCoefficients(coefficients, IsolatedPawnPenalty.index(bucket), color);
+        auto rank = Rank[squareIndex];
+        if (pieceIndex == 6)
+        {
+            rank = 7 - rank;
+        }
+        packedBonus += IsolatedPawnPenalty.packed[rank];
+        IncrementCoefficients(coefficients, IsolatedPawnPenalty.index + rank, color);
     }
 
     if (color == chess::Color::WHITE)
@@ -399,10 +404,7 @@ int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, const 
             // std::cout << "Piece: " << GetPiece(board, chess::PieceType::PAWN, chess::Color::BLACK) << std::endl;
             // std::cout << "Mask: " << WhitePassedPawnMasks[squareIndex] << std::endl;
             auto rank = Rank[squareIndex];
-            if (pieceIndex == 6)
-            {
-                rank = 7 - rank;
-            }
+
             packedBonus += PassedPawnBonus.packed[rank];
             IncrementCoefficients(coefficients, PassedPawnBonus.index + rank - 1, color); // There's no coefficient for rank 0
             // std::cout << "White pawn on " << squareIndex << " is passed, bonus " << PassedPawnBonus[rank] << std::endl;
