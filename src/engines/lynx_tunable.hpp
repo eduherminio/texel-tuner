@@ -479,6 +479,7 @@ public:
     {
         std::array<pair_t, PSQTBucketCount> packed;
         return packed;
+
         // TODO revisit
         for (int bucket = 0; bucket < PSQTBucketCount; ++bucket)
         {
@@ -546,7 +547,7 @@ public:
 
             for (int dimension = 0; dimension < bucketTunableSize; ++dimension)
             {
-                ss << "\t\t\tPack(" << round(parameters[index(bucket, dimension)][0] - mobilityPieceValues[bucket][pieceIndex]) << ", " << round(parameters[index(bucket, dimension)][1] - mobilityPieceValues[0][pieceIndex + 6]) << ")";
+                ss << "\t\t\tPack(" << round(parameters[index(bucket, dimension)][0] - mobilityPieceValues[bucket][pieceIndex]) << ", " << round(parameters[index(bucket, dimension)][1] - mobilityPieceValues[bucket][pieceIndex + 6]) << ")";
                 if (dimension == size - start - 1)
                     ss << ");";
                 else
