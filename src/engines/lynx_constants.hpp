@@ -485,7 +485,7 @@ static void print_psqts_csharp(const parameters_t &parameters, const std::array<
              << " " << timeInfo->tm_hour << ":" << timeInfo->tm_min << ":" << timeInfo->tm_sec
              << "  " << print_counter << std::endl
              << std::endl
-             << "using static Utils;\n"
+             << "using static Lynx.Utils;\n"
              << std::endl
              << "namespace Lynx;\n"
              << std::endl
