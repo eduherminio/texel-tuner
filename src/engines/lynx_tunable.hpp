@@ -177,7 +177,7 @@ public:
 
             for (int i = 0; i < size; ++i)
             {
-                if (parameters[index + i][phase] != 0)
+                if (parameters[index + i][phase] != 0.0)
                 {
                     min = parameters[index + i][phase];
                     packed[phase] = min;
@@ -271,7 +271,15 @@ public:
 
         for (int rank = 0; rank < size - end - start; ++rank)
         {
-            ss << "\t\tPack(" << round(parameters[index + rank][0] - mobilityPieceValues[0][pieceIndex]) << ", " << round(parameters[index + rank][1] - mobilityPieceValues[0][pieceIndex + 6]) << ")";
+            auto offsetToRemove0 = parameters[index + rank][0] == 0
+                                       ? 0
+                                       : mobilityPieceValues[0][pieceIndex];
+
+            auto offsetToRemove1 = parameters[index + rank][1] == 0
+                                       ? 0
+                                       : mobilityPieceValues[0][pieceIndex + 6];
+
+            ss << "\t\tPack(" << round(parameters[index + rank][0] - offsetToRemove0) << ", " << round(parameters[index + rank][1] - offsetToRemove1) << ")";
             if (rank == size - start - 1)
                 ss << "\n\t];";
             else
@@ -490,7 +498,7 @@ public:
 
                 for (int i = 0 + start; i < bucketSize; ++i)
                 {
-                    if (parameters[index(bucket, i)][phase] != 0)
+                    if (parameters[index(bucket, i)][phase] != 0.0)
                     {
                         min = parameters[index(bucket, i)][phase];
                         packed[bucket][phase] = min;
@@ -546,7 +554,15 @@ public:
 
             for (int dimension = 0; dimension < bucketTunableSize; ++dimension)
             {
-                ss << "\t\t\tPack(" << round(parameters[index(bucket, dimension)][0] - mobilityPieceValues[bucket][pieceIndex]) << ", " << round(parameters[index(bucket, dimension)][1] - mobilityPieceValues[bucket][pieceIndex + 6]) << ")";
+                auto offsetToRemove0 = parameters[index(bucket, dimension)][0] == 0.0
+                                           ? 0
+                                           : mobilityPieceValues[bucket][pieceIndex];
+
+                auto offsetToRemove1 = parameters[index(bucket, dimension)][1] == 0.0
+                                           ? 0
+                                           : mobilityPieceValues[bucket][pieceIndex + 6];
+
+                ss << "\t\t\tPack(" << round(parameters[index(bucket, dimension)][0] - offsetToRemove0) << ", " << round(parameters[index(bucket, dimension)][1] - offsetToRemove1) << ")";
                 if (dimension == size - start - 1)
                     ss << ");";
                 else
@@ -616,10 +632,14 @@ public:
                     ss << "0, ";
                 }
 
-                for (int rank = 0; rank < bucketSize - start; ++rank)
+                for (int dimension = 0; dimension < bucketSize - start; ++dimension)
                 {
-                    ss << std::round(parameters[index(bucket, rank)][phase] - mobilityPieceValues[bucket][pieceIndex + 6 * phase]);
-                    if (rank == bucketSize - start - 1)
+                    auto offsetToRemove = parameters[index(bucket, dimension)][1] == 0.0
+                                              ? 0
+                                              : mobilityPieceValues[bucket][pieceIndex + 6 * phase];
+
+                    ss << std::round(parameters[index(bucket, dimension)][phase] - offsetToRemove);
+                    if (dimension == bucketSize - start - 1)
                         ss << "},\n";
                     else
                         ss << ", ";
