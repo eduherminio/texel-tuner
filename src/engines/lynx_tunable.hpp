@@ -546,7 +546,7 @@ public:
 
             for (int dimension = 0; dimension < bucketTunableSize; ++dimension)
             {
-                ss << "\t\t\tPack(" << round(parameters[index(bucket, dimension)][0] - mobilityPieceValues[0][pieceIndex]) << ", " << round(parameters[index(bucket, dimension)][1] - mobilityPieceValues[0][pieceIndex + 6]) << ")";
+                ss << "\t\t\tPack(" << round(parameters[index(bucket, dimension)][0] - mobilityPieceValues[bucket][pieceIndex]) << ", " << round(parameters[index(bucket, dimension)][1] - mobilityPieceValues[0][pieceIndex + 6]) << ")";
                 if (dimension == size - start - 1)
                     ss << ");";
                 else
@@ -618,7 +618,7 @@ public:
 
                 for (int rank = 0; rank < bucketSize - start; ++rank)
                 {
-                    ss << std::round(parameters[index(bucket, rank)][phase] - mobilityPieceValues[0][pieceIndex + 6 * phase]);
+                    ss << std::round(parameters[index(bucket, rank)][phase] - mobilityPieceValues[bucket][pieceIndex + 6 * phase]);
                     if (rank == bucketSize - start - 1)
                         ss << "},\n";
                     else
