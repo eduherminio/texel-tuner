@@ -16,7 +16,7 @@ using u64 = uint64_t;
 
 const int enemyKingBaseIndex = psqtIndexCount / 2;
 static int numParameters = psqtIndexCount +
-                           // DoubledPawnPenalty.size
+                           DoubledPawnPenalty.size +
                            IsolatedPawnPenalty.size +
                            OpenFileRookBonus.size +
                            SemiOpenFileRookBonus.size +
@@ -104,7 +104,7 @@ public:
             }
         }
 
-        // DoubledPawnPenalty.add(result);
+        DoubledPawnPenalty.add(result);
         IsolatedPawnPenalty.add(result);
         OpenFileRookBonus.add(result);
         SemiOpenFileRookBonus.add(result);
@@ -215,11 +215,11 @@ public:
         std::stringstream ss;
         std::string name;
 
-        // name = NAME(DoubledPawnPenalty);
-        // DoubledPawnPenalty.to_json(parameters, ss, name);
-
         ss << "public static class EvaluationParams" << std::endl
            << "{" << std::endl;
+
+        name = NAME(DoubledPawnPenalty);
+        DoubledPawnPenalty.to_csharp(parameters, ss, name);
 
         name = NAME(IsolatedPawnPenalty);
         IsolatedPawnPenalty.to_csharp(parameters, ss, name);
@@ -290,8 +290,8 @@ public:
         std::stringstream ss;
         std::string name;
 
-        // name = NAME(DoubledPawnPenalty);
-        // DoubledPawnPenalty.to_json(parameters, ss, name);
+        name = NAME(DoubledPawnPenalty);
+        DoubledPawnPenalty.to_cpp(parameters, ss, name);
 
         name = NAME(IsolatedPawnPenalty);
         IsolatedPawnPenalty.to_cpp(parameters, ss, name);
@@ -378,12 +378,13 @@ void ResetLS1B(std::uint64_t &board)
 int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
 {
     int packedBonus = 0;
-    // auto doublePawnsCount = chess::builtin::popcount(GetPieceSwappingEndianness(board, chess::PieceType::PAWN, color) & (FileMasks[squareIndex]));
-    // if (doublePawnsCount > 1)
-    // {
-    //     packedBonus += doublePawnsCount * DoubledPawnPenalty_Packed;
-    //     IncrementCoefficients(coefficients, DoubledPawnPenalty_Index, color);
-    // }
+
+    auto doublePawnsCount = chess::builtin::popcount(GetPieceSwappingEndianness(board, chess::PieceType::PAWN, color) & (FileMasks[squareIndex]));
+    if (doublePawnsCount > 1)
+    {
+        packedBonus += doublePawnsCount * DoubledPawnPenalty.packed(bucket);
+        IncrementCoefficients(coefficients, DoubledPawnPenalty.index(bucket), color);
+    }
 
     if ((GetPieceSwappingEndianness(board, chess::PieceType::PAWN, color) & IsolatedPawnMasks[squareIndex]) == 0) // isIsolatedPawn
     {
