@@ -162,14 +162,14 @@ public:
                 continue;
             }
 
-            mobilityPieceValues[b][KnightMobilityBonus.pieceIndex] = knightMobility[0];
-            mobilityPieceValues[b][KnightMobilityBonus.pieceIndex + 6] = knightMobility[1];
+            mobilityPieceValues[b][KnightMobilityBonus.pieceIndex] = knightMobility[b][0];
+            mobilityPieceValues[b][KnightMobilityBonus.pieceIndex + 6] = knightMobility[b][1];
 
-            mobilityPieceValues[b][BishopMobilityBonus.pieceIndex] = bishopMobility[0];
-            mobilityPieceValues[b][BishopMobilityBonus.pieceIndex + 6] = bishopMobility[1];
+            mobilityPieceValues[b][BishopMobilityBonus.pieceIndex] = bishopMobility[b][0];
+            mobilityPieceValues[b][BishopMobilityBonus.pieceIndex + 6] = bishopMobility[b][1];
 
-            mobilityPieceValues[b][RookMobilityBonus.pieceIndex] = rookMobility[0];
-            mobilityPieceValues[b][RookMobilityBonus.pieceIndex + 6] = rookMobility[1];
+            mobilityPieceValues[b][RookMobilityBonus.pieceIndex] = rookMobility[b][0];
+            mobilityPieceValues[b][RookMobilityBonus.pieceIndex + 6] = rookMobility[b][1];
         }
 
         return mobilityPieceValues;
