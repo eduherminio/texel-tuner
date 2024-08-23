@@ -488,7 +488,7 @@ public:
             {
                 tune_t min = std::numeric_limits<double>::max();
 
-                for (int i = 0; i < size; ++i)
+                for (int i = 0 + start; i < bucketSize; ++i)
                 {
                     if (parameters[index(bucket, i)][phase] != 0)
                     {
