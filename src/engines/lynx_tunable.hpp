@@ -486,7 +486,7 @@ public:
     std::array<pair_t, PSQTBucketCount> extract_offset(const parameters_t &parameters)
     {
         std::array<pair_t, PSQTBucketCount> packed;
-        return packed;
+        std::fill(packed.begin(), packed.end(), pair_t{0, 0});
 
         // TODO revisit
         for (int bucket = 0; bucket < PSQTBucketCount; ++bucket)
