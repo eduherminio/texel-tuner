@@ -387,8 +387,8 @@ int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, const 
 
     if ((GetPieceSwappingEndianness(board, chess::PieceType::PAWN, color) & IsolatedPawnMasks[squareIndex]) == 0) // isIsolatedPawn
     {
-        packedBonus += IsolatedPawnPenalty.packed;
-        IncrementCoefficients(coefficients, IsolatedPawnPenalty.index, color);
+        packedBonus += IsolatedPawnPenalty.packed(bucket);
+        IncrementCoefficients(coefficients, IsolatedPawnPenalty.index(bucket), color);
     }
 
     if (color == chess::Color::WHITE)
