@@ -5916,11 +5916,14 @@ TunableSingle BishopPairBonus(29, 79);
 TunableSingle PieceProtectedByPawnBonus(9, 11);
 TunableSingle PieceAttackedByPawnPenalty(-41, -30);
 
-TunableArray PassedPawnBonus(
+TunableArrayBucketed PassedPawnBonus(
     chess::PieceType::PAWN,
-    std::vector<int>{0, 7, -2, 0, 24, 37, 144, 0},
-    std::vector<int>{0, 20, 27, 49, 75, 139, 270, 0},
-    1,
+    std::array<std::vector<int>, PSQTBucketCount>{{
+        std::vector<int>{0, 7, -2, 0, 24, 37, 144},
+    }},
+    std::array<std::vector<int>, PSQTBucketCount>{{
+        std::vector<int>{0, 20, 27, 49, 75, 139, 270},
+    }},
     1);
 
 TunableArray VirtualKingMobilityBonus(

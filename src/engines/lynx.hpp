@@ -27,7 +27,7 @@ static int numParameters = psqtIndexCount +
                            PieceProtectedByPawnBonus.size +
                            PieceAttackedByPawnPenalty.size +
                            KingShieldBonus.size +
-                           PassedPawnBonus.tunableSize +          // 6, removing 1 and 8 rank values
+                           PassedPawnBonus.size +                 // PSQTBucketCount * 6, removing 1 rank values
                            VirtualKingMobilityBonus.tunableSize + // 28
                            KnightMobilityBonus.tunableSize +      // 9
                            BishopMobilityBonus.tunableSize +      // 14, removing end
@@ -122,7 +122,7 @@ public:
         BishopMobilityBonus.add(result);
         RookMobilityBonus.add(result);
 
-        assert(PassedPawnBonus.tunableSize == 6);
+        assert(PassedPawnBonus.bucketTunableSize == 6);
         assert(VirtualKingMobilityBonus.tunableSize == 28);
         assert(KnightMobilityBonus.tunableSize == 9);
         assert(BishopMobilityBonus.tunableSize == 14);
@@ -393,31 +393,25 @@ int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, const 
 
     if (color == chess::Color::WHITE)
     {
-
         if ((GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK) & WhitePassedPawnMasks[squareIndex]) == 0) // isPassedPawn
         {
             // std::cout << "Piece: " << GetPiece(board, chess::PieceType::PAWN, chess::Color::BLACK) << std::endl;
             // std::cout << "Mask: " << WhitePassedPawnMasks[squareIndex] << std::endl;
             auto rank = Rank[squareIndex];
-            if (pieceIndex == 6)
-            {
-                rank = 7 - rank;
-            }
-            packedBonus += PassedPawnBonus.packed[rank];
-            IncrementCoefficients(coefficients, PassedPawnBonus.index + rank - 1, color); // There's no coefficient for rank 0
+            packedBonus += PassedPawnBonus.packed(bucket, rank);
+            IncrementCoefficients(coefficients, PassedPawnBonus.index(bucket, rank - 1), color); // There's no coefficient for rank 0
             // std::cout << "White pawn on " << squareIndex << " is passed, bonus " << PassedPawnBonus[rank] << std::endl;
         }
     }
     else
     {
-
         if ((GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE) & BlackPassedPawnMasks[squareIndex]) == 0) // isPassedPawn
         {
             auto rank = Rank[squareIndex];
             rank = 7 - rank;
 
-            packedBonus += PassedPawnBonus.packed[rank];
-            IncrementCoefficients(coefficients, PassedPawnBonus.index + rank - 1, color); // There's no coefficient for rank 0
+            packedBonus += PassedPawnBonus.packed(bucket, rank);
+            IncrementCoefficients(coefficients, PassedPawnBonus.index(bucket, rank - 1), color); // There's no coefficient for rank 0
             // std::cout << "Black pawn on " << squareIndex << " is passed, bonus " << -PassedPawnBonus[rank] << std::endl;
         }
     }
