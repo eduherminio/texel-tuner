@@ -431,8 +431,8 @@ public:
         }
 
         bucketSize = mg[0].size();
-        size = PSQTBucketCount * bucketSize;
         bucketTunableSize = bucketSize - start;
+        size = PSQTBucketCount * bucketTunableSize;
         std::cout << bucketSize << "-" << start << "=" << bucketTunableSize << std::endl;
 
         _packed = std::array<std::vector<i32>, PSQTBucketCount>();
@@ -521,7 +521,7 @@ public:
     {
         std::string variable_name;
 
-        if (bucketSize == 8)
+        if (bucketSize == 7)
         {
             variable_name = "TaperedEvaluationTermByRank";
         }
