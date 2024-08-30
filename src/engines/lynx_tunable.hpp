@@ -40,7 +40,7 @@ public:
 
     void to_csharp(const parameters_t &parameters, std::stringstream &ss, const std::string &name)
     {
-        ss << "\tpublic static readonly TaperedEvaluationTerm " << name << " = new(" << std::round(parameters[index][0]) << ", " << std::round(parameters[index][1]) << ");\n\n";
+        ss << "\tpublic static readonly TaperedEvaluationTerm " << name << " = Pack(" << std::round(parameters[index][0]) << ", " << std::round(parameters[index][1]) << ");\n\n";
     }
 
     void to_cpp(const parameters_t &parameters, std::stringstream &ss, const std::string &name)
@@ -79,10 +79,6 @@ public:
     int packed(int bucket)
     {
         return _packed[bucket];
-    }
-
-    void to_json(const parameters_t &parameters, std::stringstream &ss, const std::string &name)
-    {
     }
 
     void to_csharp(const parameters_t &parameters, std::stringstream &ss, const std::string &name)
@@ -181,7 +177,7 @@ public:
 
             for (int i = 0; i < size; ++i)
             {
-                if (parameters[index + i][phase] != 0)
+                if (parameters[index + i][phase] != 0.0)
                 {
                     min = parameters[index + i][phase];
                     packed[phase] = min;
@@ -267,26 +263,34 @@ public:
             throw std::invalid_argument("wrong size provided: " + size);
         }
 
-        ss << "\tpublic static readonly " << variable_name << " " << name << " = new(\n";
+        ss << "\tpublic static readonly " << variable_name << " " << name << " =\n\t[\n";
         for (int rank = 0; rank < start; ++rank)
         {
-            ss << "\t\tnew(0, 0),\n";
+            ss << "\t\tPack(0, 0),\n";
         }
 
         for (int rank = 0; rank < size - end - start; ++rank)
         {
-            ss << "\t\tnew(" << round(parameters[index + rank][0] - mobilityPieceValues[0][pieceIndex]) << ", " << round(parameters[index + rank][1] - mobilityPieceValues[0][pieceIndex + 6]) << ")";
+            auto offsetToRemove0 = parameters[index + rank][0] == 0
+                                       ? 0
+                                       : mobilityPieceValues[0][pieceIndex];
+
+            auto offsetToRemove1 = parameters[index + rank][1] == 0
+                                       ? 0
+                                       : mobilityPieceValues[0][pieceIndex + 6];
+
+            ss << "\t\tPack(" << round(parameters[index + rank][0] - offsetToRemove0) << ", " << round(parameters[index + rank][1] - offsetToRemove1) << ")";
             if (rank == size - start - 1)
-                ss << ");";
+                ss << "\n\t];";
             else
                 ss << ",\n";
         }
 
         for (int rank = size - end; rank < size; ++rank)
         {
-            ss << "\t\tnew(0, 0)";
+            ss << "\t\tPack(0, 0)";
             if (rank == size - 1)
-                ss << ");";
+                ss << "\n\t];";
             else
                 ss << ",\n";
         }
@@ -389,5 +393,262 @@ public:
 
         ss << "\t" << start << ",\n";
         ss << "\t" << end << ");\n\n";
+    }
+};
+
+class TunableArrayBucketed
+{
+    static inline std::array<std::array<tune_t, 12>, PSQTBucketCount> emptyArray;
+    std::array<std::vector<i32>, PSQTBucketCount> _mg;
+    std::array<std::vector<i32>, PSQTBucketCount> _eg;
+    std::array<std::vector<i32>, PSQTBucketCount> _packed;
+    i32 _index;
+
+public:
+    i32 pieceIndex;
+    i32 size;
+    i32 bucketSize;
+    i32 bucketTunableSize;
+    i32 start;
+
+    TunableArrayBucketed(chess::PieceType piece, const std::array<std::vector<i32>, PSQTBucketCount> mg, const std::array<std::vector<i32>, PSQTBucketCount> eg)
+        : TunableArrayBucketed(piece, mg, eg, 0)
+    {
+    }
+
+    TunableArrayBucketed(chess::PieceType piece, const std::array<std::vector<i32>, PSQTBucketCount> mg, const std::array<std::vector<i32>, PSQTBucketCount> eg, i32 start)
+        : pieceIndex(static_cast<int>(piece)), _mg(mg), _eg(eg), start(start)
+    {
+        for (auto b = 0; b < PSQTBucketCount; ++b)
+        {
+            emptyArray[b] = std::array<tune_t, 12>{{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
+        }
+
+        assert(mg.size() == eg.size());
+        for (auto i = 0; i < mg.size(); ++i)
+        {
+            assert(mg[i].size() == eg[i].size());
+        }
+
+        bucketSize = mg[0].size();
+        bucketTunableSize = bucketSize - start;
+        size = PSQTBucketCount * bucketTunableSize;
+        std::cout << bucketSize << "-" << start << "=" << bucketTunableSize << std::endl;
+
+        _packed = std::array<std::vector<i32>, PSQTBucketCount>();
+        for (int bucket = 0; bucket < PSQTBucketCount; ++bucket)
+        {
+            _packed[bucket] = std::vector<i32>(bucketSize);
+
+            if (_mg[bucket].size() == 0)
+            {
+                _mg[bucket] = std::vector<i32>(bucketSize, 0);
+                std::fill(_mg[bucket].begin(), _mg[bucket].end(), 0);
+                std::cout << "[WARN] empty bucket " << bucket << " mg" << std::endl;
+            }
+            if (_eg[bucket].size() == 0)
+            {
+                _eg[bucket] = std::vector<i32>(bucketSize, 0);
+                std::fill(_eg[bucket].begin(), _eg[bucket].end(), 0);
+                std::cout << "[WARN] empty bucket " << bucket << " eg" << std::endl;
+            }
+
+            for (int rank = 0 + start; rank < bucketSize; ++rank)
+            {
+                _packed[bucket][rank] = S(_mg[bucket][rank], _eg[bucket][rank]);
+            }
+        }
+    }
+
+    void add(parameters_t &parameters)
+    {
+        _index = parameters.size();
+        for (int bucket = 0; bucket < PSQTBucketCount; ++bucket)
+        {
+            for (int rank = 0 + start; rank < bucketSize; ++rank)
+            {
+                parameters.push_back({(double)_mg[bucket][rank], (double)_eg[bucket][rank]});
+            }
+        }
+    }
+
+    int index(int bucket, int itemIndex)
+    {
+        return _index + bucket * bucketTunableSize + itemIndex;
+    }
+
+    int packed(int bucket, int itemIndex)
+    {
+        return _packed[bucket][itemIndex];
+    }
+
+    /// Extracts first not-zero value
+    std::array<pair_t, PSQTBucketCount> extract_offset(const parameters_t &parameters)
+    {
+        std::array<pair_t, PSQTBucketCount> packed;
+
+        // TODO revisit
+        for (int bucket = 0; bucket < PSQTBucketCount; ++bucket)
+        {
+            packed[bucket] = pair_t();
+
+            for (int phase = 0; phase <= 1; ++phase)
+            {
+                tune_t min = std::numeric_limits<double>::max();
+
+                for (int i = 0 + start; i < bucketSize; ++i)
+                {
+                    if (parameters[index(bucket, i)][phase] != 0.0)
+                    {
+                        min = parameters[index(bucket, i)][phase];
+                        packed[bucket][phase] = min;
+
+                        break;
+                    }
+                }
+            }
+        }
+
+        return packed;
+    }
+
+    void to_csharp(const parameters_t &parameters, std::stringstream &ss, const std::string &name)
+    {
+        to_csharp(parameters, ss, name, emptyArray);
+    }
+
+    void to_csharp(const parameters_t &parameters, std::stringstream &ss, const std::string &name, const std::array<std::array<tune_t, 12>, PSQTBucketCount> &mobilityPieceValues)
+    {
+        std::string variable_name;
+
+        if (bucketSize == 7)
+        {
+            variable_name = "TaperedEvaluationTermByRank";
+        }
+        else if (bucketSize == 9)
+        {
+            variable_name = "TaperedEvaluationTermByCount8";
+        }
+        else if (bucketSize == 14 || bucketSize == 15)
+        {
+            variable_name = "TaperedEvaluationTermByCount14";
+        }
+        else if (bucketSize == 28)
+        {
+            variable_name = "TaperedEvaluationTermByCount27";
+        }
+        else
+        {
+            throw std::invalid_argument("wrong size provided: " + size);
+        }
+
+        ss << "\tpublic static readonly " << variable_name << "[] " << name << " = \n\t[\n";
+
+        for (int bucket = 0; bucket < PSQTBucketCount; ++bucket)
+        {
+            ss << "\t\t[\n";
+            for (int dimension = 0; dimension < start; ++dimension)
+            {
+                ss << "\t\t\tPack(0, 0),\n";
+            }
+
+            for (int dimension = 0; dimension < bucketTunableSize; ++dimension)
+            {
+                auto offsetToRemove0 = parameters[index(bucket, dimension)][0] == 0.0
+                                           ? 0
+                                           : mobilityPieceValues[bucket][pieceIndex];
+
+                auto offsetToRemove1 = parameters[index(bucket, dimension)][1] == 0.0
+                                           ? 0
+                                           : mobilityPieceValues[bucket][pieceIndex + 6];
+
+                ss << "\t\t\tPack(" << round(parameters[index(bucket, dimension)][0] - offsetToRemove0) << ", " << round(parameters[index(bucket, dimension)][1] - offsetToRemove1) << ")";
+                if (dimension == size - start - 1)
+                    ss << ");";
+                else
+                    ss << ",\n";
+            }
+
+            ss << "\t\t],\n";
+        }
+
+        ss << "\t];\n\n";
+    }
+
+    void to_cpp(const parameters_t &parameters, std::stringstream &ss, const std::string &name)
+    {
+        to_cpp(parameters, ss, name, emptyArray);
+    }
+
+    void to_cpp(const parameters_t &parameters, std::stringstream &ss, const std::string &name, const std::array<std::array<tune_t, 12>, PSQTBucketCount> &mobilityPieceValues)
+    {
+        std::string pieceType;
+        switch (pieceIndex)
+        {
+        case static_cast<int>(chess::PieceType::PAWN):
+        {
+            pieceType = "PAWN";
+            break;
+        }
+        case static_cast<int>(chess::PieceType::KNIGHT):
+        {
+            pieceType = "KNIGHT";
+            break;
+        }
+        case static_cast<int>(chess::PieceType::BISHOP):
+        {
+            pieceType = "BISHOP";
+            break;
+        }
+        case static_cast<int>(chess::PieceType::ROOK):
+        {
+            pieceType = "ROOK";
+            break;
+        }
+        case static_cast<int>(chess::PieceType::QUEEN):
+        {
+            pieceType = "QUEEN";
+            break;
+        }
+        case static_cast<int>(chess::PieceType::KING):
+        {
+            pieceType = "KING";
+            break;
+        }
+        }
+
+        ss << "TunableArrayBucketed " << name << "(\n";
+        ss << "\tchess::PieceType::" << pieceType << ",\n";
+
+        for (int phase = 0; phase < 2; ++phase)
+        {
+
+            ss << "\tstd::array<std::vector<int>, PSQTBucketCount>{{\n";
+            for (int bucket = 0; bucket < PSQTBucketCount; ++bucket)
+            {
+                ss << "\t\tstd::vector<int>{";
+                for (int dimension = 0; dimension < start; ++dimension)
+                {
+                    ss << "0, ";
+                }
+
+                for (int dimension = 0; dimension < bucketSize - start; ++dimension)
+                {
+                    auto offsetToRemove = parameters[index(bucket, dimension)][1] == 0.0
+                                              ? 0
+                                              : mobilityPieceValues[bucket][pieceIndex + 6 * phase];
+
+                    ss << std::round(parameters[index(bucket, dimension)][phase] - offsetToRemove);
+                    if (dimension == bucketSize - start - 1)
+                        ss << "},\n";
+                    else
+                        ss << ", ";
+                }
+            }
+
+            ss << "\n\t}},\n";
+        }
+
+        ss << "\t" << start << ");\n";
     }
 };

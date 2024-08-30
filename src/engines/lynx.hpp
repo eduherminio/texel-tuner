@@ -26,7 +26,7 @@ static int numParameters = psqtIndexCount +
                            PieceProtectedByPawnBonus.size +
                            PieceAttackedByPawnPenalty.size +
                            KingShieldBonus.size +
-                           PassedPawnBonus.tunableSize +          // 6, removing 1 and 8 rank values
+                           PassedPawnBonus.size +                 // PSQTBucketCount * 6, removing 1 rank values
                            VirtualKingMobilityBonus.tunableSize + // 28
                            KnightMobilityBonus.tunableSize +      // 9
                            BishopMobilityBonus.tunableSize +      // 14, removing end
@@ -121,7 +121,7 @@ public:
         RookMobilityBonus.add(result);
         QueenMobilityBonus.add(result);
 
-        assert(PassedPawnBonus.tunableSize == 6);
+        assert(PassedPawnBonus.bucketTunableSize == 6);
         assert(VirtualKingMobilityBonus.tunableSize == 28);
         assert(KnightMobilityBonus.tunableSize == 9);
         assert(BishopMobilityBonus.tunableSize == 14);
@@ -212,79 +212,6 @@ public:
 
         print_psqts_cpp(parameters, mobilityPieceValues, true);
         // print_cpp_parameters(parameters, mobilityPieceValues);
-    }
-
-    static void print_json_parameters(const parameters_t &parameters, const std::array<std::array<tune_t, 12>, PSQTBucketCount> &mobilityPieceValues)
-    {
-        std::stringstream ss;
-        std::string name;
-
-        // name = NAME(DoubledPawnPenalty);
-        // DoubledPawnPenalty.to_json(parameters, ss, name);
-        // ss << ",\n";
-
-        name = NAME(IsolatedPawnPenalty);
-        IsolatedPawnPenalty.to_json(parameters, ss, name);
-        ss << ",\n";
-
-        name = NAME(OpenFileRookBonus);
-        OpenFileRookBonus.to_json(parameters, ss, name);
-        ss << ",\n";
-
-        name = NAME(SemiOpenFileRookBonus);
-        SemiOpenFileRookBonus.to_json(parameters, ss, name);
-        ss << ",\n";
-
-        name = NAME(SemiOpenFileKingPenalty);
-        SemiOpenFileKingPenalty.to_json(parameters, ss, name);
-        ss << ",\n";
-
-        name = NAME(OpenFileKingPenalty);
-        OpenFileKingPenalty.to_json(parameters, ss, name);
-        ss << ",\n";
-
-        name = NAME(KingShieldBonus);
-        KingShieldBonus.to_json(parameters, ss, name);
-        ss << ",\n";
-
-        name = NAME(BishopPairBonus);
-        BishopPairBonus.to_json(parameters, ss, name);
-        ss << ",\n";
-
-        name = NAME(PieceProtectedByPawnBonus);
-        PieceProtectedByPawnBonus.to_json(parameters, ss, name);
-        ss << ",\n";
-
-        name = NAME(PieceAttackedByPawnPenalty);
-        PieceAttackedByPawnPenalty.to_json(parameters, ss, name);
-        ss << ",\n";
-
-        name = NAME(PassedPawnBonus);
-        PassedPawnBonus.to_json(parameters, ss, name);
-        ss << ",\n";
-
-        name = NAME(VirtualKingMobilityBonus);
-        VirtualKingMobilityBonus.to_json(parameters, ss, name);
-        ss << ",\n";
-
-        name = NAME(KnightMobilityBonus);
-        KnightMobilityBonus.to_json(parameters, ss, name, mobilityPieceValues);
-        ss << ",\n";
-
-        name = NAME(BishopMobilityBonus);
-        BishopMobilityBonus.to_json(parameters, ss, name, mobilityPieceValues);
-        ss << ",\n";
-
-        name = NAME(RookMobilityBonus);
-        RookMobilityBonus.to_json(parameters, ss, name, mobilityPieceValues);
-        ss << ",\n";
-
-        name = NAME(QueenMobilityBonus);
-        QueenMobilityBonus.to_json(parameters, ss, name, mobilityPieceValues);
-        ss << ",\n";
-
-        std::cout << ss.str() << std::endl
-                  << std::endl;
     }
 
     static void print_csharp_parameters(const parameters_t &parameters, const std::array<std::array<tune_t, 12>, PSQTBucketCount> &mobilityPieceValues, bool isFinal = false)
@@ -470,31 +397,25 @@ int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, const 
 
     if (color == chess::Color::WHITE)
     {
-
         if ((GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK) & WhitePassedPawnMasks[squareIndex]) == 0) // isPassedPawn
         {
             // std::cout << "Piece: " << GetPiece(board, chess::PieceType::PAWN, chess::Color::BLACK) << std::endl;
             // std::cout << "Mask: " << WhitePassedPawnMasks[squareIndex] << std::endl;
             auto rank = Rank[squareIndex];
-            if (pieceIndex == 6)
-            {
-                rank = 7 - rank;
-            }
-            packedBonus += PassedPawnBonus.packed[rank];
-            IncrementCoefficients(coefficients, PassedPawnBonus.index + rank - 1, color); // There's no coefficient for rank 0
+            packedBonus += PassedPawnBonus.packed(bucket, rank);
+            IncrementCoefficients(coefficients, PassedPawnBonus.index(bucket, rank - 1), color); // There's no coefficient for rank 0
             // std::cout << "White pawn on " << squareIndex << " is passed, bonus " << PassedPawnBonus[rank] << std::endl;
         }
     }
     else
     {
-
         if ((GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE) & BlackPassedPawnMasks[squareIndex]) == 0) // isPassedPawn
         {
             auto rank = Rank[squareIndex];
             rank = 7 - rank;
 
-            packedBonus += PassedPawnBonus.packed[rank];
-            IncrementCoefficients(coefficients, PassedPawnBonus.index + rank - 1, color); // There's no coefficient for rank 0
+            packedBonus += PassedPawnBonus.packed(bucket, rank);
+            IncrementCoefficients(coefficients, PassedPawnBonus.index(bucket, rank - 1), color); // There's no coefficient for rank 0
             // std::cout << "Black pawn on " << squareIndex << " is passed, bonus " << -PassedPawnBonus[rank] << std::endl;
         }
     }
@@ -826,68 +747,62 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
 
     // Check if drawn position due to lack of material
 
-    int totalPawnsCount = INT_MIN;
-
-    if (gamePhase <= 3)
-    {
-        totalPawnsCount = board.pieces(chess::PieceType::PAWN, chess::Color::WHITE).count() +
+    int totalPawnsCount = board.pieces(chess::PieceType::PAWN, chess::Color::WHITE).count() +
                           board.pieces(chess::PieceType::PAWN, chess::Color::BLACK).count();
 
-        if (totalPawnsCount == 0)
+    if (gamePhase <= 3 && totalPawnsCount == 0)
+    {
+        switch (gamePhase)
         {
+        // case 5:
+        //     {
+        //         // RB vs R, RN vs R - escale it down due to the chances of it being a draw
+        //         if (pieceCount[(int)Piece.R] == 1 && pieceCount[(int)Piece.r] == 1)
+        //         {
+        //             packedScore >>= 1; // /2
+        //         }
 
-            switch (gamePhase)
-            {
-            // case 5:
-            //     {
-            //         // RB vs R, RN vs R - escale it down due to the chances of it being a draw
-            //         if (pieceCount[(int)Piece.R] == 1 && pieceCount[(int)Piece.r] == 1)
-            //         {
-            //             packedScore >>= 1; // /2
-            //         }
+        //        break;
+        //    }
+        case 3:
+        {
+            auto winningSideOffset = PieceOffset(packedScore >= 0);
 
-            //        break;
-            //    }
-            case 3:
-            {
-                auto winningSideOffset = PieceOffset(packedScore >= 0);
-
-                if (pieceCount[1 + winningSideOffset] == 2) // NN vs N, NN vs B
-                {
-                    return EvalResult{
-                        std::move(coefficients),
-                        (double)0};
-                }
-
-                // Without rooks, only BB vs N is a win and BN vs N can have some chances
-                // Not taking that into account here though, we would need this to rule them out: `pieceCount[(int)Piece.b - winningSideOffset] == 1 || pieceCount[(int)Piece.B + winningSideOffset] <= 1`
-                // if (pieceCount[(int)Piece.R + winningSideOffset] == 0)  // BN vs B, NN vs B, BB vs B, BN vs N, NN vs N
-                //{
-                //    packedScore >>= 1; // /2
-                //}
-
-                break;
-            }
-            case 2:
-            {
-                if (pieceCount[1] + pieceCount[7] == 2     // NN vs -, N vs N
-                    || pieceCount[1] + pieceCount[2] == 1) // B vs N, B vs B
-                {
-                    return EvalResult{
-                        std::move(coefficients),
-                        (double)0};
-                }
-
-                break;
-            }
-            case 1:
-            case 0:
+            if (pieceCount[1 + winningSideOffset] == 2) // NN vs N, NN vs B
             {
                 return EvalResult{
                     std::move(coefficients),
                     (double)0};
             }
+
+            // Without rooks, only BB vs N is a win and BN vs N can have some chances
+            // Not taking that into account here though, we would need this to rule them out: `pieceCount[(int)Piece.b - winningSideOffset] == 1 || pieceCount[(int)Piece.B + winningSideOffset] <= 1`
+            // if (pieceCount[(int)Piece.R + winningSideOffset] == 0)  // BN vs B, NN vs B, BB vs B, BN vs N, NN vs N
+            //{
+            //    packedScore >>= 1; // /2
+            //}
+
+            break;
+        }
+        case 2:
+        {
+            if (pieceCount[1] + pieceCount[7] == 2     // NN vs -, N vs N
+                || pieceCount[1] + pieceCount[2] == 1) // B vs N, B vs B
+            {
+                return EvalResult{
+                    std::move(coefficients),
+                    (double)0};
             }
+
+            break;
+        }
+        case 1:
+        case 0:
+        {
+            return EvalResult{
+                std::move(coefficients),
+                (double)0};
+        }
         }
     }
 
@@ -904,21 +819,7 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
     auto endGameScore = UnpackEG(packedScore);
     int eval = ((middleGameScore * gamePhase) + (endGameScore * endGamePhase)) / maxPhase;
 
-    if (gamePhase <= 3)
-    {
-        auto pawnScalingPenalty = 16 - totalPawnsCount;
-
-        if (eval > 1)
-        {
-            pawnScalingPenalty = std::min(eval - 1, pawnScalingPenalty);
-            eval -= pawnScalingPenalty;
-        }
-        else if (eval < -1)
-        {
-            pawnScalingPenalty = std::min(-eval - 1, pawnScalingPenalty);
-            eval += pawnScalingPenalty;
-        }
-    }
+    eval = (int)(eval * ((80 + (totalPawnsCount * 7)) / 128.0));
 
     eval = std::clamp(eval, MinEval, MaxEval);
 
