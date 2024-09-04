@@ -6000,13 +6000,6 @@ TunableArray RookMobilityBonus(
 	0,
 	0);
 
-TunableArray FriendlyKingDistanceToPassedPawnBonus(
-	chess::PieceType::PAWN,
-	std::vector<int>{0, 1, 2, 3, 4, 5, 6, 7},
-	std::vector<int>{0, 1, 2, 3, 4, 5, 6, 7},
-	1,
-	0);
-
 TunableArray EnemyKingDistanceToPassedPawnPenalty(
 	chess::PieceType::PAWN,
 	std::vector<int>{0, -1, -2, -3, -4, -5, -6, -7},

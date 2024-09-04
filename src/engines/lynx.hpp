@@ -28,7 +28,6 @@ static int numParameters = psqtIndexCount +
                            PieceAttackedByPawnPenalty.size +
                            KingShieldBonus.size +
                            PassedPawnBonus.size +                 // PSQTBucketCount * 6, removing 1 rank values
-                           FriendlyKingDistanceToPassedPawnBonus.tunableSize + // 7, removing start
                            EnemyKingDistanceToPassedPawnPenalty.tunableSize + // 7, removing start
                            VirtualKingMobilityBonus.tunableSize + // 28
                            KnightMobilityBonus.tunableSize +      // 9
@@ -119,7 +118,6 @@ public:
         PieceAttackedByPawnPenalty.add(result);
 
         PassedPawnBonus.add(result);
-        FriendlyKingDistanceToPassedPawnBonus.add(result);
         EnemyKingDistanceToPassedPawnPenalty.add(result);
         VirtualKingMobilityBonus.add(result);
         KnightMobilityBonus.add(result);
@@ -127,7 +125,6 @@ public:
         RookMobilityBonus.add(result);
 
         assert(PassedPawnBonus.bucketTunableSize == 6);
-        assert(FriendlyKingDistanceToPassedPawnBonus.tunableSize == 7);
         assert(EnemyKingDistanceToPassedPawnPenalty.tunableSize == 7);
         assert(VirtualKingMobilityBonus.tunableSize == 28);
         assert(KnightMobilityBonus.tunableSize == 9);
@@ -260,9 +257,6 @@ public:
         name = NAME(PassedPawnBonus);
         PassedPawnBonus.to_csharp(parameters, ss, name);
 
-        name = NAME(FriendlyKingDistanceToPassedPawnBonus);
-        FriendlyKingDistanceToPassedPawnBonus.to_csharp(parameters, ss, name);
-
         name = NAME(EnemyKingDistanceToPassedPawnPenalty);
         EnemyKingDistanceToPassedPawnPenalty.to_csharp(parameters, ss, name);
 
@@ -339,9 +333,6 @@ public:
 
         name = NAME(PassedPawnBonus);
         PassedPawnBonus.to_cpp(parameters, ss, name);
-
-        name = NAME(FriendlyKingDistanceToPassedPawnBonus);
-        FriendlyKingDistanceToPassedPawnBonus.to_cpp(parameters, ss, name);
 
         name = NAME(EnemyKingDistanceToPassedPawnPenalty);
         EnemyKingDistanceToPassedPawnPenalty.to_cpp(parameters, ss, name);
@@ -420,10 +411,6 @@ int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int sa
             IncrementCoefficients(coefficients, PassedPawnBonus.index(bucket, rank - PassedPawnBonus.start), color); // There's no coefficient for rank 0
             // std::cout << "White pawn on " << squareIndex << " is passed, bonus " << PassedPawnBonus[rank] << std::endl;
 
-            auto friendlyKingDistance = ChebyshevDistance(sameSideKingSquare, squareIndex);
-            packedBonus += FriendlyKingDistanceToPassedPawnBonus.packed[friendlyKingDistance];
-            IncrementCoefficients(coefficients, FriendlyKingDistanceToPassedPawnBonus.index + friendlyKingDistance - FriendlyKingDistanceToPassedPawnBonus.start, color);
-
             auto enemyKingDistance = ChebyshevDistance(oppositeSideKingSquare, squareIndex);
             packedBonus += EnemyKingDistanceToPassedPawnPenalty.packed[enemyKingDistance];
             IncrementCoefficients(coefficients, EnemyKingDistanceToPassedPawnPenalty.index + enemyKingDistance - EnemyKingDistanceToPassedPawnPenalty.start, color);
@@ -439,10 +426,6 @@ int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int sa
             packedBonus += PassedPawnBonus.packed(bucket, rank);
             IncrementCoefficients(coefficients, PassedPawnBonus.index(bucket, rank - PassedPawnBonus.start), color); // There's no coefficient for rank 0
             // std::cout << "Black pawn on " << squareIndex << " is passed, bonus " << -PassedPawnBonus[rank] << std::endl;
-
-            auto friendlyKingDistance = ChebyshevDistance(sameSideKingSquare, squareIndex);
-            packedBonus += FriendlyKingDistanceToPassedPawnBonus.packed[friendlyKingDistance];
-            IncrementCoefficients(coefficients, FriendlyKingDistanceToPassedPawnBonus.index + friendlyKingDistance - FriendlyKingDistanceToPassedPawnBonus.start, color);
 
             auto enemyKingDistance = ChebyshevDistance(oppositeSideKingSquare, squareIndex);
             packedBonus += EnemyKingDistanceToPassedPawnPenalty.packed[enemyKingDistance];
