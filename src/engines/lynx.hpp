@@ -413,7 +413,7 @@ int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int sa
 
             auto friendlyKingDistance = ChebyshevDistance(sameSideKingSquare, squareIndex);
             packedBonus += FriendlyKingDistanceToPassedPawnBonus.packed[friendlyKingDistance];
-            IncrementCoefficients(coefficients, FriendlyKingDistanceToPassedPawnBonus.index + friendlyKingDistance, color);
+            IncrementCoefficients(coefficients, FriendlyKingDistanceToPassedPawnBonus.index + friendlyKingDistance - FriendlyKingDistanceToPassedPawnBonus.start, color);
         }
     }
     else
@@ -424,12 +424,12 @@ int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int sa
             rank = 7 - rank;
 
             packedBonus += PassedPawnBonus.packed(bucket, rank);
-            IncrementCoefficients(coefficients, PassedPawnBonus.index(bucket, rank - 1), color); // There's no coefficient for rank 0
+            IncrementCoefficients(coefficients, PassedPawnBonus.index(bucket, rank - PassedPawnBonus.start), color); // There's no coefficient for rank 0
             // std::cout << "Black pawn on " << squareIndex << " is passed, bonus " << -PassedPawnBonus[rank] << std::endl;
 
             auto friendlyKingDistance = ChebyshevDistance(sameSideKingSquare, squareIndex);
             packedBonus += FriendlyKingDistanceToPassedPawnBonus.packed[friendlyKingDistance];
-            IncrementCoefficients(coefficients, FriendlyKingDistanceToPassedPawnBonus.index + friendlyKingDistance, color);
+            IncrementCoefficients(coefficients, FriendlyKingDistanceToPassedPawnBonus.index + friendlyKingDistance - FriendlyKingDistanceToPassedPawnBonus.start, color);
         }
     }
 

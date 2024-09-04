@@ -151,7 +151,7 @@ public:
 
         packed = std::vector<i32>(size);
 
-        for (int rank = 0 + start; rank < size - end; ++rank)
+        for (int rank = 0; rank < size; ++rank)
         {
             packed[rank] = S(mg[rank], eg[rank]);
         }
