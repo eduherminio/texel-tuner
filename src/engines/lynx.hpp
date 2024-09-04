@@ -20,7 +20,6 @@ static int numParameters = psqtIndexCount +
                            IsolatedPawnPenalty.size +
                            OpenFileRookBonus.size +
                            SemiOpenFileRookBonus.size +
-                           QueenMobilityBonus.size +
                            SemiOpenFileKingPenalty.size +
                            OpenFileKingPenalty.size +
                            BishopPairBonus.size +
@@ -31,8 +30,8 @@ static int numParameters = psqtIndexCount +
                            VirtualKingMobilityBonus.tunableSize + // 28
                            KnightMobilityBonus.tunableSize +      // 9
                            BishopMobilityBonus.tunableSize +      // 14, removing end
-                           RookMobilityBonus.tunableSize          // 15
-    ;
+                           RookMobilityBonus.tunableSize +        // 15
+                           QueenMobilityBonus.tunableSize;
 
 class Lynx
 {
@@ -108,7 +107,6 @@ public:
         IsolatedPawnPenalty.add(result);
         OpenFileRookBonus.add(result);
         SemiOpenFileRookBonus.add(result);
-        QueenMobilityBonus.add(result);
         SemiOpenFileKingPenalty.add(result);
         OpenFileKingPenalty.add(result);
         KingShieldBonus.add(result);
@@ -121,12 +119,14 @@ public:
         KnightMobilityBonus.add(result);
         BishopMobilityBonus.add(result);
         RookMobilityBonus.add(result);
+        QueenMobilityBonus.add(result);
 
         assert(PassedPawnBonus.bucketTunableSize == 6);
         assert(VirtualKingMobilityBonus.tunableSize == 28);
         assert(KnightMobilityBonus.tunableSize == 9);
         assert(BishopMobilityBonus.tunableSize == 14);
         assert(RookMobilityBonus.tunableSize == 15);
+        assert(QueenMobilityBonus.tunableSize == 28);
 
         std::cout << result.size() << " == " << numParameters << std::endl;
         assert(result.size() == numParameters);
@@ -152,6 +152,7 @@ public:
         auto knightMobility = KnightMobilityBonus.extract_offset(parameters);
         auto bishopMobility = BishopMobilityBonus.extract_offset(parameters);
         auto rookMobility = RookMobilityBonus.extract_offset(parameters);
+        auto queenMobility = QueenMobilityBonus.extract_offset(parameters);
 
         for (int b = 0; b < PSQTBucketCount; ++b)
         {
@@ -170,6 +171,9 @@ public:
 
             mobilityPieceValues[b][RookMobilityBonus.pieceIndex] = rookMobility[0];
             mobilityPieceValues[b][RookMobilityBonus.pieceIndex + 6] = rookMobility[1];
+
+            mobilityPieceValues[b][QueenMobilityBonus.pieceIndex] = queenMobility[0];
+            mobilityPieceValues[b][QueenMobilityBonus.pieceIndex + 6] = queenMobility[1];
         }
 
         return mobilityPieceValues;
@@ -230,9 +234,6 @@ public:
         name = NAME(SemiOpenFileRookBonus);
         SemiOpenFileRookBonus.to_csharp(parameters, ss, name);
 
-        name = NAME(QueenMobilityBonus);
-        QueenMobilityBonus.to_csharp(parameters, ss, name);
-
         name = NAME(SemiOpenFileKingPenalty);
         SemiOpenFileKingPenalty.to_csharp(parameters, ss, name);
 
@@ -265,6 +266,9 @@ public:
 
         name = NAME(RookMobilityBonus);
         RookMobilityBonus.to_csharp(parameters, ss, name, mobilityPieceValues);
+
+        name = NAME(QueenMobilityBonus);
+        QueenMobilityBonus.to_csharp(parameters, ss, name, mobilityPieceValues);
 
         if (isFinal)
         {
@@ -302,9 +306,6 @@ public:
         name = NAME(SemiOpenFileRookBonus);
         SemiOpenFileRookBonus.to_cpp(parameters, ss, name);
 
-        name = NAME(QueenMobilityBonus);
-        QueenMobilityBonus.to_cpp(parameters, ss, name);
-
         name = NAME(SemiOpenFileKingPenalty);
         SemiOpenFileKingPenalty.to_cpp(parameters, ss, name);
 
@@ -339,6 +340,9 @@ public:
 
         name = NAME(RookMobilityBonus);
         RookMobilityBonus.to_cpp(parameters, ss, name, mobilityPieceValues);
+
+        name = NAME(QueenMobilityBonus);
+        QueenMobilityBonus.to_cpp(parameters, ss, name, mobilityPieceValues);
 
         if (isFinal)
         {
@@ -483,10 +487,13 @@ int BishopAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, cons
 
 int QueenAdditionalEvaluation(int squareIndex, int bucket, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
 {
-    auto mobilityCount = chess::attacks::queen(static_cast<chess::Square>(squareIndex), __builtin_bswap64(board.occ().getBits())).count();
-    IncrementCoefficients(coefficients, QueenMobilityBonus.index, color, mobilityCount);
+    auto mobilityCount = chess::builtin::popcount(
+        chess::attacks::queen(static_cast<chess::Square>(squareIndex), __builtin_bswap64(board.occ().getBits())).getBits() &
+        (~__builtin_bswap64(board.us(color).getBits())));
 
-    return QueenMobilityBonus.packed * mobilityCount;
+    IncrementCoefficients(coefficients, QueenMobilityBonus.index + mobilityCount, color);
+
+    return QueenMobilityBonus.packed[mobilityCount];
 }
 
 int KingAdditionalEvaluation(int squareIndex, int bucket, chess::Color kingSide, const chess::Board &board, const int pieceCount[], coefficients_t &coefficients)
