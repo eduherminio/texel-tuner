@@ -649,6 +649,6 @@ public:
             ss << "\n\t}},\n";
         }
 
-        ss << "\t" << start << ");\n";
+        ss << "\t" << start << ");\n\n";
     }
 };
