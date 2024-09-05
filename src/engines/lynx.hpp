@@ -27,6 +27,8 @@ static int numParameters = psqtIndexCount +
                            PieceAttackedByPawnPenalty.size +
                            KingShieldBonus.size +
                            PassedPawnBonus.size +                 // PSQTBucketCount * 6, removing 1 rank values
+                           FriendlyKingDistanceToPassedPawnBonus.tunableSize + // 7, removing start
+                           EnemyKingDistanceToPassedPawnPenalty.tunableSize + // 7, removing start
                            VirtualKingMobilityBonus.tunableSize + // 28
                            KnightMobilityBonus.tunableSize +      // 9
                            BishopMobilityBonus.tunableSize +      // 14, removing end
@@ -115,6 +117,8 @@ public:
         PieceAttackedByPawnPenalty.add(result);
 
         PassedPawnBonus.add(result);
+        FriendlyKingDistanceToPassedPawnBonus.add(result);
+        EnemyKingDistanceToPassedPawnPenalty.add(result);
         VirtualKingMobilityBonus.add(result);
         KnightMobilityBonus.add(result);
         BishopMobilityBonus.add(result);
@@ -122,6 +126,8 @@ public:
         QueenMobilityBonus.add(result);
 
         assert(PassedPawnBonus.bucketTunableSize == 6);
+        assert(FriendlyKingDistanceToPassedPawnBonus.tunableSize == 7);
+        assert(EnemyKingDistanceToPassedPawnPenalty.tunableSize == 7);
         assert(VirtualKingMobilityBonus.tunableSize == 28);
         assert(KnightMobilityBonus.tunableSize == 9);
         assert(BishopMobilityBonus.tunableSize == 14);
@@ -255,6 +261,12 @@ public:
         name = NAME(PassedPawnBonus);
         PassedPawnBonus.to_csharp(parameters, ss, name);
 
+        name = NAME(FriendlyKingDistanceToPassedPawnBonus);
+        FriendlyKingDistanceToPassedPawnBonus.to_csharp(parameters, ss, name);
+
+        name = NAME(EnemyKingDistanceToPassedPawnPenalty);
+        EnemyKingDistanceToPassedPawnPenalty.to_csharp(parameters, ss, name);
+
         name = NAME(VirtualKingMobilityBonus);
         VirtualKingMobilityBonus.to_csharp(parameters, ss, name);
 
@@ -329,6 +341,12 @@ public:
         name = NAME(PassedPawnBonus);
         PassedPawnBonus.to_cpp(parameters, ss, name);
 
+        name = NAME(FriendlyKingDistanceToPassedPawnBonus);
+        FriendlyKingDistanceToPassedPawnBonus.to_cpp(parameters, ss, name);
+
+        name = NAME(EnemyKingDistanceToPassedPawnPenalty);
+        EnemyKingDistanceToPassedPawnPenalty.to_cpp(parameters, ss, name);
+
         name = NAME(VirtualKingMobilityBonus);
         VirtualKingMobilityBonus.to_cpp(parameters, ss, name);
 
@@ -379,7 +397,7 @@ void ResetLS1B(std::uint64_t &board)
     board &= (board - 1);
 }
 
-int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
+int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int sameSideKingSquare, int oppositeSideKingSquare, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
 {
     int packedBonus = 0;
     // auto doublePawnsCount = chess::builtin::popcount(GetPieceSwappingEndianness(board, chess::PieceType::PAWN, color) & (FileMasks[squareIndex]));
@@ -403,8 +421,16 @@ int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, const 
             // std::cout << "Mask: " << WhitePassedPawnMasks[squareIndex] << std::endl;
             auto rank = Rank[squareIndex];
             packedBonus += PassedPawnBonus.packed(bucket, rank);
-            IncrementCoefficients(coefficients, PassedPawnBonus.index(bucket, rank - 1), color); // There's no coefficient for rank 0
+            IncrementCoefficients(coefficients, PassedPawnBonus.index(bucket, rank - PassedPawnBonus.start), color); // There's no coefficient for rank 0
             // std::cout << "White pawn on " << squareIndex << " is passed, bonus " << PassedPawnBonus[rank] << std::endl;
+
+            auto friendlyKingDistance = ChebyshevDistance(sameSideKingSquare, squareIndex);
+            packedBonus += FriendlyKingDistanceToPassedPawnBonus.packed[friendlyKingDistance];
+            IncrementCoefficients(coefficients, FriendlyKingDistanceToPassedPawnBonus.index + friendlyKingDistance - FriendlyKingDistanceToPassedPawnBonus.start, color);
+
+            auto enemyKingDistance = ChebyshevDistance(oppositeSideKingSquare, squareIndex);
+            packedBonus += EnemyKingDistanceToPassedPawnPenalty.packed[enemyKingDistance];
+            IncrementCoefficients(coefficients, EnemyKingDistanceToPassedPawnPenalty.index + enemyKingDistance - EnemyKingDistanceToPassedPawnPenalty.start, color);
         }
     }
     else
@@ -415,8 +441,16 @@ int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, const 
             rank = 7 - rank;
 
             packedBonus += PassedPawnBonus.packed(bucket, rank);
-            IncrementCoefficients(coefficients, PassedPawnBonus.index(bucket, rank - 1), color); // There's no coefficient for rank 0
+            IncrementCoefficients(coefficients, PassedPawnBonus.index(bucket, rank - PassedPawnBonus.start), color); // There's no coefficient for rank 0
             // std::cout << "Black pawn on " << squareIndex << " is passed, bonus " << -PassedPawnBonus[rank] << std::endl;
+
+            auto friendlyKingDistance = ChebyshevDistance(sameSideKingSquare, squareIndex);
+            packedBonus += FriendlyKingDistanceToPassedPawnBonus.packed[friendlyKingDistance];
+            IncrementCoefficients(coefficients, FriendlyKingDistanceToPassedPawnBonus.index + friendlyKingDistance - FriendlyKingDistanceToPassedPawnBonus.start, color);
+
+            auto enemyKingDistance = ChebyshevDistance(oppositeSideKingSquare, squareIndex);
+            packedBonus += EnemyKingDistanceToPassedPawnPenalty.packed[enemyKingDistance];
+            IncrementCoefficients(coefficients, EnemyKingDistanceToPassedPawnPenalty.index + enemyKingDistance - EnemyKingDistanceToPassedPawnPenalty.start, color);
         }
     }
 
@@ -536,13 +570,13 @@ int KingAdditionalEvaluation(int squareIndex, int bucket, chess::Color kingSide,
     return packedBonus + KingShieldBonus.packed * ownPawnsAroundCount;
 }
 
-int AdditionalPieceEvaluation(int pieceSquareIndex, int pieceIndex, int bucket, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
+int AdditionalPieceEvaluation(int pieceSquareIndex, int pieceIndex, int bucket, int sameSideKingSquare, int oppositeSideKingSquare, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
 {
     switch (pieceIndex)
     {
     case 0:
     case 6:
-        return PawnAdditionalEvaluation(pieceSquareIndex, pieceIndex, bucket, board, color, coefficients);
+        return PawnAdditionalEvaluation(pieceSquareIndex, pieceIndex, bucket, sameSideKingSquare, oppositeSideKingSquare, board, color, coefficients);
 
     case 1:
     case 7:
@@ -610,7 +644,7 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
 
             ++pieceCount[pieceIndex];
 
-            packedScore += AdditionalPieceEvaluation(pieceSquareIndex, pieceIndex, whiteBucket, board, chess::Color::WHITE, coefficients);
+            packedScore += AdditionalPieceEvaluation(pieceSquareIndex, pieceIndex, whiteBucket, whiteKing, blackKing, board, chess::Color::WHITE, coefficients);
 
             if (pieceIndex == 0)
             {
@@ -654,7 +688,7 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
 
             ++pieceCount[pieceIndex];
 
-            packedScore -= AdditionalPieceEvaluation(pieceSquareIndex, pieceIndex, blackBucket, board, chess::Color::BLACK, coefficients);
+            packedScore -= AdditionalPieceEvaluation(pieceSquareIndex, pieceIndex, blackBucket, blackKing, whiteKing, board, chess::Color::BLACK, coefficients);
 
             if (pieceIndex == 6)
             {
