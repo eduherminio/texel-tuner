@@ -517,6 +517,7 @@ int BishopAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, cons
 {
     auto mobilityCount = chess::builtin::popcount(
         chess::attacks::bishop(static_cast<chess::Square>(squareIndex), __builtin_bswap64(board.occ().getBits())).getBits() &
+        (~__builtin_bswap64(board.us(color).getBits())) &
         (~opponentPawnAttacks));
 
     IncrementCoefficients(coefficients, BishopMobilityBonus.index + mobilityCount, color);
@@ -540,6 +541,7 @@ int KingAdditionalEvaluation(int squareIndex, int bucket, const u64 opponentPawn
 {
     auto mobilityCount = chess::builtin::popcount(
         chess::attacks::queen(static_cast<chess::Square>(squareIndex), __builtin_bswap64(board.occ().getBits())).getBits() &
+        (~__builtin_bswap64(board.us(kingSide).getBits())) &
         (~opponentPawnAttacks));
 
     IncrementCoefficients(coefficients, VirtualKingMobilityBonus.index + mobilityCount, kingSide);
