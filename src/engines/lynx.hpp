@@ -457,11 +457,12 @@ int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int sa
     return packedBonus;
 }
 
-int RookAdditonalEvaluation(int squareIndex, int pieceIndex, int bucket, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
+int RookAdditonalEvaluation(int squareIndex, int pieceIndex, int bucket, const u64 opponentPawnAttacks, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
 {
     auto mobilityCount = chess::builtin::popcount(
         chess::attacks::rook(static_cast<chess::Square>(squareIndex), __builtin_bswap64(board.occ().getBits())).getBits() &
-        (~__builtin_bswap64(board.us(color).getBits())));
+        (~__builtin_bswap64(board.us(color).getBits())) &
+        (~opponentPawnAttacks));
 
     IncrementCoefficients(coefficients, RookMobilityBonus.index + mobilityCount, color);
 
@@ -500,39 +501,47 @@ int RookAdditonalEvaluation(int squareIndex, int pieceIndex, int bucket, const c
     return packedBonus;
 }
 
-int KnightAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
+int KnightAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, const u64 opponentPawnAttacks, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
 {
     auto mobilityCount = chess::builtin::popcount(
         chess::attacks::knight(static_cast<chess::Square>(squareIndex)).getBits() &
-        (~__builtin_bswap64(board.us(color).getBits())));
+        (~__builtin_bswap64(board.us(color).getBits())) &
+        (~opponentPawnAttacks));
 
     IncrementCoefficients(coefficients, KnightMobilityBonus.index + mobilityCount, color);
 
     return KnightMobilityBonus.packed[mobilityCount];
 }
 
-int BishopAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
+int BishopAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, const u64 opponentPawnAttacks, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
 {
-    auto mobilityCount = chess::attacks::bishop(static_cast<chess::Square>(squareIndex), __builtin_bswap64(board.occ().getBits())).count();
+    auto mobilityCount = chess::builtin::popcount(
+        chess::attacks::bishop(static_cast<chess::Square>(squareIndex), __builtin_bswap64(board.occ().getBits())).getBits() &
+        (~opponentPawnAttacks));
+
     IncrementCoefficients(coefficients, BishopMobilityBonus.index + mobilityCount, color);
 
     return BishopMobilityBonus.packed[mobilityCount];
 }
 
-int QueenAdditionalEvaluation(int squareIndex, int bucket, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
+int QueenAdditionalEvaluation(int squareIndex, int bucket, const u64 opponentPawnAttacks, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
 {
     auto mobilityCount = chess::builtin::popcount(
         chess::attacks::queen(static_cast<chess::Square>(squareIndex), __builtin_bswap64(board.occ().getBits())).getBits() &
-        (~__builtin_bswap64(board.us(color).getBits())));
+        (~__builtin_bswap64(board.us(color).getBits())) &
+        (~opponentPawnAttacks));
 
     IncrementCoefficients(coefficients, QueenMobilityBonus.index + mobilityCount, color);
 
     return QueenMobilityBonus.packed[mobilityCount];
 }
 
-int KingAdditionalEvaluation(int squareIndex, int bucket, chess::Color kingSide, const chess::Board &board, const int pieceCount[], coefficients_t &coefficients)
+int KingAdditionalEvaluation(int squareIndex, int bucket, const u64 opponentPawnAttacks, chess::Color kingSide, const chess::Board &board, const int pieceCount[], coefficients_t &coefficients)
 {
-    auto mobilityCount = chess::attacks::queen(static_cast<chess::Square>(squareIndex), __builtin_bswap64(board.occ().getBits())).count();
+    auto mobilityCount = chess::builtin::popcount(
+        chess::attacks::queen(static_cast<chess::Square>(squareIndex), __builtin_bswap64(board.occ().getBits())).getBits() &
+        (~opponentPawnAttacks));
+
     IncrementCoefficients(coefficients, VirtualKingMobilityBonus.index + mobilityCount, kingSide);
 
     int packedBonus = VirtualKingMobilityBonus.packed[mobilityCount];
@@ -570,7 +579,7 @@ int KingAdditionalEvaluation(int squareIndex, int bucket, chess::Color kingSide,
     return packedBonus + KingShieldBonus.packed * ownPawnsAroundCount;
 }
 
-int AdditionalPieceEvaluation(int pieceSquareIndex, int pieceIndex, int bucket, int sameSideKingSquare, int oppositeSideKingSquare, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
+int AdditionalPieceEvaluation(int pieceSquareIndex, int pieceIndex, int bucket, int sameSideKingSquare, int oppositeSideKingSquare, const u64 opponentPawnAttacks, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
 {
     switch (pieceIndex)
     {
@@ -580,19 +589,19 @@ int AdditionalPieceEvaluation(int pieceSquareIndex, int pieceIndex, int bucket, 
 
     case 1:
     case 7:
-        return KnightAdditionalEvaluation(pieceSquareIndex, pieceIndex, bucket, board, color, coefficients);
+        return KnightAdditionalEvaluation(pieceSquareIndex, pieceIndex, bucket, opponentPawnAttacks, board, color, coefficients);
 
     case 3:
     case 9:
-        return RookAdditonalEvaluation(pieceSquareIndex, pieceIndex, bucket, board, color, coefficients);
+        return RookAdditonalEvaluation(pieceSquareIndex, pieceIndex, bucket, opponentPawnAttacks, board, color, coefficients);
 
     case 2:
     case 8:
-        return BishopAdditionalEvaluation(pieceSquareIndex, pieceIndex, bucket, board, color, coefficients);
+        return BishopAdditionalEvaluation(pieceSquareIndex, pieceIndex, bucket, opponentPawnAttacks, board, color, coefficients);
 
     case 4:
     case 10:
-        return QueenAdditionalEvaluation(pieceSquareIndex, bucket, board, color, coefficients);
+        return QueenAdditionalEvaluation(pieceSquareIndex, bucket, opponentPawnAttacks, board, color, coefficients);
 
     default:
         return 0;
@@ -644,7 +653,7 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
 
             ++pieceCount[pieceIndex];
 
-            packedScore += AdditionalPieceEvaluation(pieceSquareIndex, pieceIndex, whiteBucket, whiteKing, blackKing, board, chess::Color::WHITE, coefficients);
+            packedScore += AdditionalPieceEvaluation(pieceSquareIndex, pieceIndex, whiteBucket, whiteKing, blackKing, blackPawnAttacks,  board, chess::Color::WHITE, coefficients);
 
             if (pieceIndex == 0)
             {
@@ -688,7 +697,7 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
 
             ++pieceCount[pieceIndex];
 
-            packedScore -= AdditionalPieceEvaluation(pieceSquareIndex, pieceIndex, blackBucket, blackKing, whiteKing, board, chess::Color::BLACK, coefficients);
+            packedScore -= AdditionalPieceEvaluation(pieceSquareIndex, pieceIndex, blackBucket, blackKing, whiteKing, whitePawnAttacks, board, chess::Color::BLACK, coefficients);
 
             if (pieceIndex == 6)
             {
@@ -749,8 +758,8 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
                    PackedPositionalTables(0, blackBucket, 11, blackKing) +
                    PackedPositionalTables(1, blackBucket, 5, whiteKing) +
                    PackedPositionalTables(1, whiteBucket, 11, blackKing) +
-                   KingAdditionalEvaluation(whiteKing, whiteBucket, chess::Color::WHITE, board, pieceCount, coefficients) -
-                   KingAdditionalEvaluation(blackKing, blackBucket, chess::Color::BLACK, board, pieceCount, coefficients);
+                   KingAdditionalEvaluation(whiteKing, whiteBucket, blackPawnAttacks, chess::Color::WHITE, board, pieceCount, coefficients) -
+                   KingAdditionalEvaluation(blackKing, blackBucket, whitePawnAttacks, chess::Color::BLACK, board, pieceCount, coefficients);
 
     IncrementCoefficients(
         coefficients,
