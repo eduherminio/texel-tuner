@@ -14,8 +14,8 @@
 
 using u64 = uint64_t;
 
-const int enemyKingBaseIndex = psqtIndexCount / 2;
-static int numParameters = psqtIndexCount +
+constexpr int enemyKingBaseIndex = psqtIndexCount / 2;
+const static  int numParameters = psqtIndexCount +
                            // DoubledPawnPenalty.size
                            IsolatedPawnPenalty.size +
                            OpenFileRookBonus.size +
@@ -71,39 +71,26 @@ public:
             }
         }
 
-        for (int friendEnemy = 0; friendEnemy < 2; ++friendEnemy)
+        auto add_piece_values = [&](int piece, int start, int end, int offset = 0) {
+            for (int friendEnemy = 0; friendEnemy < 2; ++friendEnemy)
+            {
+                for (int bucket = 0; bucket < PSQTBucketCount; ++bucket)
+                {
+                    for (int square = start; square < end; ++square)
+                    {
+                        result.push_back({(double)MiddleGamePositionalTables(friendEnemy, bucket, piece, square) + PieceValue[friendEnemy][bucket][piece + offset], 
+                                          (double)EndGamePositionalTables(friendEnemy, bucket, piece, square) + PieceValue[friendEnemy][bucket][piece + 5 + offset]});
+                    }
+                }
+            }
+        };
+
+        add_piece_values(0, 8, 56); // Pawns
+        for (int piece = 1; piece < 5; ++piece) // N, B, R, Q
         {
-            // Pawns
-            {
-                const int piece = 0;
-                for (int bucket = 0; bucket < PSQTBucketCount; ++bucket)
-                {
-                    for (int square = 8; square < 56; ++square)
-                        result.push_back({(double)MiddleGamePositionalTables(friendEnemy, bucket, piece, square) + PieceValue[friendEnemy][bucket][piece], (double)EndGamePositionalTables(friendEnemy, bucket, piece, square) + PieceValue[friendEnemy][bucket][piece + 5]});
-                }
-            }
-
-            // N, B, R, Q
-            for (int piece = 1; piece < 5; ++piece)
-            {
-                for (int bucket = 0; bucket < PSQTBucketCount; ++bucket)
-                {
-                    for (int square = 0; square < 64; ++square)
-                        result.push_back({(double)MiddleGamePositionalTables(friendEnemy, bucket, piece, square) + PieceValue[friendEnemy][bucket][piece], (double)EndGamePositionalTables(friendEnemy, bucket, piece, square) + PieceValue[friendEnemy][bucket][piece + 5]});
-                }
-            }
-
-            // K
-            {
-                const int piece = 5;
-
-                for (int bucket = 0; bucket < PSQTBucketCount; ++bucket)
-                {
-                    for (int square = 0; square < 64; ++square)
-                        result.push_back({(double)MiddleGamePositionalTables(friendEnemy, bucket, piece, square), (double)EndGamePositionalTables(friendEnemy, bucket, piece, square)});
-                }
-            }
+            add_piece_values(piece, 0, 64);
         }
+        add_piece_values(5, 0, 64, 0); // Kings
 
         // DoubledPawnPenalty.add(result);
         IsolatedPawnPenalty.add(result);

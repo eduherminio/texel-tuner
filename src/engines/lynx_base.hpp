@@ -1,9 +1,9 @@
 #pragma once
 #include <array>
 
-constexpr static int PSQTBucketCount = 23;
+constexpr int PSQTBucketCount = 23;
 
-const int psqtIndexCount = (64 * 6 - 16) * PSQTBucketCount * 2; // PSQT but removing pawns from 1 and 8 rank
+constexpr int psqtIndexCount = (64 * 6 - 16) * PSQTBucketCount * 2; // PSQT but removing pawns from 1 and 8 rank
 
 constexpr static std::array<int, 64> PSQTBucketLayout = {
     15, 16, 17, 18, 19, 20, 21, 22,
