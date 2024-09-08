@@ -26,13 +26,13 @@ static int numParameters = psqtIndexCount +
                            PieceProtectedByPawnBonus.size +
                            PieceAttackedByPawnPenalty.size +
                            KingShieldBonus.size +
-                           PassedPawnBonus.size +                 // PSQTBucketCount * 6, removing 1 rank values
+                           PassedPawnBonus.size +                              // PSQTBucketCount * 6, removing 1 rank values
                            FriendlyKingDistanceToPassedPawnBonus.tunableSize + // 7, removing start
-                           EnemyKingDistanceToPassedPawnPenalty.tunableSize + // 7, removing start
-                           VirtualKingMobilityBonus.tunableSize + // 28
-                           KnightMobilityBonus.tunableSize +      // 9
-                           BishopMobilityBonus.tunableSize +      // 14, removing end
-                           RookMobilityBonus.tunableSize +        // 15
+                           EnemyKingDistanceToPassedPawnPenalty.tunableSize +  // 7, removing start
+                           VirtualKingMobilityBonus.tunableSize +              // 28
+                           KnightMobilityBonus.tunableSize +                   // 9
+                           BishopMobilityBonus.tunableSize +                   // 14, removing end
+                           RookMobilityBonus.tunableSize +                     // 15
                            QueenMobilityBonus.tunableSize;
 
 class Lynx
@@ -610,12 +610,16 @@ int AdditionalPieceEvaluation(int pieceSquareIndex, int pieceIndex, int bucket, 
     }
 }
 
-int Lynx::NormalizeScore(int score)
+[[nodiscard]] int Lynx::NormalizeScore(const int score)
 {
     return (score == 0 || score > 27000 || score < -27000)
-
                ? score
                : score * 100 / EvalNormalizationCoefficient;
+}
+
+[[nodiscard]] static int ScaleEvalWith50MovesDrawDistance(const int eval, const int movesWithoutCaptureOrPawnMove)
+{
+    return eval * (200 - movesWithoutCaptureOrPawnMove) / 200;
 }
 
 EvalResult Lynx::get_external_eval_result(const chess::Board &board)
@@ -655,7 +659,7 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
 
             ++pieceCount[pieceIndex];
 
-            packedScore += AdditionalPieceEvaluation(pieceSquareIndex, pieceIndex, whiteBucket, whiteKing, blackKing, blackPawnAttacks,  board, chess::Color::WHITE, coefficients);
+            packedScore += AdditionalPieceEvaluation(pieceSquareIndex, pieceIndex, whiteBucket, whiteKing, blackKing, blackPawnAttacks, board, chess::Color::WHITE, coefficients);
 
             if (pieceIndex == 0)
             {
@@ -865,6 +869,8 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
     int eval = ((middleGameScore * gamePhase) + (endGameScore * endGamePhase)) / maxPhase;
 
     eval = (int)(eval * ((80 + (totalPawnsCount * 7)) / 128.0));
+
+    eval = ScaleEvalWith50MovesDrawDistance(eval, 0);
 
     eval = std::clamp(eval, MinEval, MaxEval);
 
