@@ -437,11 +437,9 @@ int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int sa
     {
         if ((GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE) & BlackPassedPawnMasks[squareIndex]) == 0) // isPassedPawn
         {
-            auto rank = Rank[squareIndex];
-            rank = 7 - rank;
-
-            packedBonus += PassedPawnBonus.packed(bucket, rank);
-            IncrementCoefficients(coefficients, PassedPawnBonus.index(bucket, rank - PassedPawnBonus.start), color); // There's no coefficient for rank 0
+            auto index = squareIndex - 8;
+            packedBonus += PassedPawnBonus.packed(bucket, index);
+            IncrementCoefficients(coefficients, PassedPawnBonus.index(bucket, index), color); // There's no coefficient for rank 0
             // std::cout << "Black pawn on " << squareIndex << " is passed, bonus " << -PassedPawnBonus[rank] << std::endl;
 
             auto friendlyKingDistance = ChebyshevDistance(sameSideKingSquare, squareIndex);
