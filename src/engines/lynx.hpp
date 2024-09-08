@@ -125,7 +125,7 @@ public:
         RookMobilityBonus.add(result);
         QueenMobilityBonus.add(result);
 
-        assert(PassedPawnBonus.bucketTunableSize == 6);
+        assert(PassedPawnBonus.bucketTunableSize == 48);
         assert(FriendlyKingDistanceToPassedPawnBonus.tunableSize == 7);
         assert(EnemyKingDistanceToPassedPawnPenalty.tunableSize == 7);
         assert(VirtualKingMobilityBonus.tunableSize == 28);
@@ -419,9 +419,9 @@ int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int sa
         {
             // std::cout << "Piece: " << GetPiece(board, chess::PieceType::PAWN, chess::Color::BLACK) << std::endl;
             // std::cout << "Mask: " << WhitePassedPawnMasks[squareIndex] << std::endl;
-            auto rank = Rank[squareIndex];
-            packedBonus += PassedPawnBonus.packed(bucket, rank);
-            IncrementCoefficients(coefficients, PassedPawnBonus.index(bucket, rank - PassedPawnBonus.start), color); // There's no coefficient for rank 0
+            auto index = squareIndex - 8;
+            packedBonus += PassedPawnBonus.packed(bucket, index);
+            IncrementCoefficients(coefficients, PassedPawnBonus.index(bucket, index), color); // There's no coefficient for rank 0
             // std::cout << "White pawn on " << squareIndex << " is passed, bonus " << PassedPawnBonus[rank] << std::endl;
 
             auto friendlyKingDistance = ChebyshevDistance(sameSideKingSquare, squareIndex);
