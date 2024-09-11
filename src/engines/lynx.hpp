@@ -15,25 +15,26 @@
 using u64 = uint64_t;
 
 constexpr int enemyKingBaseIndex = psqtIndexCount / 2;
-const static  int numParameters = psqtIndexCount +
-                           // DoubledPawnPenalty.size
-                           IsolatedPawnPenalty.size +
-                           OpenFileRookBonus.size +
-                           SemiOpenFileRookBonus.size +
-                           SemiOpenFileKingPenalty.size +
-                           OpenFileKingPenalty.size +
-                           BishopPairBonus.size +
-                           PieceProtectedByPawnBonus.size +
-                           PieceAttackedByPawnPenalty.size +
-                           KingShieldBonus.size +
-                           PassedPawnBonus.size +                              // PSQTBucketCount * 6, removing 1 rank values
-                           FriendlyKingDistanceToPassedPawnBonus.tunableSize + // 7, removing start
-                           EnemyKingDistanceToPassedPawnPenalty.tunableSize +  // 7, removing start
-                           VirtualKingMobilityBonus.tunableSize +              // 28
-                           KnightMobilityBonus.tunableSize +                   // 9
-                           BishopMobilityBonus.tunableSize +                   // 14, removing end
-                           RookMobilityBonus.tunableSize +                     // 15
-                           QueenMobilityBonus.tunableSize;
+const static int numParameters = psqtIndexCount +
+                                 // DoubledPawnPenalty.size
+                                 IsolatedPawnPenalty.size +
+                                 OpenFileRookBonus.size +
+                                 SemiOpenFileRookBonus.size +
+                                 SemiOpenFileKingPenalty.size +
+                                 OpenFileKingPenalty.size +
+                                 BishopPairBonus.size +
+                                 PieceProtectedByPawnBonus.size +
+                                 PieceAttackedByPawnPenalty.size +
+                                 KingShieldBonus.size +
+                                 PassedPawnBonus.size +                              // PSQTBucketCount * 6, removing 1 rank values
+                                 PassedPawnBlockedPenalty.size +                              // PSQTBucketCount * 6, removing 1 rank values
+                                 FriendlyKingDistanceToPassedPawnBonus.tunableSize + // 7, removing start
+                                 EnemyKingDistanceToPassedPawnPenalty.tunableSize +  // 7, removing start
+                                 VirtualKingMobilityBonus.tunableSize +              // 28
+                                 KnightMobilityBonus.tunableSize +                   // 9
+                                 BishopMobilityBonus.tunableSize +                   // 14, removing end
+                                 RookMobilityBonus.tunableSize +                     // 15
+                                 QueenMobilityBonus.tunableSize;
 
 class Lynx
 {
@@ -71,21 +72,22 @@ public:
             }
         }
 
-        auto add_piece_values = [&](int piece, int start, int end, int offset = 0) {
+        auto add_piece_values = [&](int piece, int start, int end, int offset = 0)
+        {
             for (int friendEnemy = 0; friendEnemy < 2; ++friendEnemy)
             {
                 for (int bucket = 0; bucket < PSQTBucketCount; ++bucket)
                 {
                     for (int square = start; square < end; ++square)
                     {
-                        result.push_back({(double)MiddleGamePositionalTables(friendEnemy, bucket, piece, square) + PieceValue[friendEnemy][bucket][piece + offset], 
+                        result.push_back({(double)MiddleGamePositionalTables(friendEnemy, bucket, piece, square) + PieceValue[friendEnemy][bucket][piece + offset],
                                           (double)EndGamePositionalTables(friendEnemy, bucket, piece, square) + PieceValue[friendEnemy][bucket][piece + 5 + offset]});
                     }
                 }
             }
         };
 
-        add_piece_values(0, 8, 56); // Pawns
+        add_piece_values(0, 8, 56);             // Pawns
         for (int piece = 1; piece < 5; ++piece) // N, B, R, Q
         {
             add_piece_values(piece, 0, 64);
@@ -104,6 +106,7 @@ public:
         PieceAttackedByPawnPenalty.add(result);
 
         PassedPawnBonus.add(result);
+        PassedPawnBlockedPenalty.add(result);
         FriendlyKingDistanceToPassedPawnBonus.add(result);
         EnemyKingDistanceToPassedPawnPenalty.add(result);
         VirtualKingMobilityBonus.add(result);
@@ -113,6 +116,7 @@ public:
         QueenMobilityBonus.add(result);
 
         assert(PassedPawnBonus.bucketTunableSize == 6);
+        assert(PassedPawnBlockedPenalty.bucketTunableSize == 6);
         assert(FriendlyKingDistanceToPassedPawnBonus.tunableSize == 7);
         assert(EnemyKingDistanceToPassedPawnPenalty.tunableSize == 7);
         assert(VirtualKingMobilityBonus.tunableSize == 28);
@@ -248,6 +252,9 @@ public:
         name = NAME(PassedPawnBonus);
         PassedPawnBonus.to_csharp(parameters, ss, name);
 
+        name = NAME(PassedPawnBlockedPenalty);
+        PassedPawnBlockedPenalty.to_csharp(parameters, ss, name);
+
         name = NAME(FriendlyKingDistanceToPassedPawnBonus);
         FriendlyKingDistanceToPassedPawnBonus.to_csharp(parameters, ss, name);
 
@@ -327,6 +334,9 @@ public:
 
         name = NAME(PassedPawnBonus);
         PassedPawnBonus.to_cpp(parameters, ss, name);
+
+        name = NAME(PassedPawnBlockedPenalty);
+        PassedPawnBlockedPenalty.to_cpp(parameters, ss, name);
 
         name = NAME(FriendlyKingDistanceToPassedPawnBonus);
         FriendlyKingDistanceToPassedPawnBonus.to_cpp(parameters, ss, name);
@@ -411,6 +421,13 @@ int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int sa
             IncrementCoefficients(coefficients, PassedPawnBonus.index(bucket, rank - PassedPawnBonus.start), color); // There's no coefficient for rank 0
             // std::cout << "White pawn on " << squareIndex << " is passed, bonus " << PassedPawnBonus[rank] << std::endl;
 
+            auto blockingSquare = squareIndex + 8;
+            if (GetBit(__builtin_bswap64(board.them(chess::Color::WHITE).getBits()), blockingSquare))
+            {
+                packedBonus += PassedPawnBlockedPenalty.packed(bucket, rank);
+                IncrementCoefficients(coefficients, PassedPawnBlockedPenalty.index(bucket, rank - PassedPawnBlockedPenalty.start), color); // There's no coefficient for rank 0
+            }
+
             auto friendlyKingDistance = ChebyshevDistance(sameSideKingSquare, squareIndex);
             packedBonus += FriendlyKingDistanceToPassedPawnBonus.packed[friendlyKingDistance];
             IncrementCoefficients(coefficients, FriendlyKingDistanceToPassedPawnBonus.index + friendlyKingDistance - FriendlyKingDistanceToPassedPawnBonus.start, color);
@@ -430,6 +447,13 @@ int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int sa
             packedBonus += PassedPawnBonus.packed(bucket, rank);
             IncrementCoefficients(coefficients, PassedPawnBonus.index(bucket, rank - PassedPawnBonus.start), color); // There's no coefficient for rank 0
             // std::cout << "Black pawn on " << squareIndex << " is passed, bonus " << -PassedPawnBonus[rank] << std::endl;
+
+            auto blockingSquare = squareIndex - 8;
+            if (GetBit(__builtin_bswap64(board.them(chess::Color::BLACK).getBits()), blockingSquare))
+            {
+                packedBonus += PassedPawnBlockedPenalty.packed(bucket, rank);
+                IncrementCoefficients(coefficients, PassedPawnBlockedPenalty.index(bucket, rank - PassedPawnBlockedPenalty.start), color); // There's no coefficient for rank 0
+            }
 
             auto friendlyKingDistance = ChebyshevDistance(sameSideKingSquare, squareIndex);
             packedBonus += FriendlyKingDistanceToPassedPawnBonus.packed[friendlyKingDistance];

@@ -289,6 +289,11 @@ const int MaxEval = PositiveCheckmateDetectionLimit - 1;
                : yDelta;
 }
 
+[[nodiscard]] static bool GetBit(const u64 board, const int squareIndex)
+{
+    return (board & (1UL << squareIndex)) != 0;
+}
+
 static void print_psqts_csharp(const parameters_t &parameters, const std::array<std::array<tune_t, 12>, PSQTBucketCount> &existingPieceValues)
 {
     std::stringstream ss;
