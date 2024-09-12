@@ -421,7 +421,7 @@ int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int sa
             IncrementCoefficients(coefficients, PassedPawnBonus.index(bucket, rank - PassedPawnBonus.start), color); // There's no coefficient for rank 0
             // std::cout << "White pawn on " << squareIndex << " is passed, bonus " << PassedPawnBonus[rank] << std::endl;
 
-            auto blockingSquare = squareIndex + 8;
+            auto blockingSquare = squareIndex - 8;
             if (GetBit(__builtin_bswap64(board.them(chess::Color::WHITE).getBits()), blockingSquare))
             {
                 packedBonus += PassedPawnBlockedPenalty.packed(bucket, rank);
@@ -448,7 +448,7 @@ int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int sa
             IncrementCoefficients(coefficients, PassedPawnBonus.index(bucket, rank - PassedPawnBonus.start), color); // There's no coefficient for rank 0
             // std::cout << "Black pawn on " << squareIndex << " is passed, bonus " << -PassedPawnBonus[rank] << std::endl;
 
-            auto blockingSquare = squareIndex - 8;
+            auto blockingSquare = squareIndex + 16;
             if (GetBit(__builtin_bswap64(board.them(chess::Color::BLACK).getBits()), blockingSquare))
             {
                 packedBonus += PassedPawnBlockedPenalty.packed(bucket, rank);
