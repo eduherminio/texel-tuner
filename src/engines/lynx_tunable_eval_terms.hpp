@@ -5971,7 +5971,7 @@ TunableArrayBucketed PassedPawnBonus(
     }},
     1);
 
-TunableArrayBucketed PassedPawnBlockedPenalty(
+TunableArrayBucketed PassedPawnBonusNoEnemiesAheadBonus(
     chess::PieceType::PAWN,
     std::array<std::vector<int>, PSQTBucketCount>{{
         std::vector<int>{0, 249, -93, 31, 39, -24, 125},
