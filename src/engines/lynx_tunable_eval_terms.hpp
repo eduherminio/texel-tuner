@@ -5904,7 +5904,33 @@ constexpr static std::array<std::array<int, 64>, PSQTBucketCount> EndGameEnemyKi
         },
     }};
 
-TunableSingle IsolatedPawnPenalty(-18, -16);
+TunableSingleBucketed IsolatedPawnPenalty(std::array<i32, PSQTBucketCount>(
+    {
+        S(-1, -1),
+        S(-18, -16),
+        S(-18, -16),
+        S(-18, -16),
+        S(-18, -16),
+        S(-18, -16),
+        S(-18, -16),
+        S(-18, -16),
+        S(-18, -16),
+        S(-18, -16),
+        S(-18, -16),
+        S(-18, -16),
+        S(-18, -16),
+        S(-18, -16),
+        S(-18, -16),
+        S(-18, -16),
+        S(-18, -16),
+        S(-18, -16),
+        S(-18, -16),
+        S(-18, -16),
+        S(-18, -16),
+        S(-18, -16),
+        S(-23, -23),
+    }));
+
 TunableSingle OpenFileRookBonus(41, 5);
 TunableSingle SemiOpenFileRookBonus(13, 13);
 TunableSingle SemiOpenFileKingPenalty(-20, 1);

@@ -27,7 +27,7 @@ const static int numParameters = psqtIndexCount +
                                  PieceAttackedByPawnPenalty.size +
                                  KingShieldBonus.size +
                                  PassedPawnBonus.size +                              // PSQTBucketCount * 6, removing 1 rank values
-                                 PassedPawnBlockedPenalty.size +                              // PSQTBucketCount * 6, removing 1 rank values
+                                 PassedPawnBlockedPenalty.size +                     // PSQTBucketCount * 6, removing 1 rank values
                                  FriendlyKingDistanceToPassedPawnBonus.tunableSize + // 7, removing start
                                  EnemyKingDistanceToPassedPawnPenalty.tunableSize +  // 7, removing start
                                  VirtualKingMobilityBonus.tunableSize +              // 28
@@ -406,8 +406,8 @@ int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int sa
 
     if ((GetPieceSwappingEndianness(board, chess::PieceType::PAWN, color) & IsolatedPawnMasks[squareIndex]) == 0) // isIsolatedPawn
     {
-        packedBonus += IsolatedPawnPenalty.packed;
-        IncrementCoefficients(coefficients, IsolatedPawnPenalty.index, color);
+        packedBonus += IsolatedPawnPenalty.packed(bucket);
+        IncrementCoefficients(coefficients, IsolatedPawnPenalty.index(bucket), color);
     }
 
     if (color == chess::Color::WHITE)
