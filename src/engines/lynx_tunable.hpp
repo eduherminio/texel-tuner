@@ -242,7 +242,7 @@ public:
     {
         std::string variable_name;
 
-        if (size == 8)
+        if (size == 8 || size == 7)
         {
             variable_name = "TaperedEvaluationTermByRank";
         }
