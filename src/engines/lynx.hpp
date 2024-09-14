@@ -18,6 +18,7 @@ constexpr int enemyKingBaseIndex = psqtIndexCount / 2;
 const static int numParameters = psqtIndexCount +
                                  // DoubledPawnPenalty.size
                                  IsolatedPawnPenalty.size +
+                                 PawnPhalanxBonus.size +
                                  OpenFileRookBonus.size +
                                  SemiOpenFileRookBonus.size +
                                  SemiOpenFileKingPenalty.size +
@@ -27,7 +28,7 @@ const static int numParameters = psqtIndexCount +
                                  PieceAttackedByPawnPenalty.size +
                                  KingShieldBonus.size +
                                  PassedPawnBonus.size +                              // PSQTBucketCount * 6, removing 1 rank values
-                                 PassedPawnBlockedPenalty.size +                              // PSQTBucketCount * 6, removing 1 rank values
+                                 PassedPawnBlockedPenalty.size +                     // PSQTBucketCount * 6, removing 1 rank values
                                  FriendlyKingDistanceToPassedPawnBonus.tunableSize + // 7, removing start
                                  EnemyKingDistanceToPassedPawnPenalty.tunableSize +  // 7, removing start
                                  VirtualKingMobilityBonus.tunableSize +              // 28
@@ -96,6 +97,7 @@ public:
 
         // DoubledPawnPenalty.add(result);
         IsolatedPawnPenalty.add(result);
+        PawnPhalanxBonus.add(result);
         OpenFileRookBonus.add(result);
         SemiOpenFileRookBonus.add(result);
         SemiOpenFileKingPenalty.add(result);
@@ -225,6 +227,9 @@ public:
         name = NAME(IsolatedPawnPenalty);
         IsolatedPawnPenalty.to_csharp(parameters, ss, name);
 
+        name = NAME(PawnPhalanxBonus);
+        PawnPhalanxBonus.to_csharp(parameters, ss, name);
+
         name = NAME(OpenFileRookBonus);
         OpenFileRookBonus.to_csharp(parameters, ss, name);
 
@@ -305,6 +310,9 @@ public:
 
         name = NAME(IsolatedPawnPenalty);
         IsolatedPawnPenalty.to_cpp(parameters, ss, name);
+
+        name = NAME(PawnPhalanxBonus);
+        PawnPhalanxBonus.to_cpp(parameters, ss, name);
 
         name = NAME(OpenFileRookBonus);
         OpenFileRookBonus.to_cpp(parameters, ss, name);
@@ -769,6 +777,25 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
     {
         packedScore -= BishopPairBonus.packed;
         IncrementCoefficients(coefficients, BishopPairBonus.index, chess::Color::BLACK);
+    }
+
+    // Pawn phalanx
+    const auto whitePawnsRight = ShiftRight(whitePawns);
+    auto whitePhalanx = whitePawns & whitePawnsRight;
+    while (whitePhalanx > 0)
+    {
+        auto rank = Rank[chess::builtin::poplsb(whitePhalanx).index()];
+        packedScore += PawnPhalanxBonus.packed[rank];
+        IncrementCoefficients(coefficients, PawnPhalanxBonus.index + rank, chess::Color::WHITE);
+    }
+
+    const auto blackPawnsRight = ShiftRight(blackPawns);
+    auto blackPhalanx = blackPawns & blackPawnsRight;
+    while (blackPhalanx > 0)
+    {
+        auto rank = 7 - Rank[chess::builtin::poplsb(blackPhalanx).index()];
+        packedScore -= PawnPhalanxBonus.packed[rank];
+        IncrementCoefficients(coefficients, PawnPhalanxBonus.index + rank, chess::Color::BLACK);
     }
 
     packedScore += PackedPositionalTables(0, whiteBucket, 5, whiteKing) +

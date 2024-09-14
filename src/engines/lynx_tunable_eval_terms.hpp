@@ -5905,6 +5905,14 @@ constexpr static std::array<std::array<int, 64>, PSQTBucketCount> EndGameEnemyKi
     }};
 
 TunableSingle IsolatedPawnPenalty(-18, -16);
+
+TunableArray PawnPhalanxBonus(
+    chess::PieceType::PAWN,
+    std::vector<int>{0, 1, 2, 3, 4, 5, 6},
+    std::vector<int>{0, 1, 2, 3, 4, 5, 6},
+    1,
+    0);
+
 TunableSingle OpenFileRookBonus(41, 5);
 TunableSingle SemiOpenFileRookBonus(13, 13);
 TunableSingle SemiOpenFileKingPenalty(-20, 1);

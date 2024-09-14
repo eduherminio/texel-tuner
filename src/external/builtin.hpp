@@ -39,9 +39,9 @@ namespace chess
 {
     using U64 = std::uint64_t;
 
-/****************************************************************************\
- * Wrapper around compiler functions                                         *
-\****************************************************************************/
+    /****************************************************************************\
+     * Wrapper around compiler functions                                         *
+    \****************************************************************************/
     namespace builtin
     {
         /// @brief Get the least significant bit of a U64.
@@ -112,5 +112,16 @@ namespace chess
 
 #endif
         }
+
+        /// @brief Get the least significant bit of a U64 and pop it.
+        /// @param mask
+        /// @return
+        inline Square poplsb(U64 &mask)
+        {
+            Square s = lsb(mask);
+            mask &= mask - 1; // compiler optimizes this to _blsr_u64
+            return Square(s);
+        }
+
     } // namespace builtin
 } // namespace chess
