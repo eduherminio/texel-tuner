@@ -91,7 +91,7 @@ public:
         {
             auto mg = std::round(parameters[_index + i][0]);
             auto eg = std::round(parameters[_index + i][1]);
-            ss << "\t\tnew (" << mg << ", " << eg << ")," << std::endl;
+            ss << "\t\tPack(" << mg << ", " << eg << ")," << std::endl;
         }
 
         ss << "\t];\n\n";
