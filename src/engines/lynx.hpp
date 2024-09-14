@@ -18,7 +18,7 @@ constexpr int enemyKingBaseIndex = psqtIndexCount / 2;
 const static int numParameters = psqtIndexCount +
                                  // DoubledPawnPenalty.size
                                  IsolatedPawnPenalty.size +
-                                 PawnPhalanxBonus.size +
+                                 PawnPhalanxBonus.tunableSize +
                                  OpenFileRookBonus.size +
                                  SemiOpenFileRookBonus.size +
                                  SemiOpenFileKingPenalty.size +
