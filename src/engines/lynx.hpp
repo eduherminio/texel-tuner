@@ -19,6 +19,7 @@ const static int numParameters = psqtIndexCount +
                                  // DoubledPawnPenalty.size
                                  IsolatedPawnPenalty.size +
                                  PawnPhalanxBonus.tunableSize +
+                                 PawnStormBonus.tunableSize +
                                  OpenFileRookBonus.size +
                                  SemiOpenFileRookBonus.size +
                                  SemiOpenFileKingPenalty.size +
@@ -98,6 +99,7 @@ public:
         // DoubledPawnPenalty.add(result);
         IsolatedPawnPenalty.add(result);
         PawnPhalanxBonus.add(result);
+        PawnStormBonus.add(result);
         OpenFileRookBonus.add(result);
         SemiOpenFileRookBonus.add(result);
         SemiOpenFileKingPenalty.add(result);
@@ -118,6 +120,8 @@ public:
         QueenMobilityBonus.add(result);
 
         assert(PassedPawnBonus.bucketTunableSize == 6);
+        assert(PawnPhalanxBonus.tunableSize == 6);
+        assert(PawnStormBonus.tunableSize == 6);
         assert(PassedPawnBonusNoEnemiesAheadBonus.bucketTunableSize == 6);
         assert(FriendlyKingDistanceToPassedPawnBonus.tunableSize == 7);
         assert(EnemyKingDistanceToPassedPawnPenalty.tunableSize == 7);
@@ -230,6 +234,9 @@ public:
         name = NAME(PawnPhalanxBonus);
         PawnPhalanxBonus.to_csharp(parameters, ss, name);
 
+        name = NAME(PawnStormBonus);
+        PawnStormBonus.to_csharp(parameters, ss, name);
+
         name = NAME(OpenFileRookBonus);
         OpenFileRookBonus.to_csharp(parameters, ss, name);
 
@@ -313,6 +320,9 @@ public:
 
         name = NAME(PawnPhalanxBonus);
         PawnPhalanxBonus.to_cpp(parameters, ss, name);
+
+        name = NAME(PawnStormBonus);
+        PawnStormBonus.to_cpp(parameters, ss, name);
 
         name = NAME(OpenFileRookBonus);
         OpenFileRookBonus.to_cpp(parameters, ss, name);
@@ -421,6 +431,7 @@ int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int sa
     auto opposideSidePawns = blackPawns;
     auto oppositeSidePieces = blackPieces;
     auto passedPawnMask = WhitePassedPawnMasks[squareIndex];
+    auto pawnStormMask = BlackPassedPawnMasks[oppositeSideKingSquare];
     auto rank = Rank[squareIndex];
 
     if (color == chess::Color::BLACK)
@@ -429,6 +440,7 @@ int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int sa
         opposideSidePawns = whitePawns;
         oppositeSidePieces = whitePieces;
         passedPawnMask = BlackPassedPawnMasks[squareIndex];
+        pawnStormMask = WhitePassedPawnMasks[oppositeSideKingSquare];
         rank = 7 - rank;
     }
 
@@ -458,6 +470,20 @@ int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int sa
         const auto enemyKingDistance = ChebyshevDistance(oppositeSideKingSquare, squareIndex);
         packedBonus += EnemyKingDistanceToPassedPawnPenalty.packed[enemyKingDistance];
         IncrementCoefficients(coefficients, EnemyKingDistanceToPassedPawnPenalty.index + enemyKingDistance - EnemyKingDistanceToPassedPawnPenalty.start, color);
+    }
+
+    // Pawn storm
+    const auto squaresInFrontOfEnemyKing = pawnStormMask;
+    auto sameSidePawnsInFrontOfEnemyKing = sameSidePawns & squaresInFrontOfEnemyKing;
+
+    while (sameSidePawnsInFrontOfEnemyKing != 0)
+    {
+        const auto stormPawn = chess::builtin::poplsb(sameSidePawnsInFrontOfEnemyKing).index();
+
+        // TODO try to limit it, i.e. Math.Max(4, Constants.ChebyshevDistance[oppositeSideKingSquare][stormPawn]);
+        const auto stormPawnDistance = ChebyshevDistance(oppositeSideKingSquare, stormPawn);
+        packedBonus += PawnStormBonus.packed[stormPawnDistance];
+        IncrementCoefficients(coefficients, PawnStormBonus.index + stormPawnDistance - PawnStormBonus.start, color);
     }
 
     return packedBonus;

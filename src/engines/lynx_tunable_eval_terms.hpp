@@ -5912,6 +5912,13 @@ TunableArray PawnPhalanxBonus(
     1,
     0);
 
+TunableArray PawnStormBonus(
+    chess::PieceType::PAWN,
+    std::vector<int>{0, 1, 2, 3, 4, 5, 6},
+    std::vector<int>{0, 1, 2, 3, 4, 5, 6},
+    1,
+    0);
+
 TunableSingle OpenFileRookBonus(42, 2);
 TunableSingle SemiOpenFileRookBonus(15, 7);
 TunableSingle SemiOpenFileKingPenalty(-23, 3);
