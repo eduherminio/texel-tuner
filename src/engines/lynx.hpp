@@ -28,7 +28,7 @@ const static int numParameters = psqtIndexCount +
                                  PieceAttackedByPawnPenalty.size +
                                  KingShieldBonus.size +
                                  PassedPawnBonus.size +                              // PSQTBucketCount * 6, removing 1 rank values
-                                 PassedPawnBlockedPenalty.size +                     // PSQTBucketCount * 6, removing 1 rank values
+                                 PassedPawnBonusNoEnemiesAheadBonus.size +           // PSQTBucketCount * 6, removing 1 rank values
                                  FriendlyKingDistanceToPassedPawnBonus.tunableSize + // 7, removing start
                                  EnemyKingDistanceToPassedPawnPenalty.tunableSize +  // 7, removing start
                                  VirtualKingMobilityBonus.tunableSize +              // 28
@@ -108,7 +108,7 @@ public:
         PieceAttackedByPawnPenalty.add(result);
 
         PassedPawnBonus.add(result);
-        PassedPawnBlockedPenalty.add(result);
+        PassedPawnBonusNoEnemiesAheadBonus.add(result);
         FriendlyKingDistanceToPassedPawnBonus.add(result);
         EnemyKingDistanceToPassedPawnPenalty.add(result);
         VirtualKingMobilityBonus.add(result);
@@ -118,7 +118,7 @@ public:
         QueenMobilityBonus.add(result);
 
         assert(PassedPawnBonus.bucketTunableSize == 6);
-        assert(PassedPawnBlockedPenalty.bucketTunableSize == 6);
+        assert(PassedPawnBonusNoEnemiesAheadBonus.bucketTunableSize == 6);
         assert(FriendlyKingDistanceToPassedPawnBonus.tunableSize == 7);
         assert(EnemyKingDistanceToPassedPawnPenalty.tunableSize == 7);
         assert(VirtualKingMobilityBonus.tunableSize == 28);
@@ -257,8 +257,8 @@ public:
         name = NAME(PassedPawnBonus);
         PassedPawnBonus.to_csharp(parameters, ss, name);
 
-        name = NAME(PassedPawnBlockedPenalty);
-        PassedPawnBlockedPenalty.to_csharp(parameters, ss, name);
+        name = NAME(PassedPawnBonusNoEnemiesAheadBonus);
+        PassedPawnBonusNoEnemiesAheadBonus.to_csharp(parameters, ss, name);
 
         name = NAME(FriendlyKingDistanceToPassedPawnBonus);
         FriendlyKingDistanceToPassedPawnBonus.to_csharp(parameters, ss, name);
@@ -343,8 +343,8 @@ public:
         name = NAME(PassedPawnBonus);
         PassedPawnBonus.to_cpp(parameters, ss, name);
 
-        name = NAME(PassedPawnBlockedPenalty);
-        PassedPawnBlockedPenalty.to_cpp(parameters, ss, name);
+        name = NAME(PassedPawnBonusNoEnemiesAheadBonus);
+        PassedPawnBonusNoEnemiesAheadBonus.to_cpp(parameters, ss, name);
 
         name = NAME(FriendlyKingDistanceToPassedPawnBonus);
         FriendlyKingDistanceToPassedPawnBonus.to_cpp(parameters, ss, name);
@@ -420,7 +420,8 @@ int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int sa
 
     if (color == chess::Color::WHITE)
     {
-        if ((GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK) & WhitePassedPawnMasks[squareIndex]) == 0) // isPassedPawn
+        const auto blackPawns = GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK);
+        if ((blackPawns & WhitePassedPawnMasks[squareIndex]) == 0) // isPassedPawn
         {
             // std::cout << "Piece: " << GetPiece(board, chess::PieceType::PAWN, chess::Color::BLACK) << std::endl;
             // std::cout << "Mask: " << WhitePassedPawnMasks[squareIndex] << std::endl;
@@ -429,11 +430,11 @@ int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int sa
             IncrementCoefficients(coefficients, PassedPawnBonus.index(bucket, rank - PassedPawnBonus.start), color); // There's no coefficient for rank 0
             // std::cout << "White pawn on " << squareIndex << " is passed, bonus " << PassedPawnBonus[rank] << std::endl;
 
-            auto blockingSquare = squareIndex + 8;
-            if (GetBit(__builtin_bswap64(board.them(chess::Color::WHITE).getBits()), blockingSquare))
+            const auto blackPieces = __builtin_bswap64(board.them(chess::Color::WHITE).getBits());
+            if((blackPieces & WhitePassedPawnMasks[squareIndex]) == 0)
             {
-                packedBonus += PassedPawnBlockedPenalty.packed(bucket, rank);
-                IncrementCoefficients(coefficients, PassedPawnBlockedPenalty.index(bucket, rank - PassedPawnBlockedPenalty.start), color); // There's no coefficient for rank 0
+                packedBonus += PassedPawnBonusNoEnemiesAheadBonus.packed(bucket, rank);
+                IncrementCoefficients(coefficients, PassedPawnBonusNoEnemiesAheadBonus.index(bucket, rank - PassedPawnBonusNoEnemiesAheadBonus.start), color); // There's no coefficient for rank 0
             }
 
             auto friendlyKingDistance = ChebyshevDistance(sameSideKingSquare, squareIndex);
@@ -447,7 +448,8 @@ int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int sa
     }
     else
     {
-        if ((GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE) & BlackPassedPawnMasks[squareIndex]) == 0) // isPassedPawn
+        const auto whitePawns = GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE);
+        if ((whitePawns & BlackPassedPawnMasks[squareIndex]) == 0) // isPassedPawn
         {
             auto rank = Rank[squareIndex];
             rank = 7 - rank;
@@ -456,11 +458,11 @@ int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int sa
             IncrementCoefficients(coefficients, PassedPawnBonus.index(bucket, rank - PassedPawnBonus.start), color); // There's no coefficient for rank 0
             // std::cout << "Black pawn on " << squareIndex << " is passed, bonus " << -PassedPawnBonus[rank] << std::endl;
 
-            auto blockingSquare = squareIndex - 8;
-            if (GetBit(__builtin_bswap64(board.them(chess::Color::BLACK).getBits()), blockingSquare))
+            const auto whitePieces = __builtin_bswap64(board.them(chess::Color::BLACK).getBits());
+            if((whitePieces & BlackPassedPawnMasks[squareIndex]) == 0)
             {
-                packedBonus += PassedPawnBlockedPenalty.packed(bucket, rank);
-                IncrementCoefficients(coefficients, PassedPawnBlockedPenalty.index(bucket, rank - PassedPawnBlockedPenalty.start), color); // There's no coefficient for rank 0
+                packedBonus += PassedPawnBonusNoEnemiesAheadBonus.packed(bucket, rank);
+                IncrementCoefficients(coefficients, PassedPawnBonusNoEnemiesAheadBonus.index(bucket, rank - PassedPawnBonusNoEnemiesAheadBonus.start), color);
             }
 
             auto friendlyKingDistance = ChebyshevDistance(sameSideKingSquare, squareIndex);
