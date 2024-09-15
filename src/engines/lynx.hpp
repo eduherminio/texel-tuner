@@ -17,7 +17,7 @@ using u64 = uint64_t;
 constexpr int enemyKingBaseIndex = psqtIndexCount / 2;
 const static int numParameters = psqtIndexCount +
                                  // DoubledPawnPenalty.size
-                                 IsolatedPawnPenalty.size +
+                                 IsolatedPawnPenalty.tunableSize +
                                  OpenFileRookBonus.size +
                                  SemiOpenFileRookBonus.size +
                                  SemiOpenFileKingPenalty.size +
@@ -115,6 +115,7 @@ public:
         RookMobilityBonus.add(result);
         QueenMobilityBonus.add(result);
 
+        assert(IsolatedPawnPenalty.tunableSize == 6);
         assert(PassedPawnBonus.bucketTunableSize == 6);
         assert(PassedPawnBonusNoEnemiesAheadBonus.bucketTunableSize == 6);
         assert(FriendlyKingDistanceToPassedPawnBonus.tunableSize == 7);
@@ -427,8 +428,8 @@ int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int sa
     // Isolated pawn
     if ((sameSidePawns & IsolatedPawnMasks[squareIndex]) == 0) // isIsolatedPawn
     {
-        packedBonus += IsolatedPawnPenalty.packed;
-        IncrementCoefficients(coefficients, IsolatedPawnPenalty.index, color);
+        packedBonus += IsolatedPawnPenalty.packed[rank];
+        IncrementCoefficients(coefficients, IsolatedPawnPenalty.index + rank - IsolatedPawnPenalty.start, color);
     }
 
     // Passed pawn
