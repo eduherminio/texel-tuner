@@ -404,67 +404,52 @@ int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int sa
     //     IncrementCoefficients(coefficients, DoubledPawnPenalty_Index, color);
     // }
 
-    if ((GetPieceSwappingEndianness(board, chess::PieceType::PAWN, color) & IsolatedPawnMasks[squareIndex]) == 0) // isIsolatedPawn
+    const auto whitePawns = GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE);
+        const auto blackPawns = GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK);
+    const auto whitePieces = __builtin_bswap64(board.us(chess::Color::WHITE).getBits());
+    const auto blackPieces = __builtin_bswap64(board.us(chess::Color::BLACK).getBits());
+
+    auto sameSidePawns = whitePawns;
+    auto opposideSidePawns = blackPawns;
+    auto oppositeSidePieces = blackPieces;
+    auto passedPawnMask = WhitePassedPawnMasks[squareIndex];
+            auto rank = Rank[squareIndex];
+
+    if (color == chess::Color::BLACK)
     {
+        sameSidePawns = blackPawns;
+        opposideSidePawns = whitePawns;
+        oppositeSidePieces = whitePieces;
+        passedPawnMask = BlackPassedPawnMasks[squareIndex];
+        rank = 7 - rank;
+    }
+
+    // Isolated pawn
+    if ((sameSidePawns & IsolatedPawnMasks[squareIndex]) == 0) // isIsolatedPawn
+        {
         packedBonus += IsolatedPawnPenalty.packed;
         IncrementCoefficients(coefficients, IsolatedPawnPenalty.index, color);
     }
 
-    if (color == chess::Color::WHITE)
+    // Passed pawn
+    if ((opposideSidePawns & passedPawnMask) == 0)
     {
-        const auto blackPawns = GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK);
-        if ((blackPawns & WhitePassedPawnMasks[squareIndex]) == 0) // isPassedPawn
-        {
-            // std::cout << "Piece: " << GetPiece(board, chess::PieceType::PAWN, chess::Color::BLACK) << std::endl;
-            // std::cout << "Mask: " << WhitePassedPawnMasks[squareIndex] << std::endl;
-            auto rank = Rank[squareIndex];
             packedBonus += PassedPawnBonus.packed(bucket, rank);
             IncrementCoefficients(coefficients, PassedPawnBonus.index(bucket, rank - PassedPawnBonus.start), color); // There's no coefficient for rank 0
-            // std::cout << "White pawn on " << squareIndex << " is passed, bonus " << PassedPawnBonus[rank] << std::endl;
-
-            const auto blackPieces = __builtin_bswap64(board.them(chess::Color::WHITE).getBits());
-            if((blackPieces & WhitePassedPawnMasks[squareIndex]) == 0)
+        // Passed pawn without opponent pieces ahead (in its passed pawn mask)
+        if ((oppositeSidePieces & passedPawnMask) == 0)
             {
                 packedBonus += PassedPawnBonusNoEnemiesAheadBonus.packed(bucket, rank);
-                IncrementCoefficients(coefficients, PassedPawnBonusNoEnemiesAheadBonus.index(bucket, rank - PassedPawnBonusNoEnemiesAheadBonus.start), color); // There's no coefficient for rank 0
+            IncrementCoefficients(coefficients, PassedPawnBonusNoEnemiesAheadBonus.index(bucket, rank - PassedPawnBonusNoEnemiesAheadBonus.start), color); // There's no coefficient for rank 0
             }
 
-            auto friendlyKingDistance = ChebyshevDistance(sameSideKingSquare, squareIndex);
+        const auto friendlyKingDistance = ChebyshevDistance(sameSideKingSquare, squareIndex);
             packedBonus += FriendlyKingDistanceToPassedPawnBonus.packed[friendlyKingDistance];
             IncrementCoefficients(coefficients, FriendlyKingDistanceToPassedPawnBonus.index + friendlyKingDistance - FriendlyKingDistanceToPassedPawnBonus.start, color);
 
-            auto enemyKingDistance = ChebyshevDistance(oppositeSideKingSquare, squareIndex);
+        const auto enemyKingDistance = ChebyshevDistance(oppositeSideKingSquare, squareIndex);
             packedBonus += EnemyKingDistanceToPassedPawnPenalty.packed[enemyKingDistance];
             IncrementCoefficients(coefficients, EnemyKingDistanceToPassedPawnPenalty.index + enemyKingDistance - EnemyKingDistanceToPassedPawnPenalty.start, color);
-        }
-    }
-    else
-    {
-        const auto whitePawns = GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE);
-        if ((whitePawns & BlackPassedPawnMasks[squareIndex]) == 0) // isPassedPawn
-        {
-            auto rank = Rank[squareIndex];
-            rank = 7 - rank;
-
-            packedBonus += PassedPawnBonus.packed(bucket, rank);
-            IncrementCoefficients(coefficients, PassedPawnBonus.index(bucket, rank - PassedPawnBonus.start), color); // There's no coefficient for rank 0
-            // std::cout << "Black pawn on " << squareIndex << " is passed, bonus " << -PassedPawnBonus[rank] << std::endl;
-
-            const auto whitePieces = __builtin_bswap64(board.them(chess::Color::BLACK).getBits());
-            if((whitePieces & BlackPassedPawnMasks[squareIndex]) == 0)
-            {
-                packedBonus += PassedPawnBonusNoEnemiesAheadBonus.packed(bucket, rank);
-                IncrementCoefficients(coefficients, PassedPawnBonusNoEnemiesAheadBonus.index(bucket, rank - PassedPawnBonusNoEnemiesAheadBonus.start), color);
-            }
-
-            auto friendlyKingDistance = ChebyshevDistance(sameSideKingSquare, squareIndex);
-            packedBonus += FriendlyKingDistanceToPassedPawnBonus.packed[friendlyKingDistance];
-            IncrementCoefficients(coefficients, FriendlyKingDistanceToPassedPawnBonus.index + friendlyKingDistance - FriendlyKingDistanceToPassedPawnBonus.start, color);
-
-            auto enemyKingDistance = ChebyshevDistance(oppositeSideKingSquare, squareIndex);
-            packedBonus += EnemyKingDistanceToPassedPawnPenalty.packed[enemyKingDistance];
-            IncrementCoefficients(coefficients, EnemyKingDistanceToPassedPawnPenalty.index + enemyKingDistance - EnemyKingDistanceToPassedPawnPenalty.start, color);
-        }
     }
 
     return packedBonus;
