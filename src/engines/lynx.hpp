@@ -431,7 +431,7 @@ int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int sa
             // std::cout << "White pawn on " << squareIndex << " is passed, bonus " << PassedPawnBonus[rank] << std::endl;
 
             const auto blackPieces = __builtin_bswap64(board.them(chess::Color::WHITE).getBits());
-            if((blackPieces & WhitePassedPawnMasks[squareIndex]) == 0)
+            if ((blackPieces & WhitePassedPawnMasks[squareIndex]) == 0)
             {
                 packedBonus += PassedPawnBonusNoEnemiesAheadBonus.packed(bucket, rank);
                 IncrementCoefficients(coefficients, PassedPawnBonusNoEnemiesAheadBonus.index(bucket, rank - PassedPawnBonusNoEnemiesAheadBonus.start), color); // There's no coefficient for rank 0
@@ -459,7 +459,7 @@ int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int sa
             // std::cout << "Black pawn on " << squareIndex << " is passed, bonus " << -PassedPawnBonus[rank] << std::endl;
 
             const auto whitePieces = __builtin_bswap64(board.them(chess::Color::BLACK).getBits());
-            if((whitePieces & BlackPassedPawnMasks[squareIndex]) == 0)
+            if ((whitePieces & BlackPassedPawnMasks[squareIndex]) == 0)
             {
                 packedBonus += PassedPawnBonusNoEnemiesAheadBonus.packed(bucket, rank);
                 IncrementCoefficients(coefficients, PassedPawnBonusNoEnemiesAheadBonus.index(bucket, rank - PassedPawnBonusNoEnemiesAheadBonus.start), color);
@@ -788,7 +788,7 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
     {
         auto rank = Rank[chess::builtin::poplsb(whitePhalanx).index()];
         packedScore += PawnPhalanxBonus.packed[rank];
-        IncrementCoefficients(coefficients, PawnPhalanxBonus.index + rank, chess::Color::WHITE);
+        IncrementCoefficients(coefficients, PawnPhalanxBonus.index + rank - PawnPhalanxBonus.start, chess::Color::WHITE);
     }
 
     const auto blackPawnsRight = ShiftRight(blackPawns);
@@ -797,7 +797,7 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
     {
         auto rank = 7 - Rank[chess::builtin::poplsb(blackPhalanx).index()];
         packedScore -= PawnPhalanxBonus.packed[rank];
-        IncrementCoefficients(coefficients, PawnPhalanxBonus.index + rank, chess::Color::BLACK);
+        IncrementCoefficients(coefficients, PawnPhalanxBonus.index + rank - PawnPhalanxBonus.start, chess::Color::BLACK);
     }
 
     packedScore += PackedPositionalTables(0, whiteBucket, 5, whiteKing) +
