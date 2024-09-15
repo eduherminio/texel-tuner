@@ -405,7 +405,7 @@ int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int sa
     // }
 
     const auto whitePawns = GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE);
-        const auto blackPawns = GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK);
+    const auto blackPawns = GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK);
     const auto whitePieces = __builtin_bswap64(board.us(chess::Color::WHITE).getBits());
     const auto blackPieces = __builtin_bswap64(board.us(chess::Color::BLACK).getBits());
 
@@ -413,7 +413,7 @@ int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int sa
     auto opposideSidePawns = blackPawns;
     auto oppositeSidePieces = blackPieces;
     auto passedPawnMask = WhitePassedPawnMasks[squareIndex];
-            auto rank = Rank[squareIndex];
+    auto rank = Rank[squareIndex];
 
     if (color == chess::Color::BLACK)
     {
@@ -426,7 +426,7 @@ int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int sa
 
     // Isolated pawn
     if ((sameSidePawns & IsolatedPawnMasks[squareIndex]) == 0) // isIsolatedPawn
-        {
+    {
         packedBonus += IsolatedPawnPenalty.packed;
         IncrementCoefficients(coefficients, IsolatedPawnPenalty.index, color);
     }
@@ -434,22 +434,22 @@ int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int sa
     // Passed pawn
     if ((opposideSidePawns & passedPawnMask) == 0)
     {
-            packedBonus += PassedPawnBonus.packed(bucket, rank);
-            IncrementCoefficients(coefficients, PassedPawnBonus.index(bucket, rank - PassedPawnBonus.start), color); // There's no coefficient for rank 0
+        packedBonus += PassedPawnBonus.packed(bucket, rank);
+        IncrementCoefficients(coefficients, PassedPawnBonus.index(bucket, rank - PassedPawnBonus.start), color); // There's no coefficient for rank 0
         // Passed pawn without opponent pieces ahead (in its passed pawn mask)
         if ((oppositeSidePieces & passedPawnMask) == 0)
-            {
-                packedBonus += PassedPawnBonusNoEnemiesAheadBonus.packed(bucket, rank);
+        {
+            packedBonus += PassedPawnBonusNoEnemiesAheadBonus.packed(bucket, rank);
             IncrementCoefficients(coefficients, PassedPawnBonusNoEnemiesAheadBonus.index(bucket, rank - PassedPawnBonusNoEnemiesAheadBonus.start), color); // There's no coefficient for rank 0
-            }
+        }
 
         const auto friendlyKingDistance = ChebyshevDistance(sameSideKingSquare, squareIndex);
-            packedBonus += FriendlyKingDistanceToPassedPawnBonus.packed[friendlyKingDistance];
-            IncrementCoefficients(coefficients, FriendlyKingDistanceToPassedPawnBonus.index + friendlyKingDistance - FriendlyKingDistanceToPassedPawnBonus.start, color);
+        packedBonus += FriendlyKingDistanceToPassedPawnBonus.packed[friendlyKingDistance];
+        IncrementCoefficients(coefficients, FriendlyKingDistanceToPassedPawnBonus.index + friendlyKingDistance - FriendlyKingDistanceToPassedPawnBonus.start, color);
 
         const auto enemyKingDistance = ChebyshevDistance(oppositeSideKingSquare, squareIndex);
-            packedBonus += EnemyKingDistanceToPassedPawnPenalty.packed[enemyKingDistance];
-            IncrementCoefficients(coefficients, EnemyKingDistanceToPassedPawnPenalty.index + enemyKingDistance - EnemyKingDistanceToPassedPawnPenalty.start, color);
+        packedBonus += EnemyKingDistanceToPassedPawnPenalty.packed[enemyKingDistance];
+        IncrementCoefficients(coefficients, EnemyKingDistanceToPassedPawnPenalty.index + enemyKingDistance - EnemyKingDistanceToPassedPawnPenalty.start, color);
     }
 
     return packedBonus;
@@ -457,7 +457,7 @@ int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int sa
 
 int RookAdditonalEvaluation(int squareIndex, int pieceIndex, int bucket, const u64 opponentPawnAttacks, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
 {
-    auto mobilityCount = chess::builtin::popcount(
+    const auto mobilityCount = chess::builtin::popcount(
         chess::attacks::rook(static_cast<chess::Square>(squareIndex), __builtin_bswap64(board.occ().getBits())).getBits() &
         (~__builtin_bswap64(board.us(color).getBits())) &
         (~opponentPawnAttacks));
@@ -501,7 +501,7 @@ int RookAdditonalEvaluation(int squareIndex, int pieceIndex, int bucket, const u
 
 int KnightAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, const u64 opponentPawnAttacks, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
 {
-    auto mobilityCount = chess::builtin::popcount(
+    const auto mobilityCount = chess::builtin::popcount(
         chess::attacks::knight(static_cast<chess::Square>(squareIndex)).getBits() &
         (~__builtin_bswap64(board.us(color).getBits())) &
         (~opponentPawnAttacks));
@@ -513,7 +513,7 @@ int KnightAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, cons
 
 int BishopAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, const u64 opponentPawnAttacks, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
 {
-    auto mobilityCount = chess::builtin::popcount(
+    const auto mobilityCount = chess::builtin::popcount(
         chess::attacks::bishop(static_cast<chess::Square>(squareIndex), __builtin_bswap64(board.occ().getBits())).getBits() &
         (~__builtin_bswap64(board.us(color).getBits())) &
         (~opponentPawnAttacks));
@@ -525,7 +525,7 @@ int BishopAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, cons
 
 int QueenAdditionalEvaluation(int squareIndex, int bucket, const u64 opponentPawnAttacks, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
 {
-    auto mobilityCount = chess::builtin::popcount(
+    const auto mobilityCount = chess::builtin::popcount(
         chess::attacks::queen(static_cast<chess::Square>(squareIndex), __builtin_bswap64(board.occ().getBits())).getBits() &
         (~__builtin_bswap64(board.us(color).getBits())) &
         (~opponentPawnAttacks));
@@ -537,7 +537,7 @@ int QueenAdditionalEvaluation(int squareIndex, int bucket, const u64 opponentPaw
 
 int KingAdditionalEvaluation(int squareIndex, int bucket, const u64 opponentPawnAttacks, chess::Color kingSide, const chess::Board &board, const int pieceCount[], coefficients_t &coefficients)
 {
-    auto mobilityCount = chess::builtin::popcount(
+    const auto mobilityCount = chess::builtin::popcount(
         chess::attacks::queen(static_cast<chess::Square>(squareIndex), __builtin_bswap64(board.occ().getBits())).getBits() &
         (~__builtin_bswap64(board.us(kingSide).getBits())) &
         (~opponentPawnAttacks));
@@ -546,7 +546,7 @@ int KingAdditionalEvaluation(int squareIndex, int bucket, const u64 opponentPawn
 
     int packedBonus = VirtualKingMobilityBonus.packed[mobilityCount];
 
-    auto kingSideOffset = kingSide == chess::Color::WHITE ? 0 : 6;
+    const auto kingSideOffset = kingSide == chess::Color::WHITE ? 0 : 6;
 
     if (pieceCount[9 - kingSideOffset] + pieceCount[10 - kingSideOffset] != 0) // areThereOppositeSideRooksOrQueens
     {
@@ -570,7 +570,7 @@ int KingAdditionalEvaluation(int squareIndex, int bucket, const u64 opponentPawn
         }
     }
 
-    auto ownPawnsAroundCount = chess::builtin::popcount(
+    const auto ownPawnsAroundCount = chess::builtin::popcount(
         chess::attacks::king(static_cast<chess::Square>(squareIndex)).getBits() &
         GetPieceSwappingEndianness(board, chess::PieceType::PAWN, kingSide));
 
@@ -629,17 +629,17 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
     int packedScore = 0;
     int gamePhase = 0;
 
-    auto whitePawns = GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE);
-    auto whitePawnAttacks = ShiftUpLeft(whitePawns) | ShiftUpRight(whitePawns);
+    const auto whitePawns = GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE);
+    const auto whitePawnAttacks = ShiftUpLeft(whitePawns) | ShiftUpRight(whitePawns);
 
-    auto blackPawns = GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK);
-    auto blackPawnAttacks = ShiftDownLeft(blackPawns) | ShiftDownRight(blackPawns);
+    const auto blackPawns = GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK);
+    const auto blackPawnAttacks = ShiftDownLeft(blackPawns) | ShiftDownRight(blackPawns);
 
-    auto whiteKing = chess::builtin::lsb(GetPieceSwappingEndianness(board, chess::PieceType::KING, chess::Color::WHITE)).index();
-    auto blackKing = chess::builtin::lsb(GetPieceSwappingEndianness(board, chess::PieceType::KING, chess::Color::BLACK)).index();
+    const auto whiteKing = chess::builtin::lsb(GetPieceSwappingEndianness(board, chess::PieceType::KING, chess::Color::WHITE)).index();
+    const auto blackKing = chess::builtin::lsb(GetPieceSwappingEndianness(board, chess::PieceType::KING, chess::Color::BLACK)).index();
 
-    auto whiteBucket = PSQTBucketLayout[whiteKing];
-    auto blackBucket = PSQTBucketLayout[blackKing ^ 56];
+    const auto whiteBucket = PSQTBucketLayout[whiteKing];
+    const auto blackBucket = PSQTBucketLayout[blackKing ^ 56];
 
     for (int pieceIndex = 0; pieceIndex < 5; ++pieceIndex)
     {
@@ -648,7 +648,7 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
         // std::cout << pieceIndex << "bb: " << bitboard << std::endl;
         while (bitboard != 0)
         {
-            auto pieceSquareIndex = chess::builtin::lsb(bitboard).index();
+            const auto pieceSquareIndex = chess::builtin::lsb(bitboard).index();
             ResetLS1B(bitboard);
 
             packedScore += PackedPositionalTables(0, whiteBucket, pieceIndex, pieceSquareIndex) + PackedPieceValue(0, whiteBucket, pieceIndex) +
@@ -686,13 +686,13 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
 
     for (int pieceIndex = 6; pieceIndex < 11; ++pieceIndex)
     {
-        auto tunerPieceIndex = (pieceIndex - 6); // [0, 5]
+        const auto tunerPieceIndex = (pieceIndex - 6); // [0, 5]
         // Bitboard copy that we 'empty'
         auto bitboard = GetPieceSwappingEndianness(board, chess::PieceType(static_cast<chess::PieceType::underlying>(tunerPieceIndex)), chess::Color::BLACK);
 
         while (bitboard != 0)
         {
-            auto pieceSquareIndex = chess::builtin::lsb(bitboard).index();
+            const auto pieceSquareIndex = chess::builtin::lsb(bitboard).index();
             ResetLS1B(bitboard);
 
             packedScore += PackedPositionalTables(0, blackBucket, pieceIndex, pieceSquareIndex) - PackedPieceValue(0, blackBucket, tunerPieceIndex) +
@@ -728,8 +728,8 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
         }
     }
 
-    auto protectedPiecesByWhitePawns = chess::builtin::popcount(whitePawnAttacks & __builtin_bswap64(board.us(chess::Color::WHITE).getBits()) /*&(~GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE))*/);
-    auto protectedPiecesByBlackPawns = chess::builtin::popcount(blackPawnAttacks & __builtin_bswap64(board.us(chess::Color::BLACK).getBits()) /*&(~GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK))*/);
+    const auto protectedPiecesByWhitePawns = chess::builtin::popcount(whitePawnAttacks & __builtin_bswap64(board.us(chess::Color::WHITE).getBits()) /*&(~GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE))*/);
+    const auto protectedPiecesByBlackPawns = chess::builtin::popcount(blackPawnAttacks & __builtin_bswap64(board.us(chess::Color::BLACK).getBits()) /*&(~GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK))*/);
 
     IncrementCoefficients(coefficients, PieceProtectedByPawnBonus.index, chess::Color::WHITE, protectedPiecesByWhitePawns);
     IncrementCoefficients(coefficients, PieceProtectedByPawnBonus.index, chess::Color::BLACK, protectedPiecesByBlackPawns);
@@ -737,8 +737,8 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
     packedScore += (PieceProtectedByPawnBonus.packed * protectedPiecesByWhitePawns) -
                    (PieceProtectedByPawnBonus.packed * protectedPiecesByBlackPawns);
 
-    auto attackedPiecesByBlackPawns = chess::builtin::popcount(blackPawnAttacks & __builtin_bswap64(board.us(chess::Color::WHITE).getBits()) /*&(~GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE))*/);
-    auto attackedPiecesByWhitePawns = chess::builtin::popcount(whitePawnAttacks & __builtin_bswap64(board.us(chess::Color::BLACK).getBits()) /*&(~GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK))*/);
+    const auto attackedPiecesByBlackPawns = chess::builtin::popcount(blackPawnAttacks & __builtin_bswap64(board.us(chess::Color::WHITE).getBits()) /*&(~GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE))*/);
+    const auto attackedPiecesByWhitePawns = chess::builtin::popcount(whitePawnAttacks & __builtin_bswap64(board.us(chess::Color::BLACK).getBits()) /*&(~GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK))*/);
 
     IncrementCoefficients(coefficients, PieceAttackedByPawnPenalty.index, chess::Color::WHITE, attackedPiecesByBlackPawns);
     IncrementCoefficients(coefficients, PieceAttackedByPawnPenalty.index, chess::Color::BLACK, attackedPiecesByWhitePawns);
@@ -794,8 +794,8 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
 
     // Check if drawn position due to lack of material
 
-    int totalPawnsCount = board.pieces(chess::PieceType::PAWN, chess::Color::WHITE).count() +
-                          board.pieces(chess::PieceType::PAWN, chess::Color::BLACK).count();
+    const int totalPawnsCount = board.pieces(chess::PieceType::PAWN, chess::Color::WHITE).count() +
+                                board.pieces(chess::PieceType::PAWN, chess::Color::BLACK).count();
 
     if (gamePhase <= 3 && totalPawnsCount == 0)
     {
@@ -813,7 +813,7 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
         //    }
         case 3:
         {
-            auto winningSideOffset = PieceOffset(packedScore >= 0);
+            const auto winningSideOffset = PieceOffset(packedScore >= 0);
 
             if (pieceCount[1 + winningSideOffset] == 2) // NN vs N, NN vs B
             {
@@ -860,10 +860,10 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
         gamePhase = maxPhase;
     }
 
-    int endGamePhase = maxPhase - gamePhase;
+    const int endGamePhase = maxPhase - gamePhase;
 
-    auto middleGameScore = UnpackMG(packedScore);
-    auto endGameScore = UnpackEG(packedScore);
+    const auto middleGameScore = UnpackMG(packedScore);
+    const auto endGameScore = UnpackEG(packedScore);
     int eval = ((middleGameScore * gamePhase) + (endGameScore * endGamePhase)) / maxPhase;
 
     eval = (int)(eval * ((80 + (totalPawnsCount * 7)) / 128.0));
