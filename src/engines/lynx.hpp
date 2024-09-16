@@ -218,9 +218,6 @@ public:
         std::stringstream ss;
         std::string name;
 
-        // name = NAME(DoubledPawnPenalty);
-        // DoubledPawnPenalty.to_json(parameters, ss, name);
-
         ss << "public static class EvaluationParams" << std::endl
            << "{" << std::endl;
 
@@ -307,9 +304,6 @@ public:
     {
         std::stringstream ss;
         std::string name;
-
-        // name = NAME(DoubledPawnPenalty);
-        // DoubledPawnPenalty.to_json(parameters, ss, name);
 
         name = NAME(DoubledPawnPenalty);
         DoubledPawnPenalty.to_cpp(parameters, ss, name);
@@ -411,12 +405,6 @@ void ResetLS1B(std::uint64_t &board)
 int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int sameSideKingSquare, int oppositeSideKingSquare, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
 {
     int packedBonus = 0;
-    // auto doublePawnsCount = chess::builtin::popcount(GetPieceSwappingEndianness(board, chess::PieceType::PAWN, color) & (FileMasks[squareIndex]));
-    // if (doublePawnsCount > 1)
-    // {
-    //     packedBonus += doublePawnsCount * DoubledPawnPenalty_Packed;
-    //     IncrementCoefficients(coefficients, DoubledPawnPenalty_Index, color);
-    // }
 
     const auto whitePawns = GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE);
     const auto blackPawns = GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK);
