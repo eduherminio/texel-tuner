@@ -246,8 +246,7 @@ public:
         {
             variable_name = "int[]";
         }
-
-        if (size == 8 || size == 7)
+        else if (size == 8 || size == 7)
         {
             variable_name = "TaperedEvaluationTermByRank";
         }
