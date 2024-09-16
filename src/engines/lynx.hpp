@@ -444,6 +444,7 @@ int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int sa
     {
         packedBonus += PassedPawnBonus.packed(bucket, rank);
         IncrementCoefficients(coefficients, PassedPawnBonus.index(bucket, rank - PassedPawnBonus.start), color); // There's no coefficient for rank 0
+
         // Passed pawn without opponent pieces ahead (in its passed pawn mask)
         if ((oppositeSidePieces & passedPawnMask) == 0)
         {
@@ -458,6 +459,11 @@ int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int sa
         const auto enemyKingDistance = ChebyshevDistance(oppositeSideKingSquare, squareIndex);
         packedBonus += EnemyKingDistanceToPassedPawnPenalty.packed[enemyKingDistance];
         IncrementCoefficients(coefficients, EnemyKingDistanceToPassedPawnPenalty.index + enemyKingDistance - EnemyKingDistanceToPassedPawnPenalty.start, color);
+    }
+
+    if (File[squareIndex] != 7 && GetBit(sameSidePawns, squareIndex + 1))
+    {
+        packedBonus += PawnPhalanxBonus.packed[rank];
     }
 
     return packedBonus;
@@ -764,25 +770,6 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
     {
         packedScore -= BishopPairBonus.packed;
         IncrementCoefficients(coefficients, BishopPairBonus.index, chess::Color::BLACK);
-    }
-
-    // Pawn phalanx
-    const auto whitePawnsRight = ShiftRight(whitePawns);
-    auto whitePhalanx = whitePawns & whitePawnsRight;
-    while (whitePhalanx > 0)
-    {
-        auto rank = Rank[chess::builtin::poplsb(whitePhalanx).index()];
-        packedScore += PawnPhalanxBonus.packed[rank];
-        IncrementCoefficients(coefficients, PawnPhalanxBonus.index + rank - PawnPhalanxBonus.start, chess::Color::WHITE);
-    }
-
-    const auto blackPawnsRight = ShiftRight(blackPawns);
-    auto blackPhalanx = blackPawns & blackPawnsRight;
-    while (blackPhalanx > 0)
-    {
-        auto rank = 7 - Rank[chess::builtin::poplsb(blackPhalanx).index()];
-        packedScore -= PawnPhalanxBonus.packed[rank];
-        IncrementCoefficients(coefficients, PawnPhalanxBonus.index + rank - PawnPhalanxBonus.start, chess::Color::BLACK);
     }
 
     packedScore += PackedPositionalTables(0, whiteBucket, 5, whiteKing) +
