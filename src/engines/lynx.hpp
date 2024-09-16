@@ -476,11 +476,11 @@ int RookAdditonalEvaluation(int squareIndex, int pieceIndex, int bucket, const u
         (~__builtin_bswap64(board.us(color).getBits())) &
         (~opponentPawnAttacks));
 
+    int packedBonus = RookMobilityBonus.packed[mobilityCount];
     IncrementCoefficients(coefficients, RookMobilityBonus.index + mobilityCount, color);
 
-    int packedBonus = RookMobilityBonus.packed[mobilityCount];
-
-    if (((GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE) | GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK)) & FileMasks[squareIndex]) == 0) // isOpenFile
+    // Open file
+    if (((GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE) | GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK)) & FileMasks[squareIndex]) == 0)
     {
         // std::cout << "OpenFileRookBonus" << std::endl;
         IncrementCoefficients(coefficients, OpenFileRookBonus.index, color);
@@ -488,25 +488,11 @@ int RookAdditonalEvaluation(int squareIndex, int pieceIndex, int bucket, const u
     }
     else
     {
-        if (color == chess::Color::WHITE)
+        // Semi-open file
+        if ((GetPieceSwappingEndianness(board, chess::PieceType::PAWN, color) & FileMasks[squareIndex]) == 0)
         {
-            if ((GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE) & FileMasks[squareIndex]) == 0) // isSemiOpenFile
-            {
-                // std::cout << "Piece: " << GetPiece(board, chess::PieceType::ROOK, chess::Color::BLACK) << std::endl;
-                // std::cout << "Mask: " << FileMasks[squareIndex] << std::endl;
-                // std::cout << "SemiOpenFileRookBonus white" << std::endl;
-                IncrementCoefficients(coefficients, SemiOpenFileRookBonus.index, color);
-                packedBonus += SemiOpenFileRookBonus.packed;
-            }
-        }
-        else
-        {
-            if ((GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK) & FileMasks[squareIndex]) == 0) // isSemiOpenFile
-            {
-                // std::cout << "SemiOpenFileRookBonus black" << std::endl;
-                IncrementCoefficients(coefficients, SemiOpenFileRookBonus.index, color);
-                packedBonus += SemiOpenFileRookBonus.packed;
-            }
+            packedBonus += SemiOpenFileRookBonus.packed;
+            IncrementCoefficients(coefficients, SemiOpenFileRookBonus.index, color);
         }
     }
 
@@ -532,9 +518,10 @@ int BishopAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, cons
         (~__builtin_bswap64(board.us(color).getBits())) &
         (~opponentPawnAttacks));
 
+    int packedBonus = BishopMobilityBonus.packed[mobilityCount];
     IncrementCoefficients(coefficients, BishopMobilityBonus.index + mobilityCount, color);
 
-    return BishopMobilityBonus.packed[mobilityCount];
+    return packedBonus;
 }
 
 int QueenAdditionalEvaluation(int squareIndex, int bucket, const u64 opponentPawnAttacks, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
