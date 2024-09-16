@@ -746,9 +746,10 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
     }
 
     // Pieces protected by pawns bonus
-    packedScore += DoubledPawnPenalty.packed * (doubleWhitePawnsCount - doubleBlackPawnsCount);
-    IncrementCoefficients(coefficients, DoubledPawnPenalty.index, chess::Color::WHITE, doubleWhitePawnsCount);
-    IncrementCoefficients(coefficients, DoubledPawnPenalty.index, chess::Color::BLACK, doubleBlackPawnsCount);
+    packedScore += (DoubledPawnPenalty.packed(whiteBucket) * doubleWhitePawnsCount) -
+                   (DoubledPawnPenalty.packed(blackBucket) * doubleBlackPawnsCount);
+    IncrementCoefficients(coefficients, DoubledPawnPenalty.index(whiteBucket), chess::Color::WHITE, doubleWhitePawnsCount);
+    IncrementCoefficients(coefficients, DoubledPawnPenalty.index(blackBucket), chess::Color::BLACK, doubleBlackPawnsCount);
 
     const auto protectedPiecesByWhitePawns = chess::builtin::popcount(whitePawnAttacks & __builtin_bswap64(board.us(chess::Color::WHITE).getBits()) /*&(~GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE))*/);
     const auto protectedPiecesByBlackPawns = chess::builtin::popcount(blackPawnAttacks & __builtin_bswap64(board.us(chess::Color::BLACK).getBits()) /*&(~GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK))*/);
