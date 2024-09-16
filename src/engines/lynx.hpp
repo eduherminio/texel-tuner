@@ -582,9 +582,9 @@ int KingAdditionalEvaluation(int squareIndex, int bucket, const u64 opponentPawn
         chess::attacks::king(static_cast<chess::Square>(squareIndex)).getBits() &
         GetPieceSwappingEndianness(board, chess::PieceType::PAWN, kingSide));
 
-    IncrementCoefficients(coefficients, KingShieldBonus.index, kingSide, ownPawnsAroundCount);
+    IncrementCoefficients(coefficients, KingShieldBonus.index(bucket), kingSide, ownPawnsAroundCount);
 
-    return packedBonus + KingShieldBonus.packed * ownPawnsAroundCount;
+    return packedBonus + KingShieldBonus.packed(bucket) * ownPawnsAroundCount;
 }
 
 int AdditionalPieceEvaluation(int pieceSquareIndex, int pieceIndex, int bucket, int sameSideKingSquare, int oppositeSideKingSquare, const u64 opponentPawnAttacks, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)

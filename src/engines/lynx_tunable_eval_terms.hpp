@@ -5916,7 +5916,33 @@ TunableSingle OpenFileRookBonus(42, 2);
 TunableSingle SemiOpenFileRookBonus(15, 7);
 TunableSingle SemiOpenFileKingPenalty(-23, 3);
 TunableSingle OpenFileKingPenalty(-70, 3);
-TunableSingle KingShieldBonus(23, -3);
+TunableSingleBucketed KingShieldBonus(std::array<i32, PSQTBucketCount>(
+    {
+        S(-1, -1),
+        S(-18, -16),
+        S(-18, -16),
+        S(-18, -16),
+        S(-18, -16),
+        S(-18, -16),
+        S(-18, -16),
+        S(-18, -16),
+        S(-18, -16),
+        S(-18, -16),
+        S(-18, -16),
+        S(-18, -16),
+        S(-18, -16),
+        S(-18, -16),
+        S(-18, -16),
+        S(-18, -16),
+        S(-18, -16),
+        S(-18, -16),
+        S(-18, -16),
+        S(-18, -16),
+        S(-18, -16),
+        S(-18, -16),
+        S(-2, -2),
+    }));
+
 TunableSingle BishopPairBonus(29, 77);
 
 TunableSingle PieceProtectedByPawnBonus(12, 16);
