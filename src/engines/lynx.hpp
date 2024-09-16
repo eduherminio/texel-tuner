@@ -474,6 +474,7 @@ int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int sa
     if (File[squareIndex] != 7 && GetBit(sameSidePawns, squareIndex + 1))
     {
         packedBonus += PawnPhalanxBonus.packed[rank];
+        IncrementCoefficients(coefficients, PawnPhalanxBonus.index + rank - PawnPhalanxBonus.start, color);
     }
 
     return packedBonus;
