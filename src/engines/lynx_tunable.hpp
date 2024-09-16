@@ -242,6 +242,11 @@ public:
     {
         std::string variable_name;
 
+        if (size == 5)
+        {
+            variable_name = "int[]";
+        }
+
         if (size == 8 || size == 7)
         {
             variable_name = "TaperedEvaluationTermByRank";

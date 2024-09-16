@@ -5914,8 +5914,8 @@ TunableArray PawnPhalanxBonus(
 
 TunableArray PawnStormBonus(
     chess::PieceType::PAWN,
-    std::vector<int>{0, -4, 1, 2, 4, 2, -0},
-    std::vector<int>{0, 3, 8, 6, 5, 6, 7},
+    std::vector<int>{0, -4, 1, 2, 4},
+    std::vector<int>{0, 3, 8, 6, 5},
     1,
     0);
 

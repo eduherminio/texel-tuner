@@ -121,7 +121,7 @@ public:
 
         assert(PassedPawnBonus.bucketTunableSize == 6);
         assert(PawnPhalanxBonus.tunableSize == 6);
-        assert(PawnStormBonus.tunableSize == 6);
+        assert(PawnStormBonus.tunableSize == 4);
         assert(PassedPawnBonusNoEnemiesAheadBonus.bucketTunableSize == 6);
         assert(FriendlyKingDistanceToPassedPawnBonus.tunableSize == 7);
         assert(EnemyKingDistanceToPassedPawnPenalty.tunableSize == 7);
@@ -491,8 +491,12 @@ int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int sa
 
         // TODO try to limit it, i.e. Math.Max(4, Constants.ChebyshevDistance[oppositeSideKingSquare][stormPawn]);
         const auto stormPawnDistance = ChebyshevDistance(oppositeSideKingSquare, stormPawn);
-        packedBonus += PawnStormBonus.packed[stormPawnDistance];
-        IncrementCoefficients(coefficients, PawnStormBonus.index + stormPawnDistance - PawnStormBonus.start, color);
+
+        if (stormPawnDistance <= 4)
+        {
+            packedBonus += PawnStormBonus.packed[stormPawnDistance];
+            IncrementCoefficients(coefficients, PawnStormBonus.index + stormPawnDistance - PawnStormBonus.start, color);
+        }
     }
 
     return packedBonus;
