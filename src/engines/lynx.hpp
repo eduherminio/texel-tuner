@@ -16,7 +16,7 @@ using u64 = uint64_t;
 
 constexpr int enemyKingBaseIndex = psqtIndexCount / 2;
 const static int numParameters = psqtIndexCount +
-                                 // DoubledPawnPenalty.size
+                                 DoubledPawnPenalty.size +
                                  IsolatedPawnPenalty.size +
                                  PawnPhalanxBonus.tunableSize +
                                  OpenFileRookBonus.size +
@@ -95,7 +95,7 @@ public:
         }
         add_piece_values(5, 0, 64, 0); // Kings
 
-        // DoubledPawnPenalty.add(result);
+        DoubledPawnPenalty.add(result);
         IsolatedPawnPenalty.add(result);
         PawnPhalanxBonus.add(result);
         OpenFileRookBonus.add(result);
@@ -224,6 +224,9 @@ public:
         ss << "public static class EvaluationParams" << std::endl
            << "{" << std::endl;
 
+        name = NAME(DoubledPawnPenalty);
+        DoubledPawnPenalty.to_csharp(parameters, ss, name);
+
         name = NAME(IsolatedPawnPenalty);
         IsolatedPawnPenalty.to_csharp(parameters, ss, name);
 
@@ -307,6 +310,9 @@ public:
 
         // name = NAME(DoubledPawnPenalty);
         // DoubledPawnPenalty.to_json(parameters, ss, name);
+
+        name = NAME(DoubledPawnPenalty);
+        DoubledPawnPenalty.to_cpp(parameters, ss, name);
 
         name = NAME(IsolatedPawnPenalty);
         IsolatedPawnPenalty.to_cpp(parameters, ss, name);
@@ -734,24 +740,11 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
         }
     }
 
-    const auto protectedPiecesByWhitePawns = chess::builtin::popcount(whitePawnAttacks & __builtin_bswap64(board.us(chess::Color::WHITE).getBits()) /*&(~GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE))*/);
-    const auto protectedPiecesByBlackPawns = chess::builtin::popcount(blackPawnAttacks & __builtin_bswap64(board.us(chess::Color::BLACK).getBits()) /*&(~GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK))*/);
+    // Doubled pawns
+    auto doubleWhitePawnsCount = chess::builtin::popcount(whitePawns & ShiftUp(whitePawns));
+    auto doubleBlackPawnsCount = chess::builtin::popcount(blackPawns & ShiftUp(blackPawns));
 
-    IncrementCoefficients(coefficients, PieceProtectedByPawnBonus.index, chess::Color::WHITE, protectedPiecesByWhitePawns);
-    IncrementCoefficients(coefficients, PieceProtectedByPawnBonus.index, chess::Color::BLACK, protectedPiecesByBlackPawns);
-
-    packedScore += (PieceProtectedByPawnBonus.packed * protectedPiecesByWhitePawns) -
-                   (PieceProtectedByPawnBonus.packed * protectedPiecesByBlackPawns);
-
-    const auto attackedPiecesByBlackPawns = chess::builtin::popcount(blackPawnAttacks & __builtin_bswap64(board.us(chess::Color::WHITE).getBits()) /*&(~GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE))*/);
-    const auto attackedPiecesByWhitePawns = chess::builtin::popcount(whitePawnAttacks & __builtin_bswap64(board.us(chess::Color::BLACK).getBits()) /*&(~GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK))*/);
-
-    IncrementCoefficients(coefficients, PieceAttackedByPawnPenalty.index, chess::Color::WHITE, attackedPiecesByBlackPawns);
-    IncrementCoefficients(coefficients, PieceAttackedByPawnPenalty.index, chess::Color::BLACK, attackedPiecesByWhitePawns);
-
-    packedScore += (PieceAttackedByPawnPenalty.packed * attackedPiecesByBlackPawns) -
-                   (PieceAttackedByPawnPenalty.packed * attackedPiecesByWhitePawns);
-
+    // Bishop pair bonus
     if (board.pieces(chess::PieceType::BISHOP, chess::Color::WHITE).count() >= 2)
     {
         packedScore += BishopPairBonus.packed;
@@ -764,6 +757,31 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
         IncrementCoefficients(coefficients, BishopPairBonus.index, chess::Color::BLACK);
     }
 
+    // Pieces protected by pawns bonus
+    packedScore += DoubledPawnPenalty.packed * (doubleWhitePawnsCount - doubleBlackPawnsCount);
+    IncrementCoefficients(coefficients, DoubledPawnPenalty.index, chess::Color::WHITE, doubleWhitePawnsCount);
+    IncrementCoefficients(coefficients, DoubledPawnPenalty.index, chess::Color::BLACK, doubleBlackPawnsCount);
+
+    const auto protectedPiecesByWhitePawns = chess::builtin::popcount(whitePawnAttacks & __builtin_bswap64(board.us(chess::Color::WHITE).getBits()) /*&(~GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE))*/);
+    const auto protectedPiecesByBlackPawns = chess::builtin::popcount(blackPawnAttacks & __builtin_bswap64(board.us(chess::Color::BLACK).getBits()) /*&(~GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK))*/);
+
+    IncrementCoefficients(coefficients, PieceProtectedByPawnBonus.index, chess::Color::WHITE, protectedPiecesByWhitePawns);
+    IncrementCoefficients(coefficients, PieceProtectedByPawnBonus.index, chess::Color::BLACK, protectedPiecesByBlackPawns);
+
+    packedScore += (PieceProtectedByPawnBonus.packed * protectedPiecesByWhitePawns) -
+                   (PieceProtectedByPawnBonus.packed * protectedPiecesByBlackPawns);
+
+    // Pieces attacked by pawns bonus
+    const auto attackedPiecesByBlackPawns = chess::builtin::popcount(blackPawnAttacks & __builtin_bswap64(board.us(chess::Color::WHITE).getBits()) /*&(~GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE))*/);
+    const auto attackedPiecesByWhitePawns = chess::builtin::popcount(whitePawnAttacks & __builtin_bswap64(board.us(chess::Color::BLACK).getBits()) /*&(~GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK))*/);
+
+    IncrementCoefficients(coefficients, PieceAttackedByPawnPenalty.index, chess::Color::WHITE, attackedPiecesByBlackPawns);
+    IncrementCoefficients(coefficients, PieceAttackedByPawnPenalty.index, chess::Color::BLACK, attackedPiecesByWhitePawns);
+
+    packedScore += (PieceAttackedByPawnPenalty.packed * attackedPiecesByBlackPawns) -
+                   (PieceAttackedByPawnPenalty.packed * attackedPiecesByWhitePawns);
+
+    // Kings
     packedScore += PackedPositionalTables(0, whiteBucket, 5, whiteKing) +
                    PackedPositionalTables(0, blackBucket, 11, blackKing) +
                    PackedPositionalTables(1, blackBucket, 5, whiteKing) +
