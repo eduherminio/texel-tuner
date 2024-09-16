@@ -540,8 +540,8 @@ int BishopAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, cons
             ? DarkSquaresBitBoard
             : LightSquaresBitBoard));
 
-    packedBonus += sameColorPawnsCount * BadBishopPenalty.packed;
-    IncrementCoefficients(coefficients, BadBishopPenalty.index, color, sameColorPawnsCount);
+    packedBonus += BadBishopPenalty.packed[sameColorPawnsCount];
+    IncrementCoefficients(coefficients, BadBishopPenalty.index + sameColorPawnsCount, color);
 
     return packedBonus;
 }
