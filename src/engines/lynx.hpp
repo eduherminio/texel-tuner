@@ -24,6 +24,7 @@ const static int numParameters = psqtIndexCount +
                                  SemiOpenFileKingPenalty.size +
                                  OpenFileKingPenalty.size +
                                  BishopPairBonus.size +
+                                 BadBishopPenalty.size +
                                  PieceProtectedByPawnBonus.size +
                                  PieceAttackedByPawnPenalty.size +
                                  KingShieldBonus.size +
@@ -104,6 +105,7 @@ public:
         OpenFileKingPenalty.add(result);
         KingShieldBonus.add(result);
         BishopPairBonus.add(result);
+        BadBishopPenalty.add(result);
         PieceProtectedByPawnBonus.add(result);
         PieceAttackedByPawnPenalty.add(result);
 
@@ -248,6 +250,9 @@ public:
         name = NAME(BishopPairBonus);
         BishopPairBonus.to_csharp(parameters, ss, name);
 
+        name = NAME(BadBishopPenalty);
+        BadBishopPenalty.to_csharp(parameters, ss, name);
+
         name = NAME(PieceProtectedByPawnBonus);
         PieceProtectedByPawnBonus.to_csharp(parameters, ss, name);
 
@@ -331,6 +336,9 @@ public:
 
         name = NAME(BishopPairBonus);
         BishopPairBonus.to_cpp(parameters, ss, name);
+
+        name = NAME(BadBishopPenalty);
+        BadBishopPenalty.to_cpp(parameters, ss, name);
         ss << "\n";
 
         name = NAME(PieceProtectedByPawnBonus);
@@ -520,6 +528,15 @@ int BishopAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, cons
 
     int packedBonus = BishopMobilityBonus.packed[mobilityCount];
     IncrementCoefficients(coefficients, BishopMobilityBonus.index + mobilityCount, color);
+
+    const auto sameSidePawns = GetPieceSwappingEndianness(board, chess::PieceType::PAWN, color);
+    const auto sameColorPawnsCount = chess::builtin::popcount(sameSidePawns &
+        (DarkSquares[squareIndex] == 1
+            ? DarkSquaresBitBoard
+            : LightSquaresBitBoard));
+
+    packedBonus += sameColorPawnsCount * BadBishopPenalty.packed;
+    IncrementCoefficients(coefficients, BadBishopPenalty.index, color, sameColorPawnsCount);
 
     return packedBonus;
 }
