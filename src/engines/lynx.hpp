@@ -535,13 +535,15 @@ int BishopAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, cons
     IncrementCoefficients(coefficients, BishopMobilityBonus.index + mobilityCount, color);
 
     const auto sameSidePawns = GetPieceSwappingEndianness(board, chess::PieceType::PAWN, color);
-    const auto sameColorPawnsCount = chess::builtin::popcount(sameSidePawns &
+    const auto sameColorPawns = 
+        sameSidePawns &
         (DarkSquares[squareIndex] == 1
-            ? DarkSquaresBitBoard
-            : LightSquaresBitBoard));
+             ? DarkSquaresBitBoard
+             : LightSquaresBitBoard);
 
-    packedBonus += BadBishopPenalty.packed[sameColorPawnsCount];
-    IncrementCoefficients(coefficients, BadBishopPenalty.index + sameColorPawnsCount, color);
+    const auto samColorPawnsDiff = chess::builtin::popcount(sameSidePawns) -  chess::builtin::popcount(sameColorPawns);
+    packedBonus += BadBishopPenalty.packed[samColorPawnsDiff];
+    IncrementCoefficients(coefficients, BadBishopPenalty.index + samColorPawnsDiff, color);
 
     return packedBonus;
 }
