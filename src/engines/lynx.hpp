@@ -17,6 +17,7 @@ using u64 = uint64_t;
 constexpr int enemyKingBaseIndex = psqtIndexCount / 2;
 const static int numParameters = psqtIndexCount +
                                  // DoubledPawnPenalty.size
+                                 UnsafeCheckBonus.size +
                                  IsolatedPawnPenalty.size +
                                  PawnPhalanxBonus.tunableSize +
                                  OpenFileRookBonus.size +
@@ -97,6 +98,7 @@ public:
         add_piece_values(5, 0, 64, 0); // Kings
 
         // DoubledPawnPenalty.add(result);
+        UnsafeCheckBonus.add(result);
         IsolatedPawnPenalty.add(result);
         PawnPhalanxBonus.add(result);
         OpenFileRookBonus.add(result);
@@ -226,6 +228,9 @@ public:
         ss << "public static class EvaluationParams" << std::endl
            << "{" << std::endl;
 
+        name = NAME(UnsafeCheckBonus);
+        UnsafeCheckBonus.to_csharp(parameters, ss, name);
+
         name = NAME(IsolatedPawnPenalty);
         IsolatedPawnPenalty.to_csharp(parameters, ss, name);
 
@@ -312,6 +317,9 @@ public:
 
         // name = NAME(DoubledPawnPenalty);
         // DoubledPawnPenalty.to_json(parameters, ss, name);
+
+        name = NAME(UnsafeCheckBonus);
+        UnsafeCheckBonus.to_cpp(parameters, ss, name);
 
         name = NAME(IsolatedPawnPenalty);
         IsolatedPawnPenalty.to_cpp(parameters, ss, name);
