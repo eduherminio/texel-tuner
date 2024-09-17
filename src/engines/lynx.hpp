@@ -735,36 +735,7 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
         }
     }
 
-    const auto protectedPiecesByWhitePawns = chess::builtin::popcount(whitePawnAttacks & __builtin_bswap64(board.us(chess::Color::WHITE).getBits()) /*&(~GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE))*/);
-    const auto protectedPiecesByBlackPawns = chess::builtin::popcount(blackPawnAttacks & __builtin_bswap64(board.us(chess::Color::BLACK).getBits()) /*&(~GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK))*/);
-
-    IncrementCoefficients(coefficients, PieceProtectedByPawnBonus.index, chess::Color::WHITE, protectedPiecesByWhitePawns);
-    IncrementCoefficients(coefficients, PieceProtectedByPawnBonus.index, chess::Color::BLACK, protectedPiecesByBlackPawns);
-
-    packedScore += (PieceProtectedByPawnBonus.packed * protectedPiecesByWhitePawns) -
-                   (PieceProtectedByPawnBonus.packed * protectedPiecesByBlackPawns);
-
-    const auto attackedPiecesByBlackPawns = chess::builtin::popcount(blackPawnAttacks & __builtin_bswap64(board.us(chess::Color::WHITE).getBits()) /*&(~GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE))*/);
-    const auto attackedPiecesByWhitePawns = chess::builtin::popcount(whitePawnAttacks & __builtin_bswap64(board.us(chess::Color::BLACK).getBits()) /*&(~GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK))*/);
-
-    IncrementCoefficients(coefficients, PieceAttackedByPawnPenalty.index, chess::Color::WHITE, attackedPiecesByBlackPawns);
-    IncrementCoefficients(coefficients, PieceAttackedByPawnPenalty.index, chess::Color::BLACK, attackedPiecesByWhitePawns);
-
-    packedScore += (PieceAttackedByPawnPenalty.packed * attackedPiecesByBlackPawns) -
-                   (PieceAttackedByPawnPenalty.packed * attackedPiecesByWhitePawns);
-
-    if (board.pieces(chess::PieceType::BISHOP, chess::Color::WHITE).count() >= 2)
-    {
-        packedScore += BishopPairBonus.packed;
-        IncrementCoefficients(coefficients, BishopPairBonus.index, chess::Color::WHITE);
-    }
-
-    if (board.pieces(chess::PieceType::BISHOP, chess::Color::BLACK).count() >= 2)
-    {
-        packedScore -= BishopPairBonus.packed;
-        IncrementCoefficients(coefficients, BishopPairBonus.index, chess::Color::BLACK);
-    }
-
+    // Kings
     packedScore += PackedPositionalTables(0, whiteBucket, 5, whiteKing) +
                    PackedPositionalTables(0, blackBucket, 11, blackKing) +
                    PackedPositionalTables(1, blackBucket, 5, whiteKing) +
@@ -792,15 +763,47 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
         enemyKingBaseIndex + (48 * PSQTBucketCount) + (64 * PSQTBucketCount * 4) + (64 * whiteBucket) + (blackKing ^ 56),
         chess::Color::BLACK);
 
-    // Debugging eval
-    // return EvalResult{
-    //     std::move(coefficients),
-    //     (double)(board.sideToMove() == chess::Color::WHITE
-    //                  ? eval
-    //                  : -eval)};
+    // Bishop
+    if (board.pieces(chess::PieceType::BISHOP, chess::Color::WHITE).count() >= 2)
+    {
+        packedScore += BishopPairBonus.packed;
+        IncrementCoefficients(coefficients, BishopPairBonus.index, chess::Color::WHITE);
+    }
 
-    // Check if drawn position due to lack of material
+    if (board.pieces(chess::PieceType::BISHOP, chess::Color::BLACK).count() >= 2)
+    {
+        packedScore -= BishopPairBonus.packed;
+        IncrementCoefficients(coefficients, BishopPairBonus.index, chess::Color::BLACK);
+    }
 
+    // Pieces protected by pawns bonus
+    const auto protectedPiecesByWhitePawns = chess::builtin::popcount(whitePawnAttacks & __builtin_bswap64(board.us(chess::Color::WHITE).getBits()) /*&(~GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE))*/);
+    const auto protectedPiecesByBlackPawns = chess::builtin::popcount(blackPawnAttacks & __builtin_bswap64(board.us(chess::Color::BLACK).getBits()) /*&(~GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK))*/);
+
+    IncrementCoefficients(coefficients, PieceProtectedByPawnBonus.index, chess::Color::WHITE, protectedPiecesByWhitePawns);
+    IncrementCoefficients(coefficients, PieceProtectedByPawnBonus.index, chess::Color::BLACK, protectedPiecesByBlackPawns);
+
+    packedScore += (PieceProtectedByPawnBonus.packed * protectedPiecesByWhitePawns) -
+                   (PieceProtectedByPawnBonus.packed * protectedPiecesByBlackPawns);
+
+    // Pieces attacked by pawns bonus
+    const auto attackedPiecesByBlackPawns = chess::builtin::popcount(blackPawnAttacks & __builtin_bswap64(board.us(chess::Color::WHITE).getBits()) /*&(~GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE))*/);
+    const auto attackedPiecesByWhitePawns = chess::builtin::popcount(whitePawnAttacks & __builtin_bswap64(board.us(chess::Color::BLACK).getBits()) /*&(~GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK))*/);
+
+    IncrementCoefficients(coefficients, PieceAttackedByPawnPenalty.index, chess::Color::WHITE, attackedPiecesByBlackPawns);
+    IncrementCoefficients(coefficients, PieceAttackedByPawnPenalty.index, chess::Color::BLACK, attackedPiecesByWhitePawns);
+
+    packedScore += (PieceAttackedByPawnPenalty.packed * attackedPiecesByBlackPawns) -
+                   (PieceAttackedByPawnPenalty.packed * attackedPiecesByWhitePawns);
+
+    // Unsafe checks
+    if (board.inCheck())
+    {
+        packedScore -= UnsafeCheckBonus.packed;
+        IncrementCoefficients(coefficients, UnsafeCheckBonus.index, board.sideToMove());
+    }
+
+    // Pawnless endgames with few pieces
     const int totalPawnsCount = board.pieces(chess::PieceType::PAWN, chess::Color::WHITE).count() +
                                 board.pieces(chess::PieceType::PAWN, chess::Color::BLACK).count();
 
