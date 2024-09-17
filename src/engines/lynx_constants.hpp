@@ -227,17 +227,41 @@ constexpr static std::array<int, 64> Rank = {
     1UL, 1UL, 1UL, 1UL, 1UL, 1UL, 1UL, 1UL,
     0UL, 0UL, 0UL, 0UL, 0UL, 0UL, 0UL, 0UL};
 
-const u64 NotAFile = 0xFEFEFEFEFEFEFEFE;
+constexpr u64 NotAFile = 0xFEFEFEFEFEFEFEFE;
 
-const u64 NotHFile = 0x7F7F7F7F7F7F7F7F;
+constexpr u64 NotHFile = 0x7F7F7F7F7F7F7F7F;
 
-const int PositiveCheckmateDetectionLimit = 27000;
+constexpr static std::array<int, 64> LightSquares = {
+    1, 0, 1, 0, 1, 0, 1, 0,
+    0, 1, 0, 1, 0, 1, 0, 1,
+    1, 0, 1, 0, 1, 0, 1, 0,
+    0, 1, 0, 1, 0, 1, 0, 1,
+    1, 0, 1, 0, 1, 0, 1, 0,
+    0, 1, 0, 1, 0, 1, 0, 1,
+    1, 0, 1, 0, 1, 0, 1, 0,
+    0, 1, 0, 1, 0, 1, 0, 1};
 
-const int NegativeCheckmateDetectionLimit = -27000;
+constexpr static std::array<int, 64> DarkSquares = {
+    0, 1, 0, 1, 0, 1, 0, 1,
+    1, 0, 1, 0, 1, 0, 1, 0,
+    0, 1, 0, 1, 0, 1, 0, 1,
+    1, 0, 1, 0, 1, 0, 1, 0,
+    0, 1, 0, 1, 0, 1, 0, 1,
+    1, 0, 1, 0, 1, 0, 1, 0,
+    0, 1, 0, 1, 0, 1, 0, 1,
+    1, 0, 1, 0, 1, 0, 1, 0};
 
-const int MinEval = NegativeCheckmateDetectionLimit + 1;
+constexpr u64 LightSquaresBitBoard = 0xAA55AA55AA55AA55UL;
 
-const int MaxEval = PositiveCheckmateDetectionLimit - 1;
+constexpr u64 DarkSquaresBitBoard = 0x55AA55AA55AA55AAUL;
+
+constexpr int PositiveCheckmateDetectionLimit = 27000;
+
+constexpr int NegativeCheckmateDetectionLimit = -27000;
+
+constexpr int MinEval = NegativeCheckmateDetectionLimit + 1;
+
+constexpr int MaxEval = PositiveCheckmateDetectionLimit - 1;
 
 [[nodiscard]] static u64 ShiftUp(const u64 board)
 {
