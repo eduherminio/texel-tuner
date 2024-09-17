@@ -5922,8 +5922,8 @@ TunableSingle KingShieldBonus(23, -3);
 TunableSingle BishopPairBonus(30, 74);
 TunableArray BadBishopPenalty(
     chess::PieceType::PAWN,
-    std::vector<int>{190, 189, 186, 180, 174, 171, 168, 164, 162},
-    std::vector<int>{235, 229, 215, 205, 195, 184, 173, 161, 157},
+    std::vector<int>{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16},
+    std::vector<int>{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16},
     0,
     0);
 
