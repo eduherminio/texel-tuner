@@ -24,7 +24,8 @@ const static int numParameters = psqtIndexCount +
                                  SemiOpenFileKingPenalty.size +
                                  OpenFileKingPenalty.size +
                                  BishopPairBonus.size +
-                                 BadBishopPenalty.size +
+                                 BadBishopPenalty.tunableSize +
+                                 BadBishop_BlockedCentralPawnsPenalty.tunableSize +
                                  PieceProtectedByPawnBonus.size +
                                  PieceAttackedByPawnPenalty.size +
                                  KingShieldBonus.size +
@@ -106,6 +107,7 @@ public:
         KingShieldBonus.add(result);
         BishopPairBonus.add(result);
         BadBishopPenalty.add(result);
+        BadBishop_BlockedCentralPawnsPenalty.add(result);
         PieceProtectedByPawnBonus.add(result);
         PieceAttackedByPawnPenalty.add(result);
 
@@ -253,6 +255,9 @@ public:
         name = NAME(BadBishopPenalty);
         BadBishopPenalty.to_csharp(parameters, ss, name);
 
+        name = NAME(BadBishop_BlockedCentralPawnsPenalty);
+        BadBishop_BlockedCentralPawnsPenalty.to_csharp(parameters, ss, name);
+
         name = NAME(PieceProtectedByPawnBonus);
         PieceProtectedByPawnBonus.to_csharp(parameters, ss, name);
 
@@ -339,6 +344,9 @@ public:
 
         name = NAME(BadBishopPenalty);
         BadBishopPenalty.to_cpp(parameters, ss, name);
+
+        name = NAME(BadBishop_BlockedCentralPawnsPenalty);
+        BadBishop_BlockedCentralPawnsPenalty.to_cpp(parameters, ss, name);
         ss << "\n";
 
         name = NAME(PieceProtectedByPawnBonus);
@@ -535,6 +543,7 @@ int BishopAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, cons
     int packedBonus = BishopMobilityBonus.packed[mobilityCount];
     IncrementCoefficients(coefficients, BishopMobilityBonus.index + mobilityCount, color);
 
+    // Bad bishop
     const auto sameSidePawns = GetPieceSwappingEndianness(board, chess::PieceType::PAWN, color);
     const auto sameColorPawnsCount = chess::builtin::popcount(sameSidePawns &
                                                               (DarkSquares[squareIndex] == 1
@@ -542,7 +551,16 @@ int BishopAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, cons
                                                                    : LightSquaresBitBoard));
 
     packedBonus += BadBishopPenalty.packed[sameColorPawnsCount];
-    IncrementCoefficients(coefficients, BadBishopPenalty.index + sameColorPawnsCount, color);
+    IncrementCoefficients(coefficients, BadBishopPenalty.index - BadBishopPenalty.start + sameColorPawnsCount, color);
+
+    const auto sameSideCentralPawns = sameSidePawns & CentralFiles;
+    const auto pawnBlockerSquares = pieceIndex == static_cast<int>(chess::Piece::WHITEBISHOP) ? ShiftUp(sameSideCentralPawns) : ShiftDown(sameSideCentralPawns);
+
+    const auto pawnBlockers = pawnBlockerSquares & __builtin_bswap64(board.them(color).getBits());
+    const auto pawnBlockersCount = chess::builtin::popcount(pawnBlockers);
+
+    packedBonus += BadBishop_BlockedCentralPawnsPenalty.packed[pawnBlockersCount];
+    IncrementCoefficients(coefficients, BadBishop_BlockedCentralPawnsPenalty.index - BadBishop_BlockedCentralPawnsPenalty.start + pawnBlockersCount, color);
 
     return packedBonus;
 }
