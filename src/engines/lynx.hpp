@@ -566,12 +566,12 @@ int RookAdditonalEvaluation(int squareIndex, int pieceIndex, int bucket, int opp
         if (piecesProtectingCheckSquare > 0)
         {
             packedBonus += UnsafeCheckBonus.packed[noColorPieceIndex];
-            IncrementCoefficients(coefficients, UnsafeCheckBonus.index + noColorPieceIndex - UnsafeCheckBonus.start, color);
+            IncrementCoefficients(coefficients, UnsafeCheckBonus.index - UnsafeCheckBonus.start + noColorPieceIndex, color);
         }
         else
         {
             packedBonus += SafeCheckBonus.packed[noColorPieceIndex];
-            IncrementCoefficients(coefficients, SafeCheckBonus.index + noColorPieceIndex - SafeCheckBonus.start, color);
+            IncrementCoefficients(coefficients, SafeCheckBonus.index - SafeCheckBonus.start + noColorPieceIndex, color);
         }
     }
 
@@ -603,12 +603,12 @@ int KnightAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int 
         if (piecesProtectingCheckSquare > 0)
         {
             packedBonus += UnsafeCheckBonus.packed[noColorPieceIndex];
-            IncrementCoefficients(coefficients, UnsafeCheckBonus.index + noColorPieceIndex - UnsafeCheckBonus.start, color);
+            IncrementCoefficients(coefficients, UnsafeCheckBonus.index - UnsafeCheckBonus.start + noColorPieceIndex, color);
         }
         else
         {
             packedBonus += SafeCheckBonus.packed[noColorPieceIndex];
-            IncrementCoefficients(coefficients, SafeCheckBonus.index + noColorPieceIndex - SafeCheckBonus.start, color);
+            IncrementCoefficients(coefficients, SafeCheckBonus.index - SafeCheckBonus.start + noColorPieceIndex, color);
         }
     }
 
@@ -651,12 +651,12 @@ int BishopAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int 
         if (piecesProtectingCheckSquare > 0)
         {
             packedBonus += UnsafeCheckBonus.packed[noColorPieceIndex];
-            IncrementCoefficients(coefficients, UnsafeCheckBonus.index + noColorPieceIndex - UnsafeCheckBonus.start, color);
+            IncrementCoefficients(coefficients, UnsafeCheckBonus.index - UnsafeCheckBonus.start + noColorPieceIndex, color);
         }
         else
         {
             packedBonus += SafeCheckBonus.packed[noColorPieceIndex];
-            IncrementCoefficients(coefficients, SafeCheckBonus.index + noColorPieceIndex - SafeCheckBonus.start, color);
+            IncrementCoefficients(coefficients, SafeCheckBonus.index - SafeCheckBonus.start + noColorPieceIndex, color);
         }
     }
 
@@ -689,12 +689,12 @@ int QueenAdditionalEvaluation(int squareIndex, int bucket, int oppositeSideKingS
         if (piecesProtectingCheckSquare > 0)
         {
             packedBonus += UnsafeCheckBonus.packed[noColorPieceIndex];
-            IncrementCoefficients(coefficients, UnsafeCheckBonus.index + noColorPieceIndex - UnsafeCheckBonus.start, color);
+            IncrementCoefficients(coefficients, UnsafeCheckBonus.index - UnsafeCheckBonus.start + noColorPieceIndex, color);
         }
         else
         {
             packedBonus += SafeCheckBonus.packed[noColorPieceIndex];
-            IncrementCoefficients(coefficients, SafeCheckBonus.index + noColorPieceIndex - SafeCheckBonus.start, color);
+            IncrementCoefficients(coefficients, SafeCheckBonus.index - SafeCheckBonus.start + noColorPieceIndex, color);
         }
     }
 
