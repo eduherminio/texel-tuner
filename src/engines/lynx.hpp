@@ -17,7 +17,7 @@ using u64 = uint64_t;
 constexpr int enemyKingBaseIndex = psqtIndexCount / 2;
 const static int numParameters = psqtIndexCount +
                                  // DoubledPawnPenalty.size
-                                 UnsafeCheckBonus.size +
+                                 SafeCheckBonus.size +
                                  IsolatedPawnPenalty.size +
                                  PawnPhalanxBonus.tunableSize +
                                  OpenFileRookBonus.size +
@@ -98,7 +98,7 @@ public:
         add_piece_values(5, 0, 64, 0); // Kings
 
         // DoubledPawnPenalty.add(result);
-        UnsafeCheckBonus.add(result);
+        SafeCheckBonus.add(result);
         IsolatedPawnPenalty.add(result);
         PawnPhalanxBonus.add(result);
         OpenFileRookBonus.add(result);
@@ -228,8 +228,8 @@ public:
         ss << "public static class EvaluationParams" << std::endl
            << "{" << std::endl;
 
-        name = NAME(UnsafeCheckBonus);
-        UnsafeCheckBonus.to_csharp(parameters, ss, name);
+        name = NAME(SafeCheckBonus);
+        SafeCheckBonus.to_csharp(parameters, ss, name);
 
         name = NAME(IsolatedPawnPenalty);
         IsolatedPawnPenalty.to_csharp(parameters, ss, name);
@@ -318,8 +318,8 @@ public:
         // name = NAME(DoubledPawnPenalty);
         // DoubledPawnPenalty.to_json(parameters, ss, name);
 
-        name = NAME(UnsafeCheckBonus);
-        UnsafeCheckBonus.to_cpp(parameters, ss, name);
+        name = NAME(SafeCheckBonus);
+        SafeCheckBonus.to_cpp(parameters, ss, name);
 
         name = NAME(IsolatedPawnPenalty);
         IsolatedPawnPenalty.to_cpp(parameters, ss, name);
@@ -416,6 +416,15 @@ chess::U64 GetPieceSwappingEndianness(const chess::Board &board, const chess::Pi
 void ResetLS1B(std::uint64_t &board)
 {
     board &= (board - 1);
+}
+
+[[nodiscard]] chess::Bitboard SquaresGivingCheck(chess::Board board, chess::Square square, chess::Color color)
+{
+    return (chess::attacks::pawn(~color, square) & board.pieces(chess::PieceType::PAWN, color)) |
+           (chess::attacks::knight(square) & board.pieces(chess::PieceType::KNIGHT, color)) |
+           (chess::attacks::king(square) & board.pieces(chess::PieceType::KING, color)) |
+           (chess::attacks::bishop(square, board.occ()) & (board.pieces(chess::PieceType::BISHOP, color) | board.pieces(chess::PieceType::QUEEN, color))) |
+           (chess::attacks::rook(square, board.occ()) & (board.pieces(chess::PieceType::ROOK, color) | board.pieces(chess::PieceType::QUEEN, color)));
 }
 
 int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int sameSideKingSquare, int oppositeSideKingSquare, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
@@ -545,9 +554,9 @@ int BishopAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, cons
 
     const auto sameSidePawns = GetPieceSwappingEndianness(board, chess::PieceType::PAWN, color);
     const auto sameColorPawnsCount = chess::builtin::popcount(sameSidePawns &
-        (DarkSquares[squareIndex] == 1
-            ? DarkSquaresBitBoard
-            : LightSquaresBitBoard));
+                                                              (DarkSquares[squareIndex] == 1
+                                                                   ? DarkSquaresBitBoard
+                                                                   : LightSquaresBitBoard));
 
     packedBonus += BadBishopPenalty.packed[sameColorPawnsCount];
     IncrementCoefficients(coefficients, BadBishopPenalty.index + sameColorPawnsCount, color);
@@ -824,8 +833,27 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
     // Unsafe checks
     if (board.inCheck())
     {
-        packedScore -= UnsafeCheckBonus.packed;
-        IncrementCoefficients(coefficients, UnsafeCheckBonus.index, board.sideToMove());
+        const auto kingSquare = board.kingSq(board.sideToMove());
+        auto squaresGivingCheck = SquaresGivingCheck(board, kingSquare, ~board.sideToMove()).getBits();
+
+        bool safeCheck = true;
+
+        while (squaresGivingCheck != 0)
+        {
+            const auto squareGivingCheck = chess::builtin::poplsb(squaresGivingCheck);
+
+            if (chess::attacks::attackers(board, board.sideToMove(), squareGivingCheck, board.occ()))
+            {
+                safeCheck = false;
+                break;
+            }
+        }
+        if (safeCheck)
+        {
+
+            packedScore -= SafeCheckBonus.packed;
+            IncrementCoefficients(coefficients, SafeCheckBonus.index, board.sideToMove());
+        }
     }
 
     // Pawnless endgames with few pieces

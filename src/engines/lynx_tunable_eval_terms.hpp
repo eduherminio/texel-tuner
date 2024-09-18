@@ -5905,7 +5905,7 @@ constexpr static std::array<std::array<int, 64>, PSQTBucketCount> EndGameEnemyKi
 	}};
 
 
-TunableSingle UnsafeCheckBonus(7, -12);
+TunableSingle SafeCheckBonus(7, -12);
 TunableSingle IsolatedPawnPenalty(-16, -13);
 TunableArray PawnPhalanxBonus(
 	chess::PieceType::PAWN,
