@@ -260,7 +260,7 @@ public:
         }
         else
         {
-            throw std::invalid_argument("wrong size provided: " + size);
+            variable_name = "int[]";
         }
 
         ss << "\tpublic static readonly " << variable_name << " " << name << " =\n\t[\n";
@@ -539,7 +539,7 @@ public:
         }
         else
         {
-            throw std::invalid_argument("wrong size provided: " + size);
+            variable_name = "int[]";
         }
 
         ss << "\tpublic static readonly " << variable_name << "[] " << name << " = \n\t[\n";

@@ -24,7 +24,7 @@ const static int numParameters = psqtIndexCount +
                                  SemiOpenFileKingPenalty.size +
                                  OpenFileKingPenalty.size +
                                  BishopPairBonus.size +
-                                 BadBishopPenalty.size +
+                                 BadBishopPenalty.tunableSize +
                                  PieceProtectedByPawnBonus.size +
                                  PieceAttackedByPawnPenalty.size +
                                  KingShieldBonus.size +
@@ -532,6 +532,7 @@ int BishopAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, cons
         (~__builtin_bswap64(board.us(color).getBits())) &
         (~opponentPawnAttacks));
 
+    // Bad bishop - same color pawns
     int packedBonus = BishopMobilityBonus.packed[mobilityCount];
     IncrementCoefficients(coefficients, BishopMobilityBonus.index + mobilityCount, color);
 
