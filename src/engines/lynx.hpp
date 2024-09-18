@@ -27,7 +27,8 @@ const static int numParameters = psqtIndexCount +
                                  BadBishopPenalty.tunableSize +
                                  PieceProtectedByPawnBonus.size +
                                  PieceAttackedByPawnPenalty.size +
-                                 CheckBonus.tunableSize +
+                                 SafeCheckBonus.tunableSize +
+                                 UnsafeCheckBonus.tunableSize +
                                  KingShieldBonus.size +
                                  PassedPawnBonus.size +                              // PSQTBucketCount * 6, removing 1 rank values
                                  PassedPawnBonusNoEnemiesAheadBonus.size +           // PSQTBucketCount * 6, removing 1 rank values
@@ -109,7 +110,8 @@ public:
         BadBishopPenalty.add(result);
         PieceProtectedByPawnBonus.add(result);
         PieceAttackedByPawnPenalty.add(result);
-        CheckBonus.add(result);
+        SafeCheckBonus.add(result);
+        UnsafeCheckBonus.add(result);
 
         PassedPawnBonus.add(result);
         PassedPawnBonusNoEnemiesAheadBonus.add(result);
@@ -261,8 +263,11 @@ public:
         name = NAME(PieceAttackedByPawnPenalty);
         PieceAttackedByPawnPenalty.to_csharp(parameters, ss, name);
 
-        name = NAME(CheckBonus);
-        CheckBonus.to_csharp(parameters, ss, name);
+        name = NAME(SafeCheckBonus);
+        SafeCheckBonus.to_csharp(parameters, ss, name);
+
+        name = NAME(UnsafeCheckBonus);
+        UnsafeCheckBonus.to_csharp(parameters, ss, name);
 
         name = NAME(PassedPawnBonus);
         PassedPawnBonus.to_csharp(parameters, ss, name);
@@ -352,8 +357,12 @@ public:
         name = NAME(PieceAttackedByPawnPenalty);
         PieceAttackedByPawnPenalty.to_cpp(parameters, ss, name);
 
-        name = NAME(CheckBonus);
-        CheckBonus.to_cpp(parameters, ss, name);
+        name = NAME(SafeCheckBonus);
+        SafeCheckBonus.to_cpp(parameters, ss, name);
+        ss << "\n";
+
+        name = NAME(UnsafeCheckBonus);
+        UnsafeCheckBonus.to_cpp(parameters, ss, name);
         ss << "\n";
 
         name = NAME(PassedPawnBonus);
@@ -408,7 +417,7 @@ void IncrementCoefficients(coefficients_t &coefficients, int index, const chess:
                                : -increment;
 }
 
-chess::U64 GetPieceSwappingEndianness(const chess::Board &board, const chess::PieceType &piece, const chess::Color &color)
+[[nodiscard]] chess::U64 GetPieceSwappingEndianness(const chess::Board &board, const chess::PieceType &piece, const chess::Color &color)
 {
     return __builtin_bswap64(board.pieces(piece, color).getBits());
 }
@@ -416,6 +425,24 @@ chess::U64 GetPieceSwappingEndianness(const chess::Board &board, const chess::Pi
 void ResetLS1B(std::uint64_t &board)
 {
     board &= (board - 1);
+}
+
+[[nodiscard]] chess::Bitboard AllAttackersFromOppositeSideTo(const chess::Board &board, int square)
+{
+    const auto color = board.sideToMove();
+    const auto oppositeSide = ~color;
+    const auto occupancy = board.occ();
+
+    const auto pawns = GetPieceSwappingEndianness(board, chess::PieceType::PAWN, oppositeSide);
+    const auto knights = GetPieceSwappingEndianness(board, chess::PieceType::KNIGHT, oppositeSide);
+    const auto kings = GetPieceSwappingEndianness(board, chess::PieceType::KING, oppositeSide);
+    const auto queens = GetPieceSwappingEndianness(board, chess::PieceType::QUEEN, oppositeSide);
+    const auto rooks = queens | GetPieceSwappingEndianness(board, chess::PieceType::ROOK, oppositeSide);
+    ;
+    const auto bishops = queens | GetPieceSwappingEndianness(board, chess::PieceType::BISHOP, oppositeSide);
+    ;
+
+    return (pawns & chess::attacks::pawn(color, square)) | (knights & chess::attacks::knight(square)) | (bishops & chess::attacks::bishop(square, occupancy)) | (rooks & chess::attacks::rook(square, occupancy)) | (kings & chess::attacks::king(square));
 }
 
 int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int sameSideKingSquare, int oppositeSideKingSquare, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
@@ -522,10 +549,23 @@ int RookAdditonalEvaluation(int squareIndex, int pieceIndex, int bucket, int opp
 
     // Checks
     const auto enemyKingCheckThreats = chess::attacks::rook(oppositeSideKingSquare, occupancy).getBits();
-    const auto checksCount = chess::builtin::popcount(attacks & enemyKingCheckThreats);
+    auto checks = attacks & enemyKingCheckThreats;
+    while (checks != 0)
+    {
+        const auto checkSquare = chess::builtin::poplsb(checks).index();
+        const auto piecesProtectingCheckSquare = AllAttackersFromOppositeSideTo(board, checkSquare).count();
 
-    packedBonus += CheckBonus.packed[noColorPieceIndex] * checksCount;
-    IncrementCoefficients(coefficients, CheckBonus.index + noColorPieceIndex - CheckBonus.start, color, checksCount);
+        if (piecesProtectingCheckSquare > 0)
+        {
+            packedBonus += UnsafeCheckBonus.packed[noColorPieceIndex];
+            IncrementCoefficients(coefficients, UnsafeCheckBonus.index + noColorPieceIndex - UnsafeCheckBonus.start, color);
+        }
+        else
+        {
+            packedBonus += SafeCheckBonus.packed[noColorPieceIndex];
+            IncrementCoefficients(coefficients, SafeCheckBonus.index + noColorPieceIndex - SafeCheckBonus.start, color);
+        }
+    }
 
     return packedBonus;
 }
@@ -546,10 +586,23 @@ int KnightAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int 
 
     // Checks
     const auto enemyKingCheckThreats = chess::attacks::knight(oppositeSideKingSquare).getBits();
-    const auto checksCount = chess::builtin::popcount(attacks & enemyKingCheckThreats);
+    auto checks = attacks & enemyKingCheckThreats;
+    while (checks != 0)
+    {
+        const auto checkSquare = chess::builtin::poplsb(checks).index();
+        const auto piecesProtectingCheckSquare = AllAttackersFromOppositeSideTo(board, checkSquare).count();
 
-    packedBonus += CheckBonus.packed[noColorPieceIndex] * checksCount;
-    IncrementCoefficients(coefficients, CheckBonus.index + noColorPieceIndex - CheckBonus.start, color, checksCount);
+        if (piecesProtectingCheckSquare > 0)
+        {
+            packedBonus += UnsafeCheckBonus.packed[noColorPieceIndex];
+            IncrementCoefficients(coefficients, UnsafeCheckBonus.index + noColorPieceIndex - UnsafeCheckBonus.start, color);
+        }
+        else
+        {
+            packedBonus += SafeCheckBonus.packed[noColorPieceIndex];
+            IncrementCoefficients(coefficients, SafeCheckBonus.index + noColorPieceIndex - SafeCheckBonus.start, color);
+        }
+    }
 
     return packedBonus;
 }
@@ -581,10 +634,23 @@ int BishopAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int 
 
     // Checks
     const auto enemyKingCheckThreats = chess::attacks::bishop(static_cast<chess::Square>(oppositeSideKingSquare), occupancy).getBits();
-    const auto checksCount = chess::builtin::popcount(attacks & enemyKingCheckThreats);
+    auto checks = attacks & enemyKingCheckThreats;
+    while (checks != 0)
+    {
+        const auto checkSquare = chess::builtin::poplsb(checks).index();
+        const auto piecesProtectingCheckSquare = AllAttackersFromOppositeSideTo(board, checkSquare).count();
 
-    packedBonus += CheckBonus.packed[noColorPieceIndex] * checksCount;
-    IncrementCoefficients(coefficients, CheckBonus.index + noColorPieceIndex - CheckBonus.start, color, checksCount);
+        if (piecesProtectingCheckSquare > 0)
+        {
+            packedBonus += UnsafeCheckBonus.packed[noColorPieceIndex];
+            IncrementCoefficients(coefficients, UnsafeCheckBonus.index + noColorPieceIndex - UnsafeCheckBonus.start, color);
+        }
+        else
+        {
+            packedBonus += SafeCheckBonus.packed[noColorPieceIndex];
+            IncrementCoefficients(coefficients, SafeCheckBonus.index + noColorPieceIndex - SafeCheckBonus.start, color);
+        }
+    }
 
     return packedBonus;
 }
@@ -606,10 +672,23 @@ int QueenAdditionalEvaluation(int squareIndex, int bucket, int oppositeSideKingS
 
     // Checks
     const auto enemyKingCheckThreats = chess::attacks::queen(static_cast<chess::Square>(oppositeSideKingSquare), occupancy).getBits();
-    const auto checksCount = chess::builtin::popcount(attacks & enemyKingCheckThreats);
+    auto checks = attacks & enemyKingCheckThreats;
+    while (checks != 0)
+    {
+        const auto checkSquare = chess::builtin::poplsb(checks).index();
+        const auto piecesProtectingCheckSquare = AllAttackersFromOppositeSideTo(board, checkSquare).count();
 
-    packedBonus += CheckBonus.packed[noColorPieceIndex] * checksCount;
-    IncrementCoefficients(coefficients, CheckBonus.index + noColorPieceIndex - CheckBonus.start, color, checksCount);
+        if (piecesProtectingCheckSquare > 0)
+        {
+            packedBonus += UnsafeCheckBonus.packed[noColorPieceIndex];
+            IncrementCoefficients(coefficients, UnsafeCheckBonus.index + noColorPieceIndex - UnsafeCheckBonus.start, color);
+        }
+        else
+        {
+            packedBonus += SafeCheckBonus.packed[noColorPieceIndex];
+            IncrementCoefficients(coefficients, SafeCheckBonus.index + noColorPieceIndex - SafeCheckBonus.start, color);
+        }
+    }
 
     return packedBonus;
 }
