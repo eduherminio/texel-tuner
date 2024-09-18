@@ -18,18 +18,20 @@ constexpr int enemyKingBaseIndex = psqtIndexCount / 2;
 const static int numParameters = psqtIndexCount +
                                  // DoubledPawnPenalty.size
                                  IsolatedPawnPenalty.size +
-                                 PawnPhalanxBonus.tunableSize +
                                  OpenFileRookBonus.size +
                                  SemiOpenFileRookBonus.size +
                                  SemiOpenFileKingPenalty.size +
                                  OpenFileKingPenalty.size +
+                                 KingShieldBonus.size +
                                  BishopPairBonus.size +
-                                 BadBishopPenalty.tunableSize +
                                  PieceProtectedByPawnBonus.size +
                                  PieceAttackedByPawnPenalty.size +
+
+                                 PawnPhalanxBonus.tunableSize +
+                                 BadBishop_SameColorPawnsPenalty.tunableSize +
                                  SafeCheckBonus.tunableSize +
                                  UnsafeCheckBonus.tunableSize +
-                                 KingShieldBonus.size +
+
                                  PassedPawnBonus.size +                              // PSQTBucketCount * 6, removing 1 rank values
                                  PassedPawnBonusNoEnemiesAheadBonus.size +           // PSQTBucketCount * 6, removing 1 rank values
                                  FriendlyKingDistanceToPassedPawnBonus.tunableSize + // 7, removing start
@@ -100,16 +102,17 @@ public:
 
         // DoubledPawnPenalty.add(result);
         IsolatedPawnPenalty.add(result);
-        PawnPhalanxBonus.add(result);
         OpenFileRookBonus.add(result);
         SemiOpenFileRookBonus.add(result);
         SemiOpenFileKingPenalty.add(result);
         OpenFileKingPenalty.add(result);
         KingShieldBonus.add(result);
         BishopPairBonus.add(result);
-        BadBishopPenalty.add(result);
         PieceProtectedByPawnBonus.add(result);
         PieceAttackedByPawnPenalty.add(result);
+
+        PawnPhalanxBonus.add(result);
+        BadBishop_SameColorPawnsPenalty.add(result);
         SafeCheckBonus.add(result);
         UnsafeCheckBonus.add(result);
 
@@ -233,9 +236,6 @@ public:
         name = NAME(IsolatedPawnPenalty);
         IsolatedPawnPenalty.to_csharp(parameters, ss, name);
 
-        name = NAME(PawnPhalanxBonus);
-        PawnPhalanxBonus.to_csharp(parameters, ss, name);
-
         name = NAME(OpenFileRookBonus);
         OpenFileRookBonus.to_csharp(parameters, ss, name);
 
@@ -254,20 +254,25 @@ public:
         name = NAME(BishopPairBonus);
         BishopPairBonus.to_csharp(parameters, ss, name);
 
-        name = NAME(BadBishopPenalty);
-        BadBishopPenalty.to_csharp(parameters, ss, name);
-
         name = NAME(PieceProtectedByPawnBonus);
         PieceProtectedByPawnBonus.to_csharp(parameters, ss, name);
 
         name = NAME(PieceAttackedByPawnPenalty);
         PieceAttackedByPawnPenalty.to_csharp(parameters, ss, name);
 
+
+        name = NAME(PawnPhalanxBonus);
+        PawnPhalanxBonus.to_csharp(parameters, ss, name);
+
+        name = NAME(BadBishop_SameColorPawnsPenalty);
+        BadBishop_SameColorPawnsPenalty.to_csharp(parameters, ss, name);
+
         name = NAME(SafeCheckBonus);
         SafeCheckBonus.to_csharp(parameters, ss, name);
 
         name = NAME(UnsafeCheckBonus);
         UnsafeCheckBonus.to_csharp(parameters, ss, name);
+
 
         name = NAME(PassedPawnBonus);
         PassedPawnBonus.to_csharp(parameters, ss, name);
@@ -326,9 +331,6 @@ public:
         name = NAME(IsolatedPawnPenalty);
         IsolatedPawnPenalty.to_cpp(parameters, ss, name);
 
-        name = NAME(PawnPhalanxBonus);
-        PawnPhalanxBonus.to_cpp(parameters, ss, name);
-
         name = NAME(OpenFileRookBonus);
         OpenFileRookBonus.to_cpp(parameters, ss, name);
 
@@ -347,15 +349,20 @@ public:
         name = NAME(BishopPairBonus);
         BishopPairBonus.to_cpp(parameters, ss, name);
 
-        name = NAME(BadBishopPenalty);
-        BadBishopPenalty.to_cpp(parameters, ss, name);
-        ss << "\n";
-
         name = NAME(PieceProtectedByPawnBonus);
         PieceProtectedByPawnBonus.to_cpp(parameters, ss, name);
 
         name = NAME(PieceAttackedByPawnPenalty);
         PieceAttackedByPawnPenalty.to_cpp(parameters, ss, name);
+
+
+        name = NAME(PawnPhalanxBonus);
+        PawnPhalanxBonus.to_cpp(parameters, ss, name);
+        ss << "\n";
+
+        name = NAME(BadBishop_SameColorPawnsPenalty);
+        BadBishop_SameColorPawnsPenalty.to_cpp(parameters, ss, name);
+        ss << "\n";
 
         name = NAME(SafeCheckBonus);
         SafeCheckBonus.to_cpp(parameters, ss, name);
@@ -364,6 +371,7 @@ public:
         name = NAME(UnsafeCheckBonus);
         UnsafeCheckBonus.to_cpp(parameters, ss, name);
         ss << "\n";
+
 
         name = NAME(PassedPawnBonus);
         PassedPawnBonus.to_cpp(parameters, ss, name);
@@ -622,15 +630,15 @@ int BishopAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int 
     auto packedBonus = BishopMobilityBonus.packed[mobilityCount];
     IncrementCoefficients(coefficients, BishopMobilityBonus.index + mobilityCount, color);
 
-    // Bad bishop
+    // Bad bishop - same color pawns
     const auto sameSidePawns = GetPieceSwappingEndianness(board, chess::PieceType::PAWN, color);
     const auto sameColorPawnsCount = chess::builtin::popcount(sameSidePawns &
                                                               (DarkSquares[squareIndex] == 1
                                                                    ? DarkSquaresBitBoard
                                                                    : LightSquaresBitBoard));
 
-    packedBonus += BadBishopPenalty.packed[sameColorPawnsCount];
-    IncrementCoefficients(coefficients, BadBishopPenalty.index + sameColorPawnsCount, color);
+    packedBonus += BadBishop_SameColorPawnsPenalty.packed[sameColorPawnsCount];
+    IncrementCoefficients(coefficients, BadBishop_SameColorPawnsPenalty.index + sameColorPawnsCount, color);
 
     // Checks
     const auto enemyKingCheckThreats = chess::attacks::bishop(static_cast<chess::Square>(oppositeSideKingSquare), occupancy).getBits();
