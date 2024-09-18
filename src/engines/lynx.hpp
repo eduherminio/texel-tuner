@@ -824,7 +824,15 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
     // Unsafe checks
     if (board.inCheck())
     {
-        packedScore -= UnsafeCheckBonus.packed;
+        if(board.sideToMove() == chess::Color::WHITE)
+        {
+            packedScore -= UnsafeCheckBonus.packed;
+        }
+        else
+        {
+            packedScore += UnsafeCheckBonus.packed;
+        }
+
         IncrementCoefficients(coefficients, UnsafeCheckBonus.index, board.sideToMove());
     }
 
