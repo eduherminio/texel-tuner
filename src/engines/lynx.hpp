@@ -850,8 +850,15 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
         }
         if (safeCheck)
         {
+            if(board.sideToMove() == chess::Color::WHITE)
+            {
+                packedScore -= SafeCheckBonus.packed;
+            }
+            else
+            {
+                packedScore += SafeCheckBonus.packed;
+            }
 
-            packedScore -= SafeCheckBonus.packed;
             IncrementCoefficients(coefficients, SafeCheckBonus.index, board.sideToMove());
         }
     }
