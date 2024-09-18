@@ -260,7 +260,6 @@ public:
         name = NAME(PieceAttackedByPawnPenalty);
         PieceAttackedByPawnPenalty.to_csharp(parameters, ss, name);
 
-
         name = NAME(PawnPhalanxBonus);
         PawnPhalanxBonus.to_csharp(parameters, ss, name);
 
@@ -272,7 +271,6 @@ public:
 
         name = NAME(UnsafeCheckBonus);
         UnsafeCheckBonus.to_csharp(parameters, ss, name);
-
 
         name = NAME(PassedPawnBonus);
         PassedPawnBonus.to_csharp(parameters, ss, name);
@@ -355,7 +353,6 @@ public:
         name = NAME(PieceAttackedByPawnPenalty);
         PieceAttackedByPawnPenalty.to_cpp(parameters, ss, name);
 
-
         name = NAME(PawnPhalanxBonus);
         PawnPhalanxBonus.to_cpp(parameters, ss, name);
         ss << "\n";
@@ -371,7 +368,6 @@ public:
         name = NAME(UnsafeCheckBonus);
         UnsafeCheckBonus.to_cpp(parameters, ss, name);
         ss << "\n";
-
 
         name = NAME(PassedPawnBonus);
         PassedPawnBonus.to_cpp(parameters, ss, name);
@@ -435,22 +431,24 @@ void ResetLS1B(std::uint64_t &board)
     board &= (board - 1);
 }
 
-[[nodiscard]] chess::Bitboard AllAttackersFromOppositeSideTo(const chess::Board &board, int square)
+[[nodiscard]] chess::Bitboard AllAttackersFromOppositeSideTo(const chess::Board &board, const chess::Color &color, int square)
 {
-    const auto color = board.sideToMove();
+    const auto occupancy = __builtin_bswap64(board.occ().getBits());
     const auto oppositeSide = ~color;
-    const auto occupancy = board.occ();
 
     const auto pawns = GetPieceSwappingEndianness(board, chess::PieceType::PAWN, oppositeSide);
     const auto knights = GetPieceSwappingEndianness(board, chess::PieceType::KNIGHT, oppositeSide);
     const auto kings = GetPieceSwappingEndianness(board, chess::PieceType::KING, oppositeSide);
     const auto queens = GetPieceSwappingEndianness(board, chess::PieceType::QUEEN, oppositeSide);
     const auto rooks = queens | GetPieceSwappingEndianness(board, chess::PieceType::ROOK, oppositeSide);
-    ;
     const auto bishops = queens | GetPieceSwappingEndianness(board, chess::PieceType::BISHOP, oppositeSide);
-    ;
 
-    return (pawns & chess::attacks::pawn(color, square)) | (knights & chess::attacks::knight(square)) | (bishops & chess::attacks::bishop(square, occupancy)) | (rooks & chess::attacks::rook(square, occupancy)) | (kings & chess::attacks::king(square));
+    // chess::attacks need to receive both the square ^ 56 and the opposite color than the one we use in C#
+    return (pawns & chess::attacks::pawn(~color, square)) |
+           (knights & chess::attacks::knight(square)) |
+           (bishops & chess::attacks::bishop(square, occupancy)) |
+           (rooks & chess::attacks::rook(square, occupancy)) |
+           (kings & chess::attacks::king(square));
 }
 
 int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int sameSideKingSquare, int oppositeSideKingSquare, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
@@ -561,7 +559,7 @@ int RookAdditonalEvaluation(int squareIndex, int pieceIndex, int bucket, int opp
     while (checks != 0)
     {
         const auto checkSquare = chess::builtin::poplsb(checks).index();
-        const auto piecesProtectingCheckSquare = AllAttackersFromOppositeSideTo(board, checkSquare).count();
+        const auto piecesProtectingCheckSquare = AllAttackersFromOppositeSideTo(board, color, checkSquare).count();
 
         if (piecesProtectingCheckSquare > 0)
         {
@@ -598,7 +596,7 @@ int KnightAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int 
     while (checks != 0)
     {
         const auto checkSquare = chess::builtin::poplsb(checks).index();
-        const auto piecesProtectingCheckSquare = AllAttackersFromOppositeSideTo(board, checkSquare).count();
+        const auto piecesProtectingCheckSquare = AllAttackersFromOppositeSideTo(board, color, checkSquare).count();
 
         if (piecesProtectingCheckSquare > 0)
         {
@@ -646,7 +644,7 @@ int BishopAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int 
     while (checks != 0)
     {
         const auto checkSquare = chess::builtin::poplsb(checks).index();
-        const auto piecesProtectingCheckSquare = AllAttackersFromOppositeSideTo(board, checkSquare).count();
+        const auto piecesProtectingCheckSquare = AllAttackersFromOppositeSideTo(board, color, checkSquare).count();
 
         if (piecesProtectingCheckSquare > 0)
         {
@@ -684,7 +682,7 @@ int QueenAdditionalEvaluation(int squareIndex, int bucket, int oppositeSideKingS
     while (checks != 0)
     {
         const auto checkSquare = chess::builtin::poplsb(checks).index();
-        const auto piecesProtectingCheckSquare = AllAttackersFromOppositeSideTo(board, checkSquare).count();
+        const auto piecesProtectingCheckSquare = AllAttackersFromOppositeSideTo(board, color, checkSquare).count();
 
         if (piecesProtectingCheckSquare > 0)
         {
