@@ -532,10 +532,10 @@ int BishopAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, cons
         (~__builtin_bswap64(board.us(color).getBits())) &
         (~opponentPawnAttacks));
 
-    // Bad bishop - same color pawns
     int packedBonus = BishopMobilityBonus.packed[mobilityCount];
     IncrementCoefficients(coefficients, BishopMobilityBonus.index + mobilityCount, color);
 
+    // Bad bishop - same color pawns
     const auto sameSidePawns = GetPieceSwappingEndianness(board, chess::PieceType::PAWN, color);
     const auto sameColorPawnsCount = chess::builtin::popcount(sameSidePawns &
                                                               (DarkSquares[squareIndex] == 1
