@@ -5905,6 +5905,15 @@ constexpr static std::array<std::array<int, 64>, PSQTBucketCount> EndGameEnemyKi
     }};
 
 TunableSingle IsolatedPawnPenalty(-17, -13);
+TunableSingle OpenFileRookBonus(40, 2);
+TunableSingle SemiOpenFileRookBonus(15, 8);
+TunableSingle SemiOpenFileKingPenalty(-23, 4);
+TunableSingle OpenFileKingPenalty(-65, 2);
+TunableSingle KingShieldBonus(23, -4);
+TunableSingle BishopPairBonus(30, 69);
+TunableSingle PieceProtectedByPawnBonus(12, 16);
+TunableSingle PieceAttackedByPawnPenalty(-47, -34);
+
 TunableArray PawnPhalanxBonus(
     chess::PieceType::PAWN,
     std::vector<int>{0, 1, 11, 24, 56, 208, -138},
@@ -5912,21 +5921,13 @@ TunableArray PawnPhalanxBonus(
     1,
     0);
 
-TunableSingle OpenFileRookBonus(40, 2);
-TunableSingle SemiOpenFileRookBonus(15, 8);
-TunableSingle SemiOpenFileKingPenalty(-23, 4);
-TunableSingle OpenFileKingPenalty(-65, 2);
-TunableSingle KingShieldBonus(23, -4);
-TunableSingle BishopPairBonus(30, 69);
-TunableArray BadBishopPenalty(
+TunableArray BadBishop_SameColorPawnsPenalty(
     chess::PieceType::PAWN,
     std::vector<int>{194, 193, 189, 183, 177, 173, 170, 165, 164},
     std::vector<int>{233, 228, 214, 204, 194, 184, 173, 163, 158},
     0,
     0);
 
-TunableSingle PieceProtectedByPawnBonus(12, 16);
-TunableSingle PieceAttackedByPawnPenalty(-47, -34);
 TunableArray CheckBonus(
     chess::PieceType::PAWN,
     std::vector<int>{0, 15, 17, 30, 13},
