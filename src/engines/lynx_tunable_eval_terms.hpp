@@ -5928,7 +5928,7 @@ TunableArray BadBishop_BlockedCentralPawnsPenalty(
     chess::PieceType::PAWN,
     std::vector<int>{0, 1, 2 ,3, 4},
     std::vector<int>{0, 1, 2 ,3, 4},
-    1,
+    0,
     0);
 
 TunableSingle PieceProtectedByPawnBonus(12, 16);

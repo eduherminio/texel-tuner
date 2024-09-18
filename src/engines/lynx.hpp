@@ -554,7 +554,9 @@ int BishopAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, cons
     IncrementCoefficients(coefficients, BadBishopPenalty.index - BadBishopPenalty.start + sameColorPawnsCount, color);
 
     const auto sameSideCentralPawns = sameSidePawns & CentralFiles;
-    const auto pawnBlockerSquares = pieceIndex == static_cast<int>(chess::Piece::WHITEBISHOP) ? ShiftUp(sameSideCentralPawns) : ShiftDown(sameSideCentralPawns);
+    const auto pawnBlockerSquares = pieceIndex == static_cast<int>(chess::Piece::WHITEBISHOP)
+                                        ? ShiftUp(sameSideCentralPawns)
+                                        : ShiftDown(sameSideCentralPawns);
 
     const auto pawnBlockers = pawnBlockerSquares & __builtin_bswap64(board.them(color).getBits());
     const auto pawnBlockersCount = chess::builtin::popcount(pawnBlockers);
