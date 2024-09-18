@@ -5928,6 +5928,13 @@ TunableArray BadBishopPenalty(
 TunableSingle PieceProtectedByPawnBonus(12, 16);
 TunableSingle PieceAttackedByPawnPenalty(-48, -34);
 
+TunableArray CheckBonus(
+    chess::PieceType::PAWN,
+    std::vector<int>{0, 1, 3, 5, 7},
+    std::vector<int>{0, 2, 4, 6, 8},
+    1,
+    0);
+
 TunableArrayBucketed PassedPawnBonus(
     chess::PieceType::PAWN,
     std::array<std::vector<int>, PSQTBucketCount>{{
