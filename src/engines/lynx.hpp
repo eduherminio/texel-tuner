@@ -583,27 +583,29 @@ int BishopAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int 
     auto packedBonus = BishopMobilityBonus.packed[mobilityCount];
     IncrementCoefficients(coefficients, BishopMobilityBonus.index + mobilityCount, color);
 
-    // Bad bishop - same color pawns
+    // Blocked pawns calculation
     const auto sameSidePawns = GetPieceSwappingEndianness(board, chess::PieceType::PAWN, color);
-    const auto sameColorPawnsCount = chess::builtin::popcount(sameSidePawns &
-                                                              (DarkSquares[squareIndex] == 1
-                                                                   ? DarkSquaresBitBoard
-                                                                   : LightSquaresBitBoard));
 
-    packedBonus += BadBishop_SameColorPawnsPenalty.packed[sameColorPawnsCount];
-    IncrementCoefficients(coefficients, BadBishop_SameColorPawnsPenalty.index + sameColorPawnsCount, color);
+    const auto oppositeSidePawnBlockerSquares = color == chess::Color::WHITE
+                                                    ? ShiftUp(sameSidePawns)
+                                                    : ShiftDown(sameSidePawns);
+    const auto oppositeSidePawnBlockers = oppositeSidePawnBlockerSquares & __builtin_bswap64(board.them(color).getBits());
+
+    // Bad bishop - same color, blocked pawns only
+    const auto sameColorBlockedPawnsCount = chess::builtin::popcount(
+        oppositeSidePawnBlockers &
+        (DarkSquares[squareIndex] == 1
+             ? LightSquaresBitBoard // Switched because we're using the blockers instead of the own pawns
+             : DarkSquaresBitBoard));
+
+    packedBonus += BadBishop_SameColorPawnsPenalty.packed[sameColorBlockedPawnsCount];
+    IncrementCoefficients(coefficients, BadBishop_SameColorPawnsPenalty.index + sameColorBlockedPawnsCount, color);
 
     // Bad bishop - blocked central pawns
-    const auto sameSideCentralPawns = sameSidePawns & CentralFiles;
-    const auto pawnBlockerSquares = pieceIndex == static_cast<int>(chess::Piece::WHITEBISHOP)
-                                        ? ShiftUp(sameSideCentralPawns)
-                                        : ShiftDown(sameSideCentralPawns);
+    const auto sameSideBlockedCentralPawnsCount = chess::builtin::popcount(oppositeSidePawnBlockers & CentralFiles);
 
-    const auto pawnBlockers = pawnBlockerSquares & __builtin_bswap64(board.them(color).getBits());
-    const auto pawnBlockersCount = chess::builtin::popcount(pawnBlockers);
-
-    packedBonus += BadBishop_BlockedCentralPawnsPenalty.packed[pawnBlockersCount];
-    IncrementCoefficients(coefficients, BadBishop_BlockedCentralPawnsPenalty.index - BadBishop_BlockedCentralPawnsPenalty.start + pawnBlockersCount, color);
+    packedBonus += BadBishop_BlockedCentralPawnsPenalty.packed[sameSideBlockedCentralPawnsCount];
+    IncrementCoefficients(coefficients, BadBishop_BlockedCentralPawnsPenalty.index - BadBishop_BlockedCentralPawnsPenalty.start + sameSideBlockedCentralPawnsCount, color);
 
     // Checks
     const auto enemyKingCheckThreats = chess::attacks::bishop(static_cast<chess::Square>(oppositeSideKingSquare), occupancy).getBits();
