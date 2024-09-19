@@ -2876,7 +2876,7 @@ constexpr static std::array<std::array<int, 64>, PSQTBucketCount> EndGameKingTab
             0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 15, 0, 0 //
+            0, 0, 0, 0, 0, 16, 0, 0 //
         },
         {
             0, 0, 0, 0, 0, 0, 0, 0,
@@ -3023,6 +3023,7 @@ constexpr static std::array<std::array<int, 64>, PSQTBucketCount> EndGameKingTab
             0, 0, 0, 0, 0, -3, 0, 0,
             0, 0, 0, 0, 0, 4, 0, 0,
             0, 0, 0, 0, 0, 4, 0, 0,
+            0, 0, 0, 0, 0, 5, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0,
@@ -5925,6 +5926,13 @@ TunableArray BadBishop_SameColorPawnsPenalty(
     chess::PieceType::PAWN,
     std::vector<int>{194, 193, 189, 183, 177, 173, 170, 165, 164},
     std::vector<int>{233, 228, 214, 204, 194, 184, 173, 163, 158},
+    0,
+    0);
+
+TunableArray BadBishop_BlockedCentralPawnsPenalty(
+    chess::PieceType::PAWN,
+    std::vector<int>{99, 95, 92, 92, 92},
+    std::vector<int>{141, 127, 103, 79, 69},
     0,
     0);
 
