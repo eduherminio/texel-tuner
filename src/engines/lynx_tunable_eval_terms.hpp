@@ -5929,8 +5929,8 @@ TunableArray BadBishop_SameColorPawnsPenalty(
 
 TunableArray BadBishop_BlockedCentralPawnsPenalty(
     chess::PieceType::PAWN,
-    std::vector<int>{99, 95, 92, 92, 92},
-    std::vector<int>{141, 127, 103, 79, 69},
+    std::vector<int>{99, 95, 92, 92, 92, 0, 0, 0, 0},
+    std::vector<int>{141, 127, 103, 79, 69, 0, 0, 0, 0},
     0,
     0);
 
