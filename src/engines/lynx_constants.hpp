@@ -255,6 +255,8 @@ constexpr u64 LightSquaresBitBoard = 0xAA55AA55AA55AA55UL;
 
 constexpr u64 DarkSquaresBitBoard = 0x55AA55AA55AA55AAUL;
 
+constexpr u64 CentralFiles = 0x3c3c3c3c3c3c3c3c;
+
 constexpr int PositiveCheckmateDetectionLimit = 27000;
 
 constexpr int NegativeCheckmateDetectionLimit = -27000;
