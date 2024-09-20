@@ -571,7 +571,7 @@ int RookAdditonalEvaluation(int squareIndex, int pieceIndex, int bucket, int opp
     IncrementCoefficients(coefficients, UnsafeCheckBonus.index - UnsafeCheckBonus.start + noColorPieceIndex, color, unsafeChecksCount);
 
     const auto safeChecksCount = chess::builtin::popcount(allChecks) - unsafeChecksCount;
-    packedBonus += SafeCheckBonus.packed[noColorPieceIndex] * unsafeChecksCount;
+    packedBonus += SafeCheckBonus.packed[noColorPieceIndex] * safeChecksCount;
     IncrementCoefficients(coefficients, SafeCheckBonus.index - SafeCheckBonus.start + noColorPieceIndex, color, safeChecksCount);
 
     return packedBonus;
@@ -600,7 +600,7 @@ int KnightAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int 
     IncrementCoefficients(coefficients, UnsafeCheckBonus.index - UnsafeCheckBonus.start + noColorPieceIndex, color, unsafeChecksCount);
 
     const auto safeChecksCount = chess::builtin::popcount(allChecks) - unsafeChecksCount;
-    packedBonus += SafeCheckBonus.packed[noColorPieceIndex] * unsafeChecksCount;
+    packedBonus += SafeCheckBonus.packed[noColorPieceIndex] * safeChecksCount;
     IncrementCoefficients(coefficients, SafeCheckBonus.index - SafeCheckBonus.start + noColorPieceIndex, color, safeChecksCount);
 
     return packedBonus;
@@ -651,7 +651,7 @@ int BishopAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int 
     IncrementCoefficients(coefficients, UnsafeCheckBonus.index - UnsafeCheckBonus.start + noColorPieceIndex, color, unsafeChecksCount);
 
     const auto safeChecksCount = chess::builtin::popcount(allChecks) - unsafeChecksCount;
-    packedBonus += SafeCheckBonus.packed[noColorPieceIndex] * unsafeChecksCount;
+    packedBonus += SafeCheckBonus.packed[noColorPieceIndex] * safeChecksCount;
     IncrementCoefficients(coefficients, SafeCheckBonus.index - SafeCheckBonus.start + noColorPieceIndex, color, safeChecksCount);
 
     return packedBonus;
@@ -681,7 +681,7 @@ int QueenAdditionalEvaluation(int squareIndex, int bucket, int oppositeSideKingS
     IncrementCoefficients(coefficients, UnsafeCheckBonus.index - UnsafeCheckBonus.start + noColorPieceIndex, color, unsafeChecksCount);
 
     const auto safeChecksCount = chess::builtin::popcount(allChecks) - unsafeChecksCount;
-    packedBonus += SafeCheckBonus.packed[noColorPieceIndex] * unsafeChecksCount;
+    packedBonus += SafeCheckBonus.packed[noColorPieceIndex] * safeChecksCount;
     IncrementCoefficients(coefficients, SafeCheckBonus.index - SafeCheckBonus.start + noColorPieceIndex, color, safeChecksCount);
 
     return packedBonus;
