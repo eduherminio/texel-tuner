@@ -542,7 +542,7 @@ public:
             variable_name = "int[]";
         }
 
-        ss << "\tpublic static readonly " << variable_name << "[] " << name << " = \n\t[\n";
+        ss << "\tpublic static readonly " << variable_name << "[] " << name << " =\n\t[\n";
 
         for (int bucket = 0; bucket < PSQTBucketCount; ++bucket)
         {
