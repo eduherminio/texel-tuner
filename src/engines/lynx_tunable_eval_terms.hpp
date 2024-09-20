@@ -5930,8 +5930,8 @@ TunableArray BadBishop_SameColorPawnsPenalty(
 
 TunableArray SafeCheckBonus(
     chess::PieceType::PAWN,
-    std::vector<int>{0, 16, 17, 30, 12},
-    std::vector<int>{0, 3, 15, 3, 19},
+    std::vector<int>{0, 86, 19, 55, 30},
+    std::vector<int>{0, -3, 19, 1, 23},
     1,
     0);
 
