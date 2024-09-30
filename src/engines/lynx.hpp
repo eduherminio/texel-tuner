@@ -24,8 +24,8 @@ const static int numParameters = psqtIndexCount +
                                  OpenFileKingPenalty.size +
                                  KingShieldBonus.size +
                                  BishopPairBonus.size +
-                                 PieceProtectedByPawnBonus.size +
-                                 PieceAttackedByPawnPenalty.size +
+                                 PieceProtectedByPawnBonus.tunableSize +
+                                 PieceAttackedByPawnPenalty.tunableSize +
 
                                  PawnPhalanxBonus.tunableSize +
                                  BadBishop_SameColorPawnsPenalty.tunableSize +
@@ -350,9 +350,11 @@ public:
 
         name = NAME(PieceProtectedByPawnBonus);
         PieceProtectedByPawnBonus.to_cpp(parameters, ss, name);
+        ss << "\n";
 
         name = NAME(PieceAttackedByPawnPenalty);
         PieceAttackedByPawnPenalty.to_cpp(parameters, ss, name);
+        ss << "\n";
 
         name = NAME(PawnPhalanxBonus);
         PawnPhalanxBonus.to_cpp(parameters, ss, name);
@@ -876,24 +878,77 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
     }
 
     // Pieces protected by pawns bonus
-    const auto protectedPiecesByWhitePawns = chess::builtin::popcount(whitePawnAttacks & __builtin_bswap64(board.us(chess::Color::WHITE).getBits()) /*&(~GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE))*/);
-    const auto protectedPiecesByBlackPawns = chess::builtin::popcount(blackPawnAttacks & __builtin_bswap64(board.us(chess::Color::BLACK).getBits()) /*&(~GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK))*/);
+    // Skipping the king, since it's pointless to have it protected
+    const auto pawnsProtectedByPawnsCount = (PieceProtectedByPawnBonus.packed[static_cast<int>(chess::PieceType::PAWN)] *
+                                             (chess::builtin::popcount(whitePawnAttacks & GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE)) -
+                                              chess::builtin::popcount(blackPawnAttacks & GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK))));
+    IncrementCoefficients(coefficients, PieceProtectedByPawnBonus.index + static_cast<int>(chess::PieceType::PAWN), chess::Color::WHITE, pawnsProtectedByPawnsCount);
 
-    IncrementCoefficients(coefficients, PieceProtectedByPawnBonus.index, chess::Color::WHITE, protectedPiecesByWhitePawns);
-    IncrementCoefficients(coefficients, PieceProtectedByPawnBonus.index, chess::Color::BLACK, protectedPiecesByBlackPawns);
+    const auto knightsProtectedByPawnsCount = (PieceProtectedByPawnBonus.packed[static_cast<int>(chess::PieceType::KNIGHT)] *
+                                               (chess::builtin::popcount(whitePawnAttacks & GetPieceSwappingEndianness(board, chess::PieceType::KNIGHT, chess::Color::WHITE)) -
+                                                chess::builtin::popcount(blackPawnAttacks & GetPieceSwappingEndianness(board, chess::PieceType::KNIGHT, chess::Color::BLACK))));
+    IncrementCoefficients(coefficients, PieceProtectedByPawnBonus.index + static_cast<int>(chess::PieceType::KNIGHT), chess::Color::WHITE, knightsProtectedByPawnsCount);
 
-    packedScore += (PieceProtectedByPawnBonus.packed * protectedPiecesByWhitePawns) -
-                   (PieceProtectedByPawnBonus.packed * protectedPiecesByBlackPawns);
+    const auto bishopsProtectedByPawnsCount = (PieceProtectedByPawnBonus.packed[static_cast<int>(chess::PieceType::BISHOP)] *
+                                               (chess::builtin::popcount(whitePawnAttacks & GetPieceSwappingEndianness(board, chess::PieceType::BISHOP, chess::Color::WHITE)) -
+                                                chess::builtin::popcount(blackPawnAttacks & GetPieceSwappingEndianness(board, chess::PieceType::BISHOP, chess::Color::BLACK))));
+    IncrementCoefficients(coefficients, PieceProtectedByPawnBonus.index + static_cast<int>(chess::PieceType::BISHOP), chess::Color::WHITE, bishopsProtectedByPawnsCount);
+
+    const auto rooksProtectedByPawnsCount = (PieceProtectedByPawnBonus.packed[static_cast<int>(chess::PieceType::ROOK)] *
+                                             (chess::builtin::popcount(whitePawnAttacks & GetPieceSwappingEndianness(board, chess::PieceType::ROOK, chess::Color::WHITE)) -
+                                              chess::builtin::popcount(blackPawnAttacks & GetPieceSwappingEndianness(board, chess::PieceType::ROOK, chess::Color::BLACK))));
+    IncrementCoefficients(coefficients, PieceProtectedByPawnBonus.index + static_cast<int>(chess::PieceType::ROOK), chess::Color::WHITE, rooksProtectedByPawnsCount);
+
+    const auto queensProtectedByPawnsCount = (PieceProtectedByPawnBonus.packed[static_cast<int>(chess::PieceType::QUEEN)] *
+                                              (chess::builtin::popcount(whitePawnAttacks & GetPieceSwappingEndianness(board, chess::PieceType::QUEEN, chess::Color::WHITE)) -
+                                               chess::builtin::popcount(blackPawnAttacks & GetPieceSwappingEndianness(board, chess::PieceType::QUEEN, chess::Color::BLACK))));
+    IncrementCoefficients(coefficients, PieceProtectedByPawnBonus.index + static_cast<int>(chess::PieceType::QUEEN), chess::Color::WHITE, queensProtectedByPawnsCount);
+
+    packedScore +=
+        pawnsProtectedByPawnsCount +
+        knightsProtectedByPawnsCount +
+        bishopsProtectedByPawnsCount +
+        rooksProtectedByPawnsCount +
+        queensProtectedByPawnsCount;
 
     // Pieces attacked by pawns bonus
-    const auto attackedPiecesByBlackPawns = chess::builtin::popcount(blackPawnAttacks & __builtin_bswap64(board.us(chess::Color::WHITE).getBits()) /*&(~GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE))*/);
-    const auto attackedPiecesByWhitePawns = chess::builtin::popcount(whitePawnAttacks & __builtin_bswap64(board.us(chess::Color::BLACK).getBits()) /*&(~GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK))*/);
+    const auto pawnsAttackedByPawnsCount = (PieceAttackedByPawnPenalty.packed[static_cast<int>(chess::PieceType::PAWN)] *
+                                            (chess::builtin::popcount(blackPawnAttacks & GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE)) -
+                                             chess::builtin::popcount(whitePawnAttacks & GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK))));
+    IncrementCoefficients(coefficients, PieceAttackedByPawnPenalty.index + static_cast<int>(chess::PieceType::PAWN), chess::Color::WHITE, pawnsAttackedByPawnsCount);
 
-    IncrementCoefficients(coefficients, PieceAttackedByPawnPenalty.index, chess::Color::WHITE, attackedPiecesByBlackPawns);
-    IncrementCoefficients(coefficients, PieceAttackedByPawnPenalty.index, chess::Color::BLACK, attackedPiecesByWhitePawns);
+    const auto knightsAttackedByPawnsCount = (PieceAttackedByPawnPenalty.packed[static_cast<int>(chess::PieceType::KNIGHT)] *
+                                            (chess::builtin::popcount(blackPawnAttacks & GetPieceSwappingEndianness(board, chess::PieceType::KNIGHT, chess::Color::WHITE)) -
+                                             chess::builtin::popcount(whitePawnAttacks & GetPieceSwappingEndianness(board, chess::PieceType::KNIGHT, chess::Color::BLACK))));
+    IncrementCoefficients(coefficients, PieceAttackedByPawnPenalty.index + static_cast<int>(chess::PieceType::KNIGHT), chess::Color::WHITE, knightsAttackedByPawnsCount);
 
-    packedScore += (PieceAttackedByPawnPenalty.packed * attackedPiecesByBlackPawns) -
-                   (PieceAttackedByPawnPenalty.packed * attackedPiecesByWhitePawns);
+    const auto bishopsAttackedByPawnsCount = (PieceAttackedByPawnPenalty.packed[static_cast<int>(chess::PieceType::BISHOP)] *
+                                            (chess::builtin::popcount(blackPawnAttacks & GetPieceSwappingEndianness(board, chess::PieceType::BISHOP, chess::Color::WHITE)) -
+                                             chess::builtin::popcount(whitePawnAttacks & GetPieceSwappingEndianness(board, chess::PieceType::BISHOP, chess::Color::BLACK))));
+    IncrementCoefficients(coefficients, PieceAttackedByPawnPenalty.index + static_cast<int>(chess::PieceType::BISHOP), chess::Color::WHITE, bishopsAttackedByPawnsCount);
+
+    const auto rooksAttackedByPawnsCount = (PieceAttackedByPawnPenalty.packed[static_cast<int>(chess::PieceType::ROOK)] *
+                                            (chess::builtin::popcount(blackPawnAttacks & GetPieceSwappingEndianness(board, chess::PieceType::ROOK, chess::Color::WHITE)) -
+                                             chess::builtin::popcount(whitePawnAttacks & GetPieceSwappingEndianness(board, chess::PieceType::ROOK, chess::Color::BLACK))));
+    IncrementCoefficients(coefficients, PieceAttackedByPawnPenalty.index + static_cast<int>(chess::PieceType::ROOK), chess::Color::WHITE, rooksAttackedByPawnsCount);
+
+    const auto queensAttackedByPawnsCount = (PieceAttackedByPawnPenalty.packed[static_cast<int>(chess::PieceType::QUEEN)] *
+                                            (chess::builtin::popcount(blackPawnAttacks & GetPieceSwappingEndianness(board, chess::PieceType::QUEEN, chess::Color::WHITE)) -
+                                             chess::builtin::popcount(whitePawnAttacks & GetPieceSwappingEndianness(board, chess::PieceType::QUEEN, chess::Color::BLACK))));
+    IncrementCoefficients(coefficients, PieceAttackedByPawnPenalty.index + static_cast<int>(chess::PieceType::QUEEN), chess::Color::WHITE, queensAttackedByPawnsCount);
+
+    const auto kingsAttackedByPawnsCount = (PieceAttackedByPawnPenalty.packed[static_cast<int>(chess::PieceType::KING)] *
+                                            (chess::builtin::popcount(blackPawnAttacks & GetPieceSwappingEndianness(board, chess::PieceType::KING, chess::Color::WHITE)) -
+                                             chess::builtin::popcount(whitePawnAttacks & GetPieceSwappingEndianness(board, chess::PieceType::KING, chess::Color::BLACK))));
+    IncrementCoefficients(coefficients, PieceAttackedByPawnPenalty.index + static_cast<int>(chess::PieceType::KING), chess::Color::WHITE, kingsAttackedByPawnsCount);
+
+    packedScore +=
+        pawnsAttackedByPawnsCount +
+        knightsAttackedByPawnsCount +
+        bishopsAttackedByPawnsCount +
+        rooksAttackedByPawnsCount +
+        queensAttackedByPawnsCount +
+        kingsAttackedByPawnsCount;
 
     // Debugging eval
     // return EvalResult{
