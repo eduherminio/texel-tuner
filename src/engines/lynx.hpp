@@ -24,11 +24,11 @@ const static int numParameters = psqtIndexCount +
                                  OpenFileKingPenalty.size +
                                  KingShieldBonus.size +
                                  BishopPairBonus.size +
-                                 KnightOutpostBonus.size +
                                  PieceProtectedByPawnBonus.size +
                                  PieceAttackedByPawnPenalty.size +
 
                                  PawnPhalanxBonus.tunableSize +
+                                 KnightOutpostBonus.tunableSize +
                                  BadBishop_SameColorPawnsPenalty.tunableSize +
                                  BadBishop_BlockedCentralPawnsPenalty.tunableSize +
 
@@ -110,11 +110,11 @@ public:
         OpenFileKingPenalty.add(result);
         KingShieldBonus.add(result);
         BishopPairBonus.add(result);
-        KnightOutpostBonus.add(result);
         PieceProtectedByPawnBonus.add(result);
         PieceAttackedByPawnPenalty.add(result);
 
         PawnPhalanxBonus.add(result);
+        KnightOutpostBonus.add(result);
         BadBishop_SameColorPawnsPenalty.add(result);
         BadBishop_BlockedCentralPawnsPenalty.add(result);
         CheckBonus.add(result);
@@ -257,9 +257,6 @@ public:
         name = NAME(BishopPairBonus);
         BishopPairBonus.to_csharp(parameters, ss, name);
 
-        name = NAME(KnightOutpostBonus);
-        KnightOutpostBonus.to_csharp(parameters, ss, name);
-
         name = NAME(PieceProtectedByPawnBonus);
         PieceProtectedByPawnBonus.to_csharp(parameters, ss, name);
 
@@ -268,6 +265,9 @@ public:
 
         name = NAME(PawnPhalanxBonus);
         PawnPhalanxBonus.to_csharp(parameters, ss, name);
+
+        name = NAME(KnightOutpostBonus);
+        KnightOutpostBonus.to_csharp(parameters, ss, name);
 
         name = NAME(BadBishop_SameColorPawnsPenalty);
         BadBishop_SameColorPawnsPenalty.to_csharp(parameters, ss, name);
@@ -353,9 +353,6 @@ public:
         name = NAME(BishopPairBonus);
         BishopPairBonus.to_cpp(parameters, ss, name);
 
-        name = NAME(KnightOutpostBonus);
-        KnightOutpostBonus.to_cpp(parameters, ss, name);
-
         name = NAME(PieceProtectedByPawnBonus);
         PieceProtectedByPawnBonus.to_cpp(parameters, ss, name);
 
@@ -364,6 +361,10 @@ public:
 
         name = NAME(PawnPhalanxBonus);
         PawnPhalanxBonus.to_cpp(parameters, ss, name);
+        ss << "\n";
+
+        name = NAME(KnightOutpostBonus);
+        KnightOutpostBonus.to_cpp(parameters, ss, name);
         ss << "\n";
 
         name = NAME(BadBishop_SameColorPawnsPenalty);
@@ -884,21 +885,35 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
     }
 
     // Knight outpost bonus
-    const auto whiteKnightOutpostCount = chess::builtin::popcount(
+    auto whiteKnightOutpostCount =
         GetPieceSwappingEndianness(board, chess::PieceType::KNIGHT, chess::Color::WHITE) &
         whitePawnAttacks &
-        (~blackPawnAttacks));
+        (~blackPawnAttacks);
 
-    packedScore += KnightOutpostBonus.packed * whiteKnightOutpostCount;
-    IncrementCoefficients(coefficients, KnightOutpostBonus.index, chess::Color::WHITE, whiteKnightOutpostCount);
+    while (whiteKnightOutpostCount != 0)
+    {
+        const auto pieceSquareIndex = chess::builtin::lsb(whiteKnightOutpostCount).index();
+        ResetLS1B(whiteKnightOutpostCount);
 
-    const auto blackKnightOutpostCount = chess::builtin::popcount(
+        const auto file = File[pieceSquareIndex];
+        packedScore += KnightOutpostBonus.packed[file];
+        IncrementCoefficients(coefficients, KnightOutpostBonus.index + file - KnightOutpostBonus.start, chess::Color::WHITE);
+    }
+
+    auto blackKnightOutpostCount =
         GetPieceSwappingEndianness(board, chess::PieceType::KNIGHT, chess::Color::BLACK) &
         blackPawnAttacks &
-        (~whitePawnAttacks));
+        (~whitePawnAttacks);
 
-    packedScore -= KnightOutpostBonus.packed * blackKnightOutpostCount;
-    IncrementCoefficients(coefficients, KnightOutpostBonus.index, chess::Color::BLACK, blackKnightOutpostCount);
+    while (whiteKnightOutpostCount != 0)
+    {
+        const auto pieceSquareIndex = chess::builtin::lsb(whiteKnightOutpostCount).index();
+        ResetLS1B(whiteKnightOutpostCount);
+
+        const auto file = File[pieceSquareIndex];
+        packedScore -= KnightOutpostBonus.packed[file];
+        IncrementCoefficients(coefficients, KnightOutpostBonus.index + file - KnightOutpostBonus.start, chess::Color::BLACK);
+    }
 
     // Pieces protected by pawns bonus
     const auto protectedPiecesByWhitePawns = chess::builtin::popcount(whitePawnAttacks & __builtin_bswap64(board.us(chess::Color::WHITE).getBits()) /*&(~GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE))*/);
