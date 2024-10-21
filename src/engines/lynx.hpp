@@ -886,6 +886,7 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
     // Knight outpost bonus
     const auto whiteKnightOutpostCount = chess::builtin::popcount(
         GetPieceSwappingEndianness(board, chess::PieceType::KNIGHT, chess::Color::WHITE) &
+        CentralAttackingSquares &
         whitePawnAttacks &
         (~blackPawnAttacks));
 
@@ -894,6 +895,7 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
 
     const auto blackKnightOutpostCount = chess::builtin::popcount(
         GetPieceSwappingEndianness(board, chess::PieceType::KNIGHT, chess::Color::BLACK) &
+        CentralAttackingSquares &
         blackPawnAttacks &
         (~whitePawnAttacks));
 
