@@ -875,6 +875,23 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
         IncrementCoefficients(coefficients, BishopPairBonus.index, chess::Color::BLACK);
     }
 
+    // Knight outpost bonus
+    const auto whiteKnightOutpostCount = chess::builtin::popcount(
+        GetPieceSwappingEndianness(board, chess::PieceType::KNIGHT, chess::Color::WHITE) &
+        whitePawnAttacks &
+        (~blackPawnAttacks));
+
+    packedScore += KnightOutpostBonus.packed * whiteKnightOutpostCount;
+    IncrementCoefficients(coefficients, KnightOutpostBonus.index, chess::Color::WHITE, whiteKnightOutpostCount);
+
+    const auto blackKnightOutpostCount = chess::builtin::popcount(
+        GetPieceSwappingEndianness(board, chess::PieceType::KNIGHT, chess::Color::BLACK) &
+        blackPawnAttacks &
+        (~whitePawnAttacks));
+
+    packedScore -= KnightOutpostBonus.packed * blackKnightOutpostCount;
+    IncrementCoefficients(coefficients, KnightOutpostBonus.index, chess::Color::BLACK, blackKnightOutpostCount);
+
     // Pieces protected by pawns bonus
     const auto protectedPiecesByWhitePawns = chess::builtin::popcount(whitePawnAttacks & __builtin_bswap64(board.us(chess::Color::WHITE).getBits()) /*&(~GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE))*/);
     const auto protectedPiecesByBlackPawns = chess::builtin::popcount(blackPawnAttacks & __builtin_bswap64(board.us(chess::Color::BLACK).getBits()) /*&(~GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK))*/);
