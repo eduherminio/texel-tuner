@@ -895,9 +895,13 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
         const auto knightSquareIndex = chess::builtin::lsb(whiteKnightOutpostCount).index();
         ResetLS1B(whiteKnightOutpostCount);
 
-        const auto rank = Rank[knightSquareIndex];
-        packedScore += KnightOutpostBonus.packed[rank];
-        IncrementCoefficients(coefficients, KnightOutpostBonus.index + rank - KnightOutpostBonus.start, chess::Color::WHITE);
+        if ((blackPawns & WhitePassedPawnMasks[knightSquareIndex]) == 0)
+        {
+            const auto rank = Rank[knightSquareIndex];
+
+            packedScore += KnightOutpostBonus.packed[rank];
+            IncrementCoefficients(coefficients, KnightOutpostBonus.index + rank - KnightOutpostBonus.start, chess::Color::WHITE);
+        }
     }
 
     auto blackKnightOutpostCount =
@@ -910,9 +914,13 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
         const auto knightSquareIndex = chess::builtin::lsb(blackKnightOutpostCount).index();
         ResetLS1B(blackKnightOutpostCount);
 
-        const auto rank =  7 - Rank[knightSquareIndex];
-        packedScore -= KnightOutpostBonus.packed[rank];
-        IncrementCoefficients(coefficients, KnightOutpostBonus.index + rank - KnightOutpostBonus.start, chess::Color::BLACK);
+        if ((whitePawns & BlackPassedPawnMasks[knightSquareIndex]) == 0)
+        {
+            const auto rank = 7 - Rank[knightSquareIndex];
+            
+            packedScore -= KnightOutpostBonus.packed[rank];
+            IncrementCoefficients(coefficients, KnightOutpostBonus.index + rank - KnightOutpostBonus.start, chess::Color::BLACK);
+        }
     }
 
     // Pieces protected by pawns bonus
