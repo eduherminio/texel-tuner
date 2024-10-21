@@ -892,10 +892,10 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
 
     while (whiteKnightOutpostCount != 0)
     {
-        const auto pieceSquareIndex = chess::builtin::lsb(whiteKnightOutpostCount).index();
+        const auto knightSquareIndex = chess::builtin::lsb(whiteKnightOutpostCount).index();
         ResetLS1B(whiteKnightOutpostCount);
 
-        const auto rank = Rank[pieceSquareIndex];
+        const auto rank = Rank[knightSquareIndex];
         packedScore += KnightOutpostBonus.packed[rank];
         IncrementCoefficients(coefficients, KnightOutpostBonus.index + rank - KnightOutpostBonus.start, chess::Color::WHITE);
     }
@@ -905,12 +905,12 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
         blackPawnAttacks &
         (~whitePawnAttacks);
 
-    while (whiteKnightOutpostCount != 0)
+    while (blackKnightOutpostCount != 0)
     {
-        const auto pieceSquareIndex = chess::builtin::lsb(whiteKnightOutpostCount).index();
-        ResetLS1B(whiteKnightOutpostCount);
+        const auto knightSquareIndex = chess::builtin::lsb(blackKnightOutpostCount).index();
+        ResetLS1B(blackKnightOutpostCount);
 
-        const auto rank =  7 - Rank[pieceSquareIndex];
+        const auto rank =  7 - Rank[knightSquareIndex];
         packedScore -= KnightOutpostBonus.packed[rank];
         IncrementCoefficients(coefficients, KnightOutpostBonus.index + rank - KnightOutpostBonus.start, chess::Color::BLACK);
     }
