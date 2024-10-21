@@ -231,7 +231,9 @@ constexpr u64 NotAFile = 0xFEFEFEFEFEFEFEFE;
 
 constexpr u64 NotHFile = 0x7F7F7F7F7F7F7F7F;
 
-constexpr u64 CentralAttackingSquares = 0x3C3C3C0000;
+constexpr u64 CentralAttackingWhiteSquares = 0x3C3C3C0000;
+
+constexpr u64 CentralAttackingBlackSquares = 0x3C3C3C000000;
 
 constexpr static std::array<int, 64> LightSquares = {
     1, 0, 1, 0, 1, 0, 1, 0,
