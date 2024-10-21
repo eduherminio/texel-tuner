@@ -5923,7 +5923,7 @@ TunableArray KnightOutpostBonus(
     chess::PieceType::PAWN,
     std::vector<int>{0, 1, 10, 22, 55, 208, -54, 505},
     std::vector<int>{0, 2, 10, 24, 77, 187, 403, 606},
-    1,
+    2,
     0);
 
 TunableArray BadBishop_SameColorPawnsPenalty(
