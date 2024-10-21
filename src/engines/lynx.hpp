@@ -895,9 +895,9 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
         const auto pieceSquareIndex = chess::builtin::lsb(whiteKnightOutpostCount).index();
         ResetLS1B(whiteKnightOutpostCount);
 
-        const auto file = File[pieceSquareIndex];
-        packedScore += KnightOutpostBonus.packed[file];
-        IncrementCoefficients(coefficients, KnightOutpostBonus.index + file - KnightOutpostBonus.start, chess::Color::WHITE);
+        const auto rank = Rank[pieceSquareIndex];
+        packedScore += KnightOutpostBonus.packed[rank];
+        IncrementCoefficients(coefficients, KnightOutpostBonus.index + rank - KnightOutpostBonus.start, chess::Color::WHITE);
     }
 
     auto blackKnightOutpostCount =
@@ -910,9 +910,9 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
         const auto pieceSquareIndex = chess::builtin::lsb(whiteKnightOutpostCount).index();
         ResetLS1B(whiteKnightOutpostCount);
 
-        const auto file = File[pieceSquareIndex];
-        packedScore -= KnightOutpostBonus.packed[file];
-        IncrementCoefficients(coefficients, KnightOutpostBonus.index + file - KnightOutpostBonus.start, chess::Color::BLACK);
+        const auto rank =  7 - Rank[pieceSquareIndex];
+        packedScore -= KnightOutpostBonus.packed[rank];
+        IncrementCoefficients(coefficients, KnightOutpostBonus.index + rank - KnightOutpostBonus.start, chess::Color::BLACK);
     }
 
     // Pieces protected by pawns bonus
