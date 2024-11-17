@@ -231,8 +231,10 @@ public:
         // name = NAME(DoubledPawnPenalty);
         // DoubledPawnPenalty.to_json(parameters, ss, name);
 
-        ss << "public static class EvaluationParams" << std::endl
-           << "{" << std::endl;
+        ss << "public static partial class EvaluationParams" << std::endl
+           << "{" << std::endl
+           << "#pragma warning disable IDE0051, IDE0052, CS0169 // Remove unread private members\n"
+           << std::endl;
 
         name = NAME(IsolatedPawnPenalty);
         IsolatedPawnPenalty.to_csharp(parameters, ss, name);
@@ -260,6 +262,9 @@ public:
 
         name = NAME(PieceAttackedByPawnPenalty);
         PieceAttackedByPawnPenalty.to_csharp(parameters, ss, name);
+
+        ss << "#pragma warning restore IDE0051, IDE0052, CS0169 // Remove unread private members\n"
+           << std::endl;
 
         name = NAME(PawnPhalanxBonus);
         PawnPhalanxBonus.to_csharp(parameters, ss, name);
