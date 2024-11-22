@@ -5913,7 +5913,12 @@ TunableSingle KingShieldBonus(23, -3);
 TunableSingle BishopPairBonus(30, 72);
 TunableSingle PieceProtectedByPawnBonus(12, 15);
 TunableSingle PieceAttackedByPawnPenalty(-47, -33);
-TunableSingle KnightAttacksRookBonus(65, -10);
+TunableArray KnightForkBounus(
+    chess::PieceType::PAWN,
+    std::vector<int>{0, 0, 2, 3, 4, 5, 6, 7, 8},
+    std::vector<int>{0, 0, 2, 3, 4, 5, 6, 7, 8},
+    2,
+    0);
 TunableArray PawnPhalanxBonus(
     chess::PieceType::PAWN,
     std::vector<int>{0, 1, 10, 22, 55, 208, -55},
