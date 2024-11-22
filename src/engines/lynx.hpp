@@ -578,8 +578,10 @@ int KnightAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int 
     packedBonus += CheckBonus.packed[noColorPieceIndex] * checksCount;
     IncrementCoefficients(coefficients, CheckBonus.index + noColorPieceIndex - CheckBonus.start, color, checksCount);
 
+    const auto opponentPawnAttacksBitBoard = chess::Bitboard(opponentPawnAttacks);
+
     // Forks
-    if (attacks.check(oppositeSideKingSquare))
+    if (attacks.check(oppositeSideKingSquare) && !opponentPawnAttacksBitBoard.check(squareIndex))
     {
         const auto enemyPieces = GetPieceSwappingEndianness(board, chess::PieceType::QUEEN, ~color) |
                                  GetPieceSwappingEndianness(board, chess::PieceType::ROOK, ~color) |
