@@ -560,11 +560,11 @@ int RookAdditonalEvaluation(int squareIndex, int pieceIndex, int bucket, int opp
 int KnightAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int oppositeSideKingSquare, const u64 opponentPawnAttacks, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
 {
     const auto noColorPieceIndex = static_cast<int>(chess::PieceType::KNIGHT);
-    const auto attacks = chess::attacks::knight(static_cast<chess::Square>(squareIndex)).getBits();
+    const auto attacks = chess::attacks::knight(static_cast<chess::Square>(squareIndex));
 
     // Mobility
     const auto mobilityCount = chess::builtin::popcount(
-        attacks &
+        attacks.getBits() &
         (~__builtin_bswap64(board.us(color).getBits())) &
         (~opponentPawnAttacks));
 
@@ -572,25 +572,23 @@ int KnightAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int 
     IncrementCoefficients(coefficients, KnightMobilityBonus.index + mobilityCount - KnightMobilityBonus.start, color);
 
     // Checks
-    const auto enemyKingCheckThreats = chess::attacks::knight(oppositeSideKingSquare).getBits();
-    const auto checksCount = chess::builtin::popcount(attacks & enemyKingCheckThreats);
+    const auto enemyKingCheckThreats = chess::attacks::knight(oppositeSideKingSquare);
+    const auto checksCount = (attacks & enemyKingCheckThreats).count();
 
     packedBonus += CheckBonus.packed[noColorPieceIndex] * checksCount;
     IncrementCoefficients(coefficients, CheckBonus.index + noColorPieceIndex - CheckBonus.start, color, checksCount);
 
     // Forks
-    const auto majorPieces = GetPieceSwappingEndianness(board, chess::PieceType::KING, ~color) |
-                             GetPieceSwappingEndianness(board, chess::PieceType::QUEEN, ~color) |
-                             GetPieceSwappingEndianness(board, chess::PieceType::ROOK, ~color) |
-                             GetPieceSwappingEndianness(board, chess::PieceType::BISHOP, ~color);
-
-    const auto enemyPiecesAttacked = attacks & majorPieces;
-    const auto attacksCount = chess::builtin::popcount(enemyPiecesAttacked);
-
-    if (attacksCount > 1)
+    if (attacks.check(oppositeSideKingSquare))
     {
-        packedBonus += KnightForkBounus.packed * attacksCount;
-        IncrementCoefficients(coefficients, KnightForkBounus.index, color, attacksCount);
+        const auto enemyPieces = GetPieceSwappingEndianness(board, chess::PieceType::QUEEN, ~color) |
+                                 GetPieceSwappingEndianness(board, chess::PieceType::ROOK, ~color) |
+                                 GetPieceSwappingEndianness(board, chess::PieceType::BISHOP, ~color);
+
+        const auto enemyPiecesAttackedCount = (attacks & enemyPieces).count();
+
+        packedBonus += KnightForkBounus.packed * enemyPiecesAttackedCount;
+        IncrementCoefficients(coefficients, KnightForkBounus.index, color, enemyPiecesAttackedCount);
     }
 
     return packedBonus;
