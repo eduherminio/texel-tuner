@@ -581,7 +581,8 @@ int KnightAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int 
     // Forks
     const auto majorPieces = GetPieceSwappingEndianness(board, chess::PieceType::KING, ~color) |
                              GetPieceSwappingEndianness(board, chess::PieceType::QUEEN, ~color) |
-                             GetPieceSwappingEndianness(board, chess::PieceType::ROOK, ~color);
+                             GetPieceSwappingEndianness(board, chess::PieceType::ROOK, ~color) |
+                             GetPieceSwappingEndianness(board, chess::PieceType::BISHOP, ~color);
 
     const auto enemyPiecesAttacked = attacks & majorPieces;
     const auto attacksCount = chess::builtin::popcount(enemyPiecesAttacked);
