@@ -366,6 +366,7 @@ public:
 
         name = NAME(KnightForkBounus);
         KnightForkBounus.to_cpp(parameters, ss, name);
+        ss << "\n";
 
         name = NAME(PawnPhalanxBonus);
         PawnPhalanxBonus.to_cpp(parameters, ss, name);
@@ -585,7 +586,7 @@ int KnightAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int 
     if (attacksCount != 0)
     {
         packedBonus += KnightForkBounus.packed[attacksCount];
-        IncrementCoefficients(coefficients, KnightForkBounus.index + attacksCount, color);
+        IncrementCoefficients(coefficients, KnightForkBounus.index + attacksCount - KnightForkBounus.start, color);
     }
 
     return packedBonus;
