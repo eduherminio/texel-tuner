@@ -529,7 +529,7 @@ int RookAdditonalEvaluation(int squareIndex, int pieceIndex, int bucket, int opp
         (~opponentPawnAttacks));
 
     int packedBonus = RookMobilityBonus.packed[mobilityCount];
-    IncrementCoefficients(coefficients, RookMobilityBonus.index + mobilityCount, color);
+    IncrementCoefficients(coefficients, RookMobilityBonus.index + mobilityCount - RookMobilityBonus.start, color);
 
     // Open file
     if (((GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE) | GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK)) & FileMasks[squareIndex]) == 0)
@@ -570,7 +570,7 @@ int KnightAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int 
         (~opponentPawnAttacks));
 
     auto packedBonus = KnightMobilityBonus.packed[mobilityCount];
-    IncrementCoefficients(coefficients, KnightMobilityBonus.index + mobilityCount, color);
+    IncrementCoefficients(coefficients, KnightMobilityBonus.index + mobilityCount - KnightMobilityBonus.start, color);
 
     // Checks
     const auto enemyKingCheckThreats = chess::attacks::knight(oppositeSideKingSquare).getBits();
@@ -583,11 +583,8 @@ int KnightAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int 
     const auto enemyPiecesAttacked = attacks & __builtin_bswap64(board.them(color).getBits());
     const auto attacksCount = chess::builtin::popcount(enemyPiecesAttacked);
 
-    if (attacksCount != 0)
-    {
-        packedBonus += KnightForkBounus.packed[attacksCount];
-        IncrementCoefficients(coefficients, KnightForkBounus.index + attacksCount - KnightForkBounus.start, color);
-    }
+    packedBonus += KnightForkBounus.packed[attacksCount];
+    IncrementCoefficients(coefficients, KnightForkBounus.index + attacksCount - KnightForkBounus.start, color);
 
     return packedBonus;
 }
@@ -605,7 +602,7 @@ int BishopAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int 
         (~opponentPawnAttacks));
 
     auto packedBonus = BishopMobilityBonus.packed[mobilityCount];
-    IncrementCoefficients(coefficients, BishopMobilityBonus.index + mobilityCount, color);
+    IncrementCoefficients(coefficients, BishopMobilityBonus.index + mobilityCount - BishopMobilityBonus.start, color);
 
     // Bad bishop - same color pawns
     const auto sameSidePawns = GetPieceSwappingEndianness(board, chess::PieceType::PAWN, color);
@@ -651,7 +648,7 @@ int QueenAdditionalEvaluation(int squareIndex, int bucket, int oppositeSideKingS
         (~opponentPawnAttacks));
 
     auto packedBonus = QueenMobilityBonus.packed[mobilityCount];
-    IncrementCoefficients(coefficients, QueenMobilityBonus.index + mobilityCount, color);
+    IncrementCoefficients(coefficients, QueenMobilityBonus.index + mobilityCount - QueenMobilityBonus.start, color);
 
     // Checks
     const auto enemyKingCheckThreats = chess::attacks::queen(static_cast<chess::Square>(oppositeSideKingSquare), occupancy).getBits();

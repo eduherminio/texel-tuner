@@ -5917,7 +5917,7 @@ TunableArray KnightForkBounus(
     chess::PieceType::PAWN,
     std::vector<int>{0, -11, -17, -17, -5, -2, 80, 0, 0},
     std::vector<int>{0, 3, 13, 21, 41, 145, 9, 0, 0},
-    1,
+    0,
     0);
 
 TunableArray PawnPhalanxBonus(
