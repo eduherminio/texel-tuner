@@ -26,7 +26,7 @@ const static int numParameters = psqtIndexCount +
                                  BishopPairBonus.size +
                                  PieceProtectedByPawnBonus.size +
                                  PieceAttackedByPawnPenalty.size +
-                                 KnightAttacksRookBonus.size +
+                                 KnightAttacksQueenBonus.size +
 
                                  PawnPhalanxBonus.tunableSize +
                                  BadBishop_SameColorPawnsPenalty.tunableSize +
@@ -112,7 +112,7 @@ public:
         BishopPairBonus.add(result);
         PieceProtectedByPawnBonus.add(result);
         PieceAttackedByPawnPenalty.add(result);
-        KnightAttacksRookBonus.add(result);
+        KnightAttacksQueenBonus.add(result);
 
         PawnPhalanxBonus.add(result);
         BadBishop_SameColorPawnsPenalty.add(result);
@@ -265,8 +265,8 @@ public:
         name = NAME(PieceAttackedByPawnPenalty);
         PieceAttackedByPawnPenalty.to_csharp(parameters, ss, name);
 
-        name = NAME(KnightAttacksRookBonus);
-        KnightAttacksRookBonus.to_csharp(parameters, ss, name);
+        name = NAME(KnightAttacksQueenBonus);
+        KnightAttacksQueenBonus.to_csharp(parameters, ss, name);
 
         ss << "#pragma warning restore IDE0051, IDE0052, CS0169 // Remove unread private members\n"
            << std::endl;
@@ -364,8 +364,8 @@ public:
         name = NAME(PieceAttackedByPawnPenalty);
         PieceAttackedByPawnPenalty.to_cpp(parameters, ss, name);
 
-        name = NAME(KnightAttacksRookBonus);
-        KnightAttacksRookBonus.to_cpp(parameters, ss, name);
+        name = NAME(KnightAttacksQueenBonus);
+        KnightAttacksQueenBonus.to_cpp(parameters, ss, name);
 
         name = NAME(PawnPhalanxBonus);
         PawnPhalanxBonus.to_cpp(parameters, ss, name);
@@ -579,15 +579,15 @@ int KnightAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int 
     IncrementCoefficients(coefficients, CheckBonus.index + noColorPieceIndex - CheckBonus.start, color, checksCount);
 
     // Attacks to enemy queens
-    const auto enemyRooks = GetPieceSwappingEndianness(board, chess::PieceType::ROOK,
+    const auto enemyRooks = GetPieceSwappingEndianness(board, chess::PieceType::QUEEN,
                                                        (color == chess::Color::WHITE
                                                             ? chess::Color::BLACK
                                                             : chess::Color::WHITE));
 
-    const auto rookAttacksCount = chess::builtin::popcount(attacks & enemyRooks);
+    const auto queenAttacksCount = chess::builtin::popcount(attacks & enemyRooks);
 
-    packedBonus += KnightAttacksRookBonus.packed * rookAttacksCount;
-    IncrementCoefficients(coefficients, KnightAttacksRookBonus.index, color, rookAttacksCount);
+    packedBonus += KnightAttacksQueenBonus.packed * queenAttacksCount;
+    IncrementCoefficients(coefficients, KnightAttacksQueenBonus.index, color, queenAttacksCount);
 
     return packedBonus;
 }
