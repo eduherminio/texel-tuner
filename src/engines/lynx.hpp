@@ -26,6 +26,7 @@ const static int numParameters = psqtIndexCount +
                                  BishopPairBonus.size +
                                  PieceProtectedByPawnBonus.size +
                                  PieceAttackedByPawnPenalty.size +
+                                 KnightAttacksQueenBonus.size +
 
                                  PawnPhalanxBonus.tunableSize +
                                  BadBishop_SameColorPawnsPenalty.tunableSize +
@@ -111,6 +112,7 @@ public:
         BishopPairBonus.add(result);
         PieceProtectedByPawnBonus.add(result);
         PieceAttackedByPawnPenalty.add(result);
+        KnightAttacksQueenBonus.add(result);
 
         PawnPhalanxBonus.add(result);
         BadBishop_SameColorPawnsPenalty.add(result);
@@ -263,6 +265,9 @@ public:
         name = NAME(PieceAttackedByPawnPenalty);
         PieceAttackedByPawnPenalty.to_csharp(parameters, ss, name);
 
+        name = NAME(KnightAttacksQueenBonus);
+        KnightAttacksQueenBonus.to_csharp(parameters, ss, name);
+
         ss << "#pragma warning restore IDE0051, IDE0052, CS0169 // Remove unread private members\n"
            << std::endl;
 
@@ -358,6 +363,9 @@ public:
 
         name = NAME(PieceAttackedByPawnPenalty);
         PieceAttackedByPawnPenalty.to_cpp(parameters, ss, name);
+
+        name = NAME(KnightAttacksQueenBonus);
+        KnightAttacksQueenBonus.to_cpp(parameters, ss, name);
 
         name = NAME(PawnPhalanxBonus);
         PawnPhalanxBonus.to_cpp(parameters, ss, name);
@@ -569,6 +577,17 @@ int KnightAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int 
 
     packedBonus += CheckBonus.packed[noColorPieceIndex] * checksCount;
     IncrementCoefficients(coefficients, CheckBonus.index + noColorPieceIndex - CheckBonus.start, color, checksCount);
+
+    // Attacks to enemy queens
+    const auto enemyQueen = color == chess::Color::WHITE
+                                ? GetPieceSwappingEndianness(board, chess::PieceType::QUEEN, chess::Color::BLACK)
+                                : GetPieceSwappingEndianness(board, chess::PieceType::QUEEN, chess::Color::WHITE);
+
+    if ((attacks & enemyQueen) != 0)
+    {
+        packedBonus += KnightAttacksQueenBonus.packed;
+        IncrementCoefficients(coefficients, KnightAttacksQueenBonus.index, color);
+    }
 
     return packedBonus;
 }
