@@ -585,7 +585,7 @@ int KnightAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int 
     if (attacksCount >= 2)
     {
         packedBonus += KnightForkBounus.packed[attacksCount];
-        IncrementCoefficients(coefficients, KnightForkBounus.index + attacksCount, color);
+        IncrementCoefficients(coefficients, KnightForkBounus.index + attacksCount - KnightForkBounus.start, color);
     }
 
     return packedBonus;
