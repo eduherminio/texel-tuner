@@ -583,7 +583,7 @@ int KnightAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int 
                              GetPieceSwappingEndianness(board, chess::PieceType::QUEEN, ~color) |
                              GetPieceSwappingEndianness(board, chess::PieceType::ROOK, ~color);
 
-    const auto enemyPiecesAttacked = attacks & __builtin_bswap64(board.them(color).getBits());
+    const auto enemyPiecesAttacked = attacks & majorPieces;
     const auto attacksCount = chess::builtin::popcount(enemyPiecesAttacked);
 
     if (attacksCount > 1)
