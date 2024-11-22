@@ -26,8 +26,8 @@ const static int numParameters = psqtIndexCount +
                                  BishopPairBonus.size +
                                  PieceProtectedByPawnBonus.size +
                                  PieceAttackedByPawnPenalty.size +
+                                 KnightForkBounus.size +
 
-                                 KnightForkBounus.tunableSize +
                                  PawnPhalanxBonus.tunableSize +
                                  BadBishop_SameColorPawnsPenalty.tunableSize +
                                  BadBishop_BlockedCentralPawnsPenalty.tunableSize +
@@ -112,8 +112,8 @@ public:
         BishopPairBonus.add(result);
         PieceProtectedByPawnBonus.add(result);
         PieceAttackedByPawnPenalty.add(result);
-
         KnightForkBounus.add(result);
+
         PawnPhalanxBonus.add(result);
         BadBishop_SameColorPawnsPenalty.add(result);
         BadBishop_BlockedCentralPawnsPenalty.add(result);
@@ -265,11 +265,11 @@ public:
         name = NAME(PieceAttackedByPawnPenalty);
         PieceAttackedByPawnPenalty.to_csharp(parameters, ss, name);
 
-        ss << "#pragma warning restore IDE0051, IDE0052, CS0169 // Remove unread private members\n"
-           << std::endl;
-
         name = NAME(KnightForkBounus);
         KnightForkBounus.to_csharp(parameters, ss, name);
+
+        ss << "#pragma warning restore IDE0051, IDE0052, CS0169 // Remove unread private members\n"
+           << std::endl;
 
         name = NAME(PawnPhalanxBonus);
         PawnPhalanxBonus.to_csharp(parameters, ss, name);
@@ -366,7 +366,6 @@ public:
 
         name = NAME(KnightForkBounus);
         KnightForkBounus.to_cpp(parameters, ss, name);
-        ss << "\n";
 
         name = NAME(PawnPhalanxBonus);
         PawnPhalanxBonus.to_cpp(parameters, ss, name);
@@ -580,11 +579,18 @@ int KnightAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int 
     IncrementCoefficients(coefficients, CheckBonus.index + noColorPieceIndex - CheckBonus.start, color, checksCount);
 
     // Forks
+    const auto majorPieces = GetPieceSwappingEndianness(board, chess::PieceType::KING, ~color) |
+                             GetPieceSwappingEndianness(board, chess::PieceType::QUEEN, ~color) |
+                             GetPieceSwappingEndianness(board, chess::PieceType::ROOK, ~color);
+
     const auto enemyPiecesAttacked = attacks & __builtin_bswap64(board.them(color).getBits());
     const auto attacksCount = chess::builtin::popcount(enemyPiecesAttacked);
 
-    packedBonus += KnightForkBounus.packed[attacksCount];
-    IncrementCoefficients(coefficients, KnightForkBounus.index + attacksCount - KnightForkBounus.start, color);
+    if (attacksCount > 1)
+    {
+        packedBonus += KnightForkBounus.packed * attacksCount;
+        IncrementCoefficients(coefficients, KnightForkBounus.index, color, attacksCount);
+    }
 
     return packedBonus;
 }
