@@ -5915,9 +5915,9 @@ TunableSingle PieceProtectedByPawnBonus(12, 15);
 TunableSingle PieceAttackedByPawnPenalty(-47, -33);
 TunableArray KnightForkBounus(
     chess::PieceType::PAWN,
-    std::vector<int>{0, 0, 2, 3, 4, 5, 6, 7, 8},
-    std::vector<int>{0, 0, 2, 3, 4, 5, 6, 7, 8},
-    2,
+    std::vector<int>{0, 1, 2, 3, 4, 5, 6, 7, 8},
+    std::vector<int>{0, 1, 2, 3, 4, 5, 6, 7, 8},
+    1,
     0);
 TunableArray PawnPhalanxBonus(
     chess::PieceType::PAWN,

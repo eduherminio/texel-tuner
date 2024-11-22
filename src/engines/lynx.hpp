@@ -582,7 +582,7 @@ int KnightAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int 
     const auto enemyPiecesAttacked = attacks & __builtin_bswap64(board.them(color).getBits());
     const auto attacksCount = chess::builtin::popcount(enemyPiecesAttacked);
 
-    if (attacksCount >= 2)
+    if (attacksCount != 0)
     {
         packedBonus += KnightForkBounus.packed[attacksCount];
         IncrementCoefficients(coefficients, KnightForkBounus.index + attacksCount, color);
