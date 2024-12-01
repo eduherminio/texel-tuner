@@ -24,6 +24,7 @@ const static int numParameters = psqtIndexCount +
                                  OpenFileKingPenalty.size +
                                  KingShieldBonus.size +
                                  BishopPairBonus.size +
+                                 KnightOutpostBonus.size +
                                  PieceProtectedByPawnBonus.size +
                                  PieceAttackedByPawnPenalty.size +
 
@@ -109,6 +110,7 @@ public:
         OpenFileKingPenalty.add(result);
         KingShieldBonus.add(result);
         BishopPairBonus.add(result);
+        KnightOutpostBonus.add(result);
         PieceProtectedByPawnBonus.add(result);
         PieceAttackedByPawnPenalty.add(result);
 
@@ -257,6 +259,9 @@ public:
         name = NAME(BishopPairBonus);
         BishopPairBonus.to_csharp(parameters, ss, name);
 
+        name = NAME(KnightOutpostBonus);
+        KnightOutpostBonus.to_csharp(parameters, ss, name);
+
         name = NAME(PieceProtectedByPawnBonus);
         PieceProtectedByPawnBonus.to_csharp(parameters, ss, name);
 
@@ -352,6 +357,9 @@ public:
 
         name = NAME(BishopPairBonus);
         BishopPairBonus.to_cpp(parameters, ss, name);
+
+        name = NAME(KnightOutpostBonus);
+        KnightOutpostBonus.to_cpp(parameters, ss, name);
 
         name = NAME(PieceProtectedByPawnBonus);
         PieceProtectedByPawnBonus.to_cpp(parameters, ss, name);
@@ -879,6 +887,23 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
         packedScore -= BishopPairBonus.packed;
         IncrementCoefficients(coefficients, BishopPairBonus.index, chess::Color::BLACK);
     }
+
+    // Knight outpost
+    const auto whiteOutpostsCount = chess::builtin::popcount(
+        __builtin_bswap64(board.pieces(chess::PieceType::KNIGHT, chess::Color::WHITE).getBits()) &
+        whitePawnAttacks &
+        (~blackPawnAttacks));
+
+    packedScore += whiteOutpostsCount * KnightOutpostBonus.packed;
+    IncrementCoefficients(coefficients, KnightOutpostBonus.index, chess::Color::WHITE, whiteOutpostsCount);
+
+    const auto blackOutpostsCount = chess::builtin::popcount(
+        __builtin_bswap64(board.pieces(chess::PieceType::KNIGHT, chess::Color::BLACK).getBits()) &
+        blackPawnAttacks &
+        (~whitePawnAttacks));
+
+    packedScore -= blackOutpostsCount * KnightOutpostBonus.packed;
+    IncrementCoefficients(coefficients, KnightOutpostBonus.index, chess::Color::BLACK, blackOutpostsCount);
 
     // Pieces protected by pawns bonus
     const auto protectedPiecesByWhitePawns = chess::builtin::popcount(whitePawnAttacks & __builtin_bswap64(board.us(chess::Color::WHITE).getBits()) /*&(~GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE))*/);
