@@ -891,6 +891,7 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
     // Knight outpost
     const auto whiteOutpostsCount = chess::builtin::popcount(
         __builtin_bswap64(board.pieces(chess::PieceType::KNIGHT, chess::Color::WHITE).getBits()) &
+        KnightOutpostWhiteRanks &
         whitePawnAttacks &
         (~blackPawnAttacks));
 
@@ -899,6 +900,7 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
 
     const auto blackOutpostsCount = chess::builtin::popcount(
         __builtin_bswap64(board.pieces(chess::PieceType::KNIGHT, chess::Color::BLACK).getBits()) &
+        KnightOutpostBlackRanks &
         blackPawnAttacks &
         (~whitePawnAttacks));
 
