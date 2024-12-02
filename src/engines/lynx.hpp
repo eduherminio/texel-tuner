@@ -582,7 +582,6 @@ int KnightAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int 
     const auto colorInt = static_cast<int>(color);
 
     if (
-        GetBit(KnightOutpostRanksBySide[colorInt], squareIndex) &&
         GetBit(friendlyPawnAttacks, squareIndex) &&
         ((SidePassedPawnMasksBySide[colorInt][squareIndex] & GetPieceSwappingEndianness(board, chess::PieceType::PAWN, ~color)) == 0))
     {
