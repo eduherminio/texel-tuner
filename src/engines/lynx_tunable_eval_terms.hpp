@@ -5912,6 +5912,7 @@ TunableSingle OpenFileKingPenalty(-66, 2);
 TunableSingle KingShieldBonus(23, -3);
 TunableSingle BishopPairBonus(30, 72);
 TunableSingle KnightOutpostBonus(32, 3);
+TunableSingle KnightOutpostProtectedBonus(32, 3);
 TunableSingle PieceProtectedByPawnBonus(10, 15);
 TunableSingle PieceAttackedByPawnPenalty(-46, -33);
 TunableArray PawnPhalanxBonus(

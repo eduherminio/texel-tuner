@@ -25,6 +25,7 @@ const static int numParameters = psqtIndexCount +
                                  KingShieldBonus.size +
                                  BishopPairBonus.size +
                                  KnightOutpostBonus.size +
+                                 KnightOutpostProtectedBonus.size +
                                  PieceProtectedByPawnBonus.size +
                                  PieceAttackedByPawnPenalty.size +
 
@@ -111,6 +112,7 @@ public:
         KingShieldBonus.add(result);
         BishopPairBonus.add(result);
         KnightOutpostBonus.add(result);
+        KnightOutpostProtectedBonus.add(result);
         PieceProtectedByPawnBonus.add(result);
         PieceAttackedByPawnPenalty.add(result);
 
@@ -262,6 +264,9 @@ public:
         name = NAME(KnightOutpostBonus);
         KnightOutpostBonus.to_csharp(parameters, ss, name);
 
+        name = NAME(KnightOutpostProtectedBonus);
+        KnightOutpostProtectedBonus.to_csharp(parameters, ss, name);
+
         name = NAME(PieceProtectedByPawnBonus);
         PieceProtectedByPawnBonus.to_csharp(parameters, ss, name);
 
@@ -360,6 +365,9 @@ public:
 
         name = NAME(KnightOutpostBonus);
         KnightOutpostBonus.to_cpp(parameters, ss, name);
+
+        name = NAME(KnightOutpostProtectedBonus);
+        KnightOutpostProtectedBonus.to_cpp(parameters, ss, name);
 
         name = NAME(PieceProtectedByPawnBonus);
         PieceProtectedByPawnBonus.to_cpp(parameters, ss, name);
@@ -581,13 +589,19 @@ int KnightAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int 
     // Knight outpost
     const auto colorInt = static_cast<int>(color);
 
-    if (
-        GetBit(KnightOutpostRanksBySide[colorInt], squareIndex) &&
-        GetBit(friendlyPawnAttacks, squareIndex) &&
+    if (GetBit(KnightOutpostRanksBySide[colorInt], squareIndex) &&
         ((SidePassedPawnMasksBySide[colorInt][squareIndex] & GetPieceSwappingEndianness(board, chess::PieceType::PAWN, ~color)) == 0))
     {
-        packedBonus += KnightOutpostBonus.packed;
-        IncrementCoefficients(coefficients, KnightOutpostBonus.index, color);
+        if (GetBit(friendlyPawnAttacks, squareIndex))
+        {
+            packedBonus += KnightOutpostProtectedBonus.packed;
+            IncrementCoefficients(coefficients, KnightOutpostProtectedBonus.index, color);
+        }
+        else
+        {
+            packedBonus += KnightOutpostBonus.packed;
+            IncrementCoefficients(coefficients, KnightOutpostBonus.index, color);
+        }
     }
 
     return packedBonus;
