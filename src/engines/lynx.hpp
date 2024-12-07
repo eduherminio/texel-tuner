@@ -35,6 +35,7 @@ const static int numParameters = psqtIndexCount +
 
                                  PassedPawnBonus.size +                              // PSQTBucketCount * 6, removing 1 rank values
                                  PassedPawnBonusNoEnemiesAheadBonus.size +           // PSQTBucketCount * 6, removing 1 rank values
+                                 PassedPawnBonusCanMove.size +                       // PSQTBucketCount * 6, removing 1 rank values
                                  FriendlyKingDistanceToPassedPawnBonus.tunableSize + // 7, removing start
                                  EnemyKingDistanceToPassedPawnPenalty.tunableSize +  // 7, removing start
                                  VirtualKingMobilityBonus.tunableSize +              // 28
@@ -119,6 +120,7 @@ public:
 
         PassedPawnBonus.add(result);
         PassedPawnBonusNoEnemiesAheadBonus.add(result);
+        PassedPawnBonusCanMove.add(result);
         FriendlyKingDistanceToPassedPawnBonus.add(result);
         EnemyKingDistanceToPassedPawnPenalty.add(result);
         VirtualKingMobilityBonus.add(result);
@@ -129,6 +131,7 @@ public:
 
         assert(PassedPawnBonus.bucketTunableSize == 6);
         assert(PassedPawnBonusNoEnemiesAheadBonus.bucketTunableSize == 6);
+        assert(PassedPawnBonusCanMove.bucketTunableSize == 6);
         assert(FriendlyKingDistanceToPassedPawnBonus.tunableSize == 7);
         assert(EnemyKingDistanceToPassedPawnPenalty.tunableSize == 7);
         assert(VirtualKingMobilityBonus.tunableSize == 28);
@@ -284,6 +287,9 @@ public:
         name = NAME(PassedPawnBonusNoEnemiesAheadBonus);
         PassedPawnBonusNoEnemiesAheadBonus.to_csharp(parameters, ss, name);
 
+        name = NAME(PassedPawnBonusCanMove);
+        PassedPawnBonusCanMove.to_csharp(parameters, ss, name);
+
         name = NAME(FriendlyKingDistanceToPassedPawnBonus);
         FriendlyKingDistanceToPassedPawnBonus.to_csharp(parameters, ss, name);
 
@@ -381,6 +387,9 @@ public:
         name = NAME(PassedPawnBonusNoEnemiesAheadBonus);
         PassedPawnBonusNoEnemiesAheadBonus.to_cpp(parameters, ss, name);
 
+        name = NAME(PassedPawnBonusCanMove);
+        PassedPawnBonusCanMove.to_cpp(parameters, ss, name);
+
         name = NAME(FriendlyKingDistanceToPassedPawnBonus);
         FriendlyKingDistanceToPassedPawnBonus.to_cpp(parameters, ss, name);
 
@@ -451,12 +460,14 @@ int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int sa
     const auto blackPawns = GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK);
     const auto whitePieces = __builtin_bswap64(board.us(chess::Color::WHITE).getBits());
     const auto blackPieces = __builtin_bswap64(board.us(chess::Color::BLACK).getBits());
+    const auto occupancy = __builtin_bswap64(board.occ().getBits());
 
     auto sameSidePawns = whitePawns;
     auto opposideSidePawns = blackPawns;
     auto oppositeSidePieces = blackPieces;
     auto passedPawnMask = WhitePassedPawnMasks[squareIndex];
     auto rank = Rank[squareIndex];
+    auto squareInFrontOfPawn = squareIndex - 8;
 
     if (color == chess::Color::BLACK)
     {
@@ -465,6 +476,7 @@ int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int sa
         oppositeSidePieces = whitePieces;
         passedPawnMask = BlackPassedPawnMasks[squareIndex];
         rank = 7 - rank;
+        squareInFrontOfPawn = squareIndex + 8;
     }
 
     // Isolated pawn
@@ -485,6 +497,13 @@ int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int sa
         {
             packedBonus += PassedPawnBonusNoEnemiesAheadBonus.packed(bucket, rank);
             IncrementCoefficients(coefficients, PassedPawnBonusNoEnemiesAheadBonus.index(bucket, rank - PassedPawnBonusNoEnemiesAheadBonus.start), color); // There's no coefficient for rank 0
+        }
+
+        // Passed pawn without a piece right in front of him
+        if (!GetBit(occupancy, squareInFrontOfPawn))
+        {
+            packedBonus += PassedPawnBonusCanMove.packed(bucket, rank);
+            IncrementCoefficients(coefficients, PassedPawnBonusCanMove.index(bucket, rank - PassedPawnBonusCanMove.start), color); // There's no coefficient for rank 0
         }
 
         // King distance to passed pawn
