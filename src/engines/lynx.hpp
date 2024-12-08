@@ -460,7 +460,6 @@ int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int sa
     const auto blackPawns = GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK);
     const auto whitePieces = __builtin_bswap64(board.us(chess::Color::WHITE).getBits());
     const auto blackPieces = __builtin_bswap64(board.us(chess::Color::BLACK).getBits());
-    const auto occupancy = __builtin_bswap64(board.occ().getBits());
 
     auto sameSidePawns = whitePawns;
     auto opposideSidePawns = blackPawns;
@@ -500,7 +499,7 @@ int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int sa
         }
 
         // Passed pawn without a piece right in front of him
-        if (!GetBit(occupancy, squareInFrontOfPawn))
+        else if (!GetBit(oppositeSidePieces, squareInFrontOfPawn))
         {
             packedBonus += PassedPawnBonusCanMove.packed(bucket, rank);
             IncrementCoefficients(coefficients, PassedPawnBonusCanMove.index(bucket, rank - PassedPawnBonusCanMove.start), color); // There's no coefficient for rank 0
