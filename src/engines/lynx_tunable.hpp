@@ -40,8 +40,18 @@ public:
 
     void to_csharp(const parameters_t &parameters, std::stringstream &ss, const std::string &name)
     {
-        ss << "\t[GeneratedPack("<< std::round(std::round(parameters[index][0])) << ", " << std::round(parameters[index][1]) << ")]\n";
-        ss << "\tprivate static readonly int _" << name << ";\n\n";
+        const auto mg = parameters[index][0];
+        const auto eg = parameters[index][1];
+
+        // Don't use rounded values for actual packed calculation
+        const auto packed = S(mg, eg);
+
+        ss
+            << "\t/// <summary>\n"
+            << "\t/// <see cref=\"Utils.Pack(" << std::round(mg) << ", " << std::round(eg) << ")\"/>\n"
+            << "\t/// </summary>\n"
+            << "\tpublic const int " << name << " = " << packed << ";\n"
+            << std::endl;
     }
 
     void to_cpp(const parameters_t &parameters, std::stringstream &ss, const std::string &name)
