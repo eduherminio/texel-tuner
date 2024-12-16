@@ -40,15 +40,16 @@ public:
 
     void to_csharp(const parameters_t &parameters, std::stringstream &ss, const std::string &name)
     {
-        const auto mg = parameters[index][0];
-        const auto eg = parameters[index][1];
+        const auto mg = std::round(parameters[index][0]);
+        const auto eg = std::round(parameters[index][1]);
 
-        // Don't use rounded values for actual packed calculation
+        // Rounded values probably shouldn't be used for the actual packed value generation, but in practice it doesn't make a difference
+        // (meausred in https://github.com/lynx-chess/Lynx/pull/1283) and this allows us to have consistency between C# and C++ evaluation
         const auto packed = S(mg, eg);
 
         ss
             << "\t/// <summary>\n"
-            << "\t/// <see cref=\"Utils.Pack(" << std::round(mg) << ", " << std::round(eg) << ")\"/>\n"
+            << "\t/// <see cref=\"Utils.Pack(" << mg << ", " << eg << ")\"/>\n"
             << "\t/// </summary>\n"
             << "\tpublic const int " << name << " = " << packed << ";\n"
             << std::endl;
