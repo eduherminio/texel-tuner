@@ -532,7 +532,7 @@ static void print_psqts_csharp(const parameters_t &parameters, const std::array<
              << std::endl
              << "#pragma warning disable IDE0055, IDE1006 // Discard formatting and naming styles\n"
              << std::endl
-             << "internal static partial class TunableEvalParameters\n"
+             << "internal static class TunableEvalParameters\n"
              << "{\n";
 
         file << ss.rdbuf();
