@@ -256,9 +256,9 @@ constexpr u64 NotAFile = 0xFEFEFEFEFEFEFEFE;
 
 constexpr u64 NotHFile = 0x7F7F7F7F7F7F7F7F;
 
-constexpr u64 KnightOutpostWhiteRanks = 0x187E7E7E7E3C;
+constexpr u64 KnightOutpostWhiteRanks = 0x7E7E7E0000;
 
-constexpr u64 KnightOutpostBlackRanks = 0x3C7E7E7E7E180000;
+constexpr u64 KnightOutpostBlackRanks = 0x7E7E7E000000;
 
 constexpr std::array<u64, 2> KnightOutpostRanksBySide = {KnightOutpostWhiteRanks, KnightOutpostBlackRanks};
 
