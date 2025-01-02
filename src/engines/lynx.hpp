@@ -235,7 +235,7 @@ public:
         // name = NAME(DoubledPawnPenalty);
         // DoubledPawnPenalty.to_json(parameters, ss, name);
 
-        ss << "public static partial class EvaluationParams" << std::endl
+        ss << "public static class EvaluationParams" << std::endl
            << "{" << std::endl
            << "#pragma warning disable IDE0051, IDE0052, CS0169 // Remove unread private members\n"
            << std::endl;
