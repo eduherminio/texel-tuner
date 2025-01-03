@@ -755,7 +755,7 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
         // Pieces protected by pawns bonus
         const auto protectedPiecesByWhitePawns = chess::builtin::popcount(whitePawnAttacks & bitboard);
         packedScore += (PieceProtectedByPawnBonus.packed[pieceIndex] * protectedPiecesByWhitePawns);
-        IncrementCoefficients(coefficients, PieceProtectedByPawnBonus.index + protectedPiecesByWhitePawns, chess::Color::WHITE);
+        IncrementCoefficients(coefficients, PieceProtectedByPawnBonus.index + pieceIndex, chess::Color::WHITE, protectedPiecesByWhitePawns);
 
         while (bitboard != 0)
         {
@@ -804,8 +804,8 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
         auto bitboard = GetPieceSwappingEndianness(board, chess::PieceType(static_cast<chess::PieceType::underlying>(tunerPieceIndex)), chess::Color::BLACK);
 
         const auto protectedPiecesByBlackPawns = chess::builtin::popcount(blackPawnAttacks & bitboard);
-        packedScore += (PieceProtectedByPawnBonus.packed[pieceIndex - 6] * protectedPiecesByBlackPawns);
-        IncrementCoefficients(coefficients, PieceProtectedByPawnBonus.index + protectedPiecesByBlackPawns, chess::Color::BLACK);
+        packedScore -= (PieceProtectedByPawnBonus.packed[tunerPieceIndex] * protectedPiecesByBlackPawns);
+        IncrementCoefficients(coefficients, PieceProtectedByPawnBonus.index + tunerPieceIndex, chess::Color::BLACK, protectedPiecesByBlackPawns);
 
         while (bitboard != 0)
         {
