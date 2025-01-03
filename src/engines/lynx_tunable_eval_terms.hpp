@@ -5909,6 +5909,8 @@ TunableSingle OpenFileRookBonus(40, 2);
 TunableSingle SemiOpenFileRookBonus(15, 8);
 TunableSingle SemiOpenFileKingPenalty(-24, 5);
 TunableSingle OpenFileKingPenalty(-65, 2);
+TunableSingle OpenFileQueenBonus(-65, 2);
+TunableSingle SemiOpenFileQueenBonus(-65, 2);
 TunableSingle KingShieldBonus(23, -3);
 TunableSingle BishopPairBonus(30, 72);
 TunableSingle PieceProtectedByPawnBonus(12, 15);

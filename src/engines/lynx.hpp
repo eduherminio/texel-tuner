@@ -22,6 +22,8 @@ const static int numParameters = psqtIndexCount +
                                  SemiOpenFileRookBonus.size +
                                  SemiOpenFileKingPenalty.size +
                                  OpenFileKingPenalty.size +
+                                 OpenFileQueenBonus.size +
+                                 SemiOpenFileQueenBonus.size +
                                  KingShieldBonus.size +
                                  BishopPairBonus.size +
                                  PieceProtectedByPawnBonus.size +
@@ -107,6 +109,8 @@ public:
         SemiOpenFileRookBonus.add(result);
         SemiOpenFileKingPenalty.add(result);
         OpenFileKingPenalty.add(result);
+        OpenFileQueenBonus.add(result);
+        SemiOpenFileQueenBonus.add(result);
         KingShieldBonus.add(result);
         BishopPairBonus.add(result);
         PieceProtectedByPawnBonus.add(result);
@@ -251,6 +255,12 @@ public:
         name = NAME(OpenFileKingPenalty);
         OpenFileKingPenalty.to_csharp(parameters, ss, name);
 
+        name = NAME(OpenFileQueenBonus);
+        OpenFileQueenBonus.to_csharp(parameters, ss, name);
+
+        name = NAME(SemiOpenFileQueenBonus);
+        SemiOpenFileQueenBonus.to_csharp(parameters, ss, name);
+
         name = NAME(KingShieldBonus);
         KingShieldBonus.to_csharp(parameters, ss, name);
 
@@ -346,6 +356,12 @@ public:
 
         name = NAME(OpenFileKingPenalty);
         OpenFileKingPenalty.to_cpp(parameters, ss, name);
+
+        name = NAME(OpenFileQueenBonus);
+        OpenFileQueenBonus.to_cpp(parameters, ss, name);
+
+        name = NAME(SemiOpenFileQueenBonus);
+        SemiOpenFileQueenBonus.to_cpp(parameters, ss, name);
 
         name = NAME(KingShieldBonus);
         KingShieldBonus.to_cpp(parameters, ss, name);
@@ -640,6 +656,26 @@ int QueenAdditionalEvaluation(int squareIndex, int bucket, int oppositeSideKingS
 
     packedBonus += CheckBonus.packed[noColorPieceIndex] * checksCount;
     IncrementCoefficients(coefficients, CheckBonus.index + noColorPieceIndex - CheckBonus.start, color, checksCount);
+
+    // Open/semi-open files when no rooks
+    if (board.pieces(chess::PieceType::ROOK, chess::Color::WHITE).count() == 0 && board.pieces(chess::PieceType::ROOK, chess::Color::BLACK).count() == 0)
+    {
+        // Open file
+        if (((GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE) | GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK)) & FileMasks[squareIndex]) == 0)
+        {
+            packedBonus += OpenFileQueenBonus.packed;
+            IncrementCoefficients(coefficients, OpenFileQueenBonus.index, color);
+        }
+        else
+        {
+            // Semi-open file
+            if ((GetPieceSwappingEndianness(board, chess::PieceType::PAWN, color) & FileMasks[squareIndex]) == 0)
+            {
+                packedBonus += SemiOpenFileQueenBonus.packed;
+                IncrementCoefficients(coefficients, SemiOpenFileQueenBonus.index, color);
+            }
+        }
+    }
 
     return packedBonus;
 }
