@@ -658,7 +658,7 @@ int QueenAdditionalEvaluation(int squareIndex, int bucket, int oppositeSideKingS
     IncrementCoefficients(coefficients, CheckBonus.index + noColorPieceIndex - CheckBonus.start, color, checksCount);
 
     // Open/semi-open files when no rooks
-    if (board.pieces(chess::PieceType::ROOK, color).count() == 0)
+    if (board.pieces(chess::PieceType::ROOK, ~color).count() == 0)
     {
         // Open file
         if (((GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE) | GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK)) & FileMasks[squareIndex]) == 0)
