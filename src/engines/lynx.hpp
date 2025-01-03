@@ -24,9 +24,9 @@ const static int numParameters = psqtIndexCount +
                                  OpenFileKingPenalty.size +
                                  KingShieldBonus.size +
                                  BishopPairBonus.size +
-                                 PieceProtectedByPawnBonus.size +
-                                 PieceAttackedByPawnPenalty.size +
 
+                                 PieceProtectedByPawnBonus.tunableSize +
+                                 PieceAttackedByPawnPenalty.tunableSize +
                                  PawnPhalanxBonus.tunableSize +
                                  BadBishop_SameColorPawnsPenalty.tunableSize +
                                  BadBishop_BlockedCentralPawnsPenalty.tunableSize +
@@ -109,9 +109,9 @@ public:
         OpenFileKingPenalty.add(result);
         KingShieldBonus.add(result);
         BishopPairBonus.add(result);
-        PieceAttackedByPawnPenalty.add(result);
 
         PieceProtectedByPawnBonus.add(result);
+        PieceAttackedByPawnPenalty.add(result);
         PawnPhalanxBonus.add(result);
         BadBishop_SameColorPawnsPenalty.add(result);
         BadBishop_BlockedCentralPawnsPenalty.add(result);
@@ -255,11 +255,11 @@ public:
         name = NAME(BishopPairBonus);
         BishopPairBonus.to_csharp(parameters, ss, name);
 
-        name = NAME(PieceAttackedByPawnPenalty);
-        PieceAttackedByPawnPenalty.to_csharp(parameters, ss, name);
-
         name = NAME(PieceProtectedByPawnBonus);
         PieceProtectedByPawnBonus.to_csharp(parameters, ss, name);
+
+        name = NAME(PieceAttackedByPawnPenalty);
+        PieceAttackedByPawnPenalty.to_csharp(parameters, ss, name);
 
         name = NAME(PawnPhalanxBonus);
         PawnPhalanxBonus.to_csharp(parameters, ss, name);
@@ -348,11 +348,12 @@ public:
         name = NAME(BishopPairBonus);
         BishopPairBonus.to_cpp(parameters, ss, name);
 
-        name = NAME(PieceAttackedByPawnPenalty);
-        PieceAttackedByPawnPenalty.to_cpp(parameters, ss, name);
-
         name = NAME(PieceProtectedByPawnBonus);
         PieceProtectedByPawnBonus.to_cpp(parameters, ss, name);
+        ss << "\n";
+
+        name = NAME(PieceAttackedByPawnPenalty);
+        PieceAttackedByPawnPenalty.to_cpp(parameters, ss, name);
         ss << "\n";
 
         name = NAME(PawnPhalanxBonus);
@@ -757,6 +758,11 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
         packedScore += (PieceProtectedByPawnBonus.packed[pieceIndex] * protectedPiecesByWhitePawns);
         IncrementCoefficients(coefficients, PieceProtectedByPawnBonus.index + pieceIndex, chess::Color::WHITE, protectedPiecesByWhitePawns);
 
+        // Pieces attacked by pawns penatlty
+        const auto attackedPiecesByBlackPawns = chess::builtin::popcount(blackPawnAttacks & bitboard);
+        packedScore += (PieceAttackedByPawnPenalty.packed[pieceIndex] * attackedPiecesByBlackPawns);
+        IncrementCoefficients(coefficients, PieceAttackedByPawnPenalty.index + pieceIndex, chess::Color::WHITE, attackedPiecesByBlackPawns);
+
         while (bitboard != 0)
         {
             const auto pieceSquareIndex = chess::builtin::lsb(bitboard).index();
@@ -803,9 +809,15 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
         // Bitboard copy that we 'empty'
         auto bitboard = GetPieceSwappingEndianness(board, chess::PieceType(static_cast<chess::PieceType::underlying>(tunerPieceIndex)), chess::Color::BLACK);
 
+        // Pieces protected by pawns bonus
         const auto protectedPiecesByBlackPawns = chess::builtin::popcount(blackPawnAttacks & bitboard);
         packedScore -= (PieceProtectedByPawnBonus.packed[tunerPieceIndex] * protectedPiecesByBlackPawns);
         IncrementCoefficients(coefficients, PieceProtectedByPawnBonus.index + tunerPieceIndex, chess::Color::BLACK, protectedPiecesByBlackPawns);
+
+        // Pieces attacked by pawns penatlty
+        const auto attackedPiecesByWhitePawns = chess::builtin::popcount(whitePawnAttacks & bitboard);
+        packedScore -= (PieceAttackedByPawnPenalty.packed[tunerPieceIndex] * attackedPiecesByWhitePawns);
+        IncrementCoefficients(coefficients, PieceAttackedByPawnPenalty.index + tunerPieceIndex, chess::Color::BLACK, attackedPiecesByWhitePawns);
 
         while (bitboard != 0)
         {
@@ -885,16 +897,6 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
         packedScore -= BishopPairBonus.packed;
         IncrementCoefficients(coefficients, BishopPairBonus.index, chess::Color::BLACK);
     }
-
-    // Pieces attacked by pawns bonus
-    const auto attackedPiecesByBlackPawns = chess::builtin::popcount(blackPawnAttacks & __builtin_bswap64(board.us(chess::Color::WHITE).getBits()) /*&(~GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE))*/);
-    const auto attackedPiecesByWhitePawns = chess::builtin::popcount(whitePawnAttacks & __builtin_bswap64(board.us(chess::Color::BLACK).getBits()) /*&(~GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK))*/);
-
-    IncrementCoefficients(coefficients, PieceAttackedByPawnPenalty.index, chess::Color::WHITE, attackedPiecesByBlackPawns);
-    IncrementCoefficients(coefficients, PieceAttackedByPawnPenalty.index, chess::Color::BLACK, attackedPiecesByWhitePawns);
-
-    packedScore += (PieceAttackedByPawnPenalty.packed * attackedPiecesByBlackPawns) -
-                   (PieceAttackedByPawnPenalty.packed * attackedPiecesByWhitePawns);
 
     // Debugging eval
     // return EvalResult{
