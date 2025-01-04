@@ -24,9 +24,9 @@ const static int numParameters = psqtIndexCount +
                                  OpenFileKingPenalty.size +
                                  KingShieldBonus.size +
                                  BishopPairBonus.size +
-                                 PieceProtectedByPawnBonus.size +
                                  PieceAttackedByPawnPenalty.size +
 
+                                 PieceProtectedByPawnBonus.tunableSize +
                                  PawnPhalanxBonus.tunableSize +
                                  BadBishop_SameColorPawnsPenalty.tunableSize +
                                  BadBishop_BlockedCentralPawnsPenalty.tunableSize +
