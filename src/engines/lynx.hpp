@@ -682,9 +682,12 @@ int KingAdditionalEvaluation(int squareIndex, int bucket, const u64 opponentPawn
     packedBonus += KingShieldBonus.packed * ownPawnsAroundCount;
     IncrementCoefficients(coefficients, KingShieldBonus.index, kingSide, ownPawnsAroundCount);
 
+    // Pieces attacked by pawns penatlty
     if (GetBit(opponentPawnAttacks, squareIndex))
     {
-        packedBonus += PieceAttackedByPawnPenalty.packed[static_cast<int>(chess::PieceType::KING)];
+        const auto kingIndex = static_cast<int>(chess::PieceType::KING);
+        packedBonus += PieceAttackedByPawnPenalty.packed[kingIndex];
+        IncrementCoefficients(coefficients, PieceAttackedByPawnPenalty.index + kingIndex, kingSide);
     }
 
     return packedBonus;
