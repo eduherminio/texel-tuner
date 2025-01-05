@@ -24,6 +24,7 @@ const static int numParameters = psqtIndexCount +
                                  OpenFileKingPenalty.size +
                                  KingShieldBonus.size +
                                  BishopPairBonus.size +
+                                 ConnectedRooksBonus.size +
                                  PieceAttackedByPawnPenalty.size +
 
                                  PieceProtectedByPawnBonus.tunableSize +
@@ -109,6 +110,7 @@ public:
         OpenFileKingPenalty.add(result);
         KingShieldBonus.add(result);
         BishopPairBonus.add(result);
+        ConnectedRooksBonus.add(result);
         PieceAttackedByPawnPenalty.add(result);
 
         PieceProtectedByPawnBonus.add(result);
@@ -255,6 +257,9 @@ public:
         name = NAME(BishopPairBonus);
         BishopPairBonus.to_csharp(parameters, ss, name);
 
+        name = NAME(ConnectedRooksBonus);
+        ConnectedRooksBonus.to_csharp(parameters, ss, name);
+
         name = NAME(PieceAttackedByPawnPenalty);
         PieceAttackedByPawnPenalty.to_csharp(parameters, ss, name);
 
@@ -347,6 +352,12 @@ public:
 
         name = NAME(BishopPairBonus);
         BishopPairBonus.to_cpp(parameters, ss, name);
+
+        name = NAME(ConnectedRooksBonus);
+        ConnectedRooksBonus.to_cpp(parameters, ss, name);
+
+        name = NAME(ConnectedRooksBonus);
+        ConnectedRooksBonus.to_cpp(parameters, ss, name);
 
         name = NAME(PieceAttackedByPawnPenalty);
         PieceAttackedByPawnPenalty.to_cpp(parameters, ss, name);
@@ -541,6 +552,12 @@ int RookAdditonalEvaluation(int squareIndex, int pieceIndex, int bucket, int opp
 
     packedBonus += CheckBonus.packed[noColorPieceIndex] * checksCount;
     IncrementCoefficients(coefficients, CheckBonus.index + noColorPieceIndex - CheckBonus.start, color, checksCount);
+
+    if (chess::builtin::popcount(attacks & GetPieceSwappingEndianness(board, chess::PieceType::ROOK, color)) >= 2)
+    {
+        packedBonus += ConnectedRooksBonus.packed;
+        IncrementCoefficients(coefficients, ConnectedRooksBonus.index, color);
+    }
 
     return packedBonus;
 }
