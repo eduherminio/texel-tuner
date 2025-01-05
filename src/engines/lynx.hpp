@@ -887,6 +887,19 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
         IncrementCoefficients(coefficients, BishopPairBonus.index, chess::Color::BLACK);
     }
 
+    // Rook pair bonus
+    if (board.pieces(chess::PieceType::ROOK, chess::Color::WHITE).count() >= 2)
+    {
+        packedScore += RookPairBonus.packed;
+        IncrementCoefficients(coefficients, RookPairBonus.index, chess::Color::WHITE);
+    }
+
+    if (board.pieces(chess::PieceType::ROOK, chess::Color::BLACK).count() >= 2)
+    {
+        packedScore -= RookPairBonus.packed;
+        IncrementCoefficients(coefficients, RookPairBonus.index, chess::Color::BLACK);
+    }
+
     // Pieces attacked by pawns bonus
     const auto attackedPiecesByBlackPawns = chess::builtin::popcount(blackPawnAttacks & __builtin_bswap64(board.us(chess::Color::WHITE).getBits()) /*&(~GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE))*/);
     const auto attackedPiecesByWhitePawns = chess::builtin::popcount(whitePawnAttacks & __builtin_bswap64(board.us(chess::Color::BLACK).getBits()) /*&(~GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK))*/);
