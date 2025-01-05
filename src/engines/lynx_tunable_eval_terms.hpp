@@ -5922,7 +5922,7 @@ TunableArray PieceAttackedByPawnPenalty(
     chess::PieceType::PAWN,
     std::vector<int>{0, 13, 14, 15},
     std::vector<int>{0, 23, 24, 25},
-    1,
+    0,
     0);
 
 TunableArray PawnPhalanxBonus(
