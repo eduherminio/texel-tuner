@@ -543,14 +543,6 @@ int RookAdditonalEvaluation(int squareIndex, int pieceIndex, int bucket, int opp
     packedBonus += CheckBonus.packed[noColorPieceIndex] * checksCount;
     IncrementCoefficients(coefficients, CheckBonus.index + noColorPieceIndex - CheckBonus.start, color, checksCount);
 
-    // Pieces attacked by pawns penatlty
-    if (GetBit(opponentPawnAttacks, squareIndex))
-    {
-        const auto index = static_cast<int>(chess::PieceType::ROOK);
-        packedBonus += PieceAttackedByPawnPenalty.packed[index];
-        IncrementCoefficients(coefficients, PieceAttackedByPawnPenalty.index + index, color);
-    }
-
     return packedBonus;
 }
 
@@ -574,14 +566,6 @@ int KnightAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int 
 
     packedBonus += CheckBonus.packed[noColorPieceIndex] * checksCount;
     IncrementCoefficients(coefficients, CheckBonus.index + noColorPieceIndex - CheckBonus.start, color, checksCount);
-
-    // Pieces attacked by pawns penatlty
-    if (GetBit(opponentPawnAttacks, squareIndex))
-    {
-        const auto index = static_cast<int>(chess::PieceType::KNIGHT);
-        packedBonus += PieceAttackedByPawnPenalty.packed[index];
-        IncrementCoefficients(coefficients, PieceAttackedByPawnPenalty.index + index, color);
-    }
 
     return packedBonus;
 }
@@ -628,14 +612,6 @@ int BishopAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int 
 
     packedBonus += CheckBonus.packed[noColorPieceIndex] * checksCount;
     IncrementCoefficients(coefficients, CheckBonus.index + noColorPieceIndex - CheckBonus.start, color, checksCount);
-
-    // Pieces attacked by pawns penatlty
-    if (GetBit(opponentPawnAttacks, squareIndex))
-    {
-        const auto index = static_cast<int>(chess::PieceType::BISHOP);
-        packedBonus += PieceAttackedByPawnPenalty.packed[index];
-        IncrementCoefficients(coefficients, PieceAttackedByPawnPenalty.index + index, color);
-    }
 
     return packedBonus;
 }
@@ -705,6 +681,14 @@ int KingAdditionalEvaluation(int squareIndex, int bucket, const u64 opponentPawn
 
     packedBonus += KingShieldBonus.packed * ownPawnsAroundCount;
     IncrementCoefficients(coefficients, KingShieldBonus.index, kingSide, ownPawnsAroundCount);
+
+    // Pieces attacked by pawns penatlty
+    if (GetBit(opponentPawnAttacks, squareIndex))
+    {
+        const auto kingIndex = static_cast<int>(chess::PieceType::KING);
+        packedBonus += PieceAttackedByPawnPenalty.packed[kingIndex];
+        IncrementCoefficients(coefficients, PieceAttackedByPawnPenalty.index + kingIndex, kingSide);
+    }
 
     return packedBonus;
 }
@@ -783,6 +767,11 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
         packedScore += (PieceProtectedByPawnBonus.packed[pieceIndex] * protectedPiecesByWhitePawns);
         IncrementCoefficients(coefficients, PieceProtectedByPawnBonus.index + pieceIndex, chess::Color::WHITE, protectedPiecesByWhitePawns);
 
+        // Pieces attacked by pawns penatlty
+        const auto attackedPiecesByBlackPawns = chess::builtin::popcount(blackPawnAttacks & bitboard);
+        packedScore += (PieceAttackedByPawnPenalty.packed[pieceIndex] * attackedPiecesByBlackPawns);
+        IncrementCoefficients(coefficients, PieceAttackedByPawnPenalty.index + pieceIndex, chess::Color::WHITE, attackedPiecesByBlackPawns);
+
         while (bitboard != 0)
         {
             const auto pieceSquareIndex = chess::builtin::lsb(bitboard).index();
@@ -833,6 +822,11 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
         const auto protectedPiecesByBlackPawns = chess::builtin::popcount(blackPawnAttacks & bitboard);
         packedScore -= (PieceProtectedByPawnBonus.packed[tunerPieceIndex] * protectedPiecesByBlackPawns);
         IncrementCoefficients(coefficients, PieceProtectedByPawnBonus.index + tunerPieceIndex, chess::Color::BLACK, protectedPiecesByBlackPawns);
+
+        // Pieces attacked by pawns penatlty
+        const auto attackedPiecesByWhitePawns = chess::builtin::popcount(whitePawnAttacks & bitboard);
+        packedScore -= (PieceAttackedByPawnPenalty.packed[tunerPieceIndex] * attackedPiecesByWhitePawns);
+        IncrementCoefficients(coefficients, PieceAttackedByPawnPenalty.index + tunerPieceIndex, chess::Color::BLACK, attackedPiecesByWhitePawns);
 
         while (bitboard != 0)
         {
