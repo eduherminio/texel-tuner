@@ -24,7 +24,6 @@ const static int numParameters = psqtIndexCount +
                                  OpenFileKingPenalty.size +
                                  KingShieldBonus.size +
                                  BishopPairBonus.size +
-                                 PieceAttackedByPawnPenalty.size +
 
                                  PieceProtectedByPawnBonus.tunableSize +
                                  PawnPhalanxBonus.tunableSize +
@@ -109,7 +108,6 @@ public:
         OpenFileKingPenalty.add(result);
         KingShieldBonus.add(result);
         BishopPairBonus.add(result);
-        PieceAttackedByPawnPenalty.add(result);
 
         PieceProtectedByPawnBonus.add(result);
         PawnPhalanxBonus.add(result);
@@ -255,9 +253,6 @@ public:
         name = NAME(BishopPairBonus);
         BishopPairBonus.to_csharp(parameters, ss, name);
 
-        name = NAME(PieceAttackedByPawnPenalty);
-        PieceAttackedByPawnPenalty.to_csharp(parameters, ss, name);
-
         name = NAME(PieceProtectedByPawnBonus);
         PieceProtectedByPawnBonus.to_csharp(parameters, ss, name);
 
@@ -347,9 +342,6 @@ public:
 
         name = NAME(BishopPairBonus);
         BishopPairBonus.to_cpp(parameters, ss, name);
-
-        name = NAME(PieceAttackedByPawnPenalty);
-        PieceAttackedByPawnPenalty.to_cpp(parameters, ss, name);
 
         name = NAME(PieceProtectedByPawnBonus);
         PieceProtectedByPawnBonus.to_cpp(parameters, ss, name);
@@ -886,16 +878,6 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
         packedScore -= BishopPairBonus.packed;
         IncrementCoefficients(coefficients, BishopPairBonus.index, chess::Color::BLACK);
     }
-
-    // Pieces attacked by pawns bonus
-    const auto attackedPiecesByBlackPawns = chess::builtin::popcount(blackPawnAttacks & __builtin_bswap64(board.us(chess::Color::WHITE).getBits()) /*&(~GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::WHITE))*/);
-    const auto attackedPiecesByWhitePawns = chess::builtin::popcount(whitePawnAttacks & __builtin_bswap64(board.us(chess::Color::BLACK).getBits()) /*&(~GetPieceSwappingEndianness(board, chess::PieceType::PAWN, chess::Color::BLACK))*/);
-
-    IncrementCoefficients(coefficients, PieceAttackedByPawnPenalty.index, chess::Color::WHITE, attackedPiecesByBlackPawns);
-    IncrementCoefficients(coefficients, PieceAttackedByPawnPenalty.index, chess::Color::BLACK, attackedPiecesByWhitePawns);
-
-    packedScore += (PieceAttackedByPawnPenalty.packed * attackedPiecesByBlackPawns) -
-                   (PieceAttackedByPawnPenalty.packed * attackedPiecesByWhitePawns);
 
     // Debugging eval
     // return EvalResult{
