@@ -26,22 +26,23 @@ const static int numParameters = psqtIndexCount +
                                  BishopPairBonus.size +
                                  PieceAttackedByPawnPenalty.size +
 
+                                 // Arrays
                                  PieceProtectedByPawnBonus.tunableSize +
-                                 PawnPhalanxBonus.tunableSize +
                                  BadBishop_SameColorPawnsPenalty.tunableSize +
                                  BadBishop_BlockedCentralPawnsPenalty.tunableSize +
-
                                  CheckBonus.tunableSize +
-
-                                 PassedPawnBonus.size +                              // PSQTBucketCount * 6, removing 1 rank values
-                                 PassedPawnBonusNoEnemiesAheadBonus.size +           // PSQTBucketCount * 6, removing 1 rank values
                                  FriendlyKingDistanceToPassedPawnBonus.tunableSize + // 7, removing start
                                  EnemyKingDistanceToPassedPawnPenalty.tunableSize +  // 7, removing start
                                  VirtualKingMobilityBonus.tunableSize +              // 28
                                  KnightMobilityBonus.tunableSize +                   // 9
                                  BishopMobilityBonus.tunableSize +                   // 14, removing end
                                  RookMobilityBonus.tunableSize +                     // 15
-                                 QueenMobilityBonus.tunableSize;
+                                 QueenMobilityBonus.tunableSize +
+
+                                 // Bucketed arrays
+                                 PassedPawnBonus.size +                    // PSQTBucketCount * 6, removing 1 rank values
+                                 PassedPawnBonusNoEnemiesAheadBonus.size + // PSQTBucketCount * 6, removing 1 rank values
+                                 PawnPhalanxBonus.size;                    // PSQTBucketCount * 6, removing 1 rank values
 
 class Lynx
 {
@@ -111,14 +112,12 @@ public:
         BishopPairBonus.add(result);
         PieceAttackedByPawnPenalty.add(result);
 
+        // Arrays
         PieceProtectedByPawnBonus.add(result);
-        PawnPhalanxBonus.add(result);
         BadBishop_SameColorPawnsPenalty.add(result);
         BadBishop_BlockedCentralPawnsPenalty.add(result);
         CheckBonus.add(result);
 
-        PassedPawnBonus.add(result);
-        PassedPawnBonusNoEnemiesAheadBonus.add(result);
         FriendlyKingDistanceToPassedPawnBonus.add(result);
         EnemyKingDistanceToPassedPawnPenalty.add(result);
         VirtualKingMobilityBonus.add(result);
@@ -127,8 +126,14 @@ public:
         RookMobilityBonus.add(result);
         QueenMobilityBonus.add(result);
 
+        // Bucketed arrays
+        PassedPawnBonus.add(result);
+        PassedPawnBonusNoEnemiesAheadBonus.add(result);
+        PawnPhalanxBonus.add(result);
+
         assert(PassedPawnBonus.bucketTunableSize == 6);
         assert(PassedPawnBonusNoEnemiesAheadBonus.bucketTunableSize == 6);
+        assert(PawnPhalanxBonus.bucketTunableSize == 6);
         assert(FriendlyKingDistanceToPassedPawnBonus.tunableSize == 7);
         assert(EnemyKingDistanceToPassedPawnPenalty.tunableSize == 7);
         assert(VirtualKingMobilityBonus.tunableSize == 28);
@@ -258,11 +263,9 @@ public:
         name = NAME(PieceAttackedByPawnPenalty);
         PieceAttackedByPawnPenalty.to_csharp(parameters, ss, name);
 
+        // Arrays
         name = NAME(PieceProtectedByPawnBonus);
         PieceProtectedByPawnBonus.to_csharp(parameters, ss, name);
-
-        name = NAME(PawnPhalanxBonus);
-        PawnPhalanxBonus.to_csharp(parameters, ss, name);
 
         name = NAME(BadBishop_SameColorPawnsPenalty);
         BadBishop_SameColorPawnsPenalty.to_csharp(parameters, ss, name);
@@ -272,12 +275,6 @@ public:
 
         name = NAME(CheckBonus);
         CheckBonus.to_csharp(parameters, ss, name);
-
-        name = NAME(PassedPawnBonus);
-        PassedPawnBonus.to_csharp(parameters, ss, name);
-
-        name = NAME(PassedPawnBonusNoEnemiesAheadBonus);
-        PassedPawnBonusNoEnemiesAheadBonus.to_csharp(parameters, ss, name);
 
         name = NAME(FriendlyKingDistanceToPassedPawnBonus);
         FriendlyKingDistanceToPassedPawnBonus.to_csharp(parameters, ss, name);
@@ -299,6 +296,16 @@ public:
 
         name = NAME(QueenMobilityBonus);
         QueenMobilityBonus.to_csharp(parameters, ss, name, mobilityPieceValues);
+
+        // Bucketed arrays
+        name = NAME(PassedPawnBonus);
+        PassedPawnBonus.to_csharp(parameters, ss, name);
+
+        name = NAME(PassedPawnBonusNoEnemiesAheadBonus);
+        PassedPawnBonusNoEnemiesAheadBonus.to_csharp(parameters, ss, name);
+
+        name = NAME(PawnPhalanxBonus);
+        PawnPhalanxBonus.to_csharp(parameters, ss, name);
 
         if (isFinal)
         {
@@ -351,12 +358,9 @@ public:
         name = NAME(PieceAttackedByPawnPenalty);
         PieceAttackedByPawnPenalty.to_cpp(parameters, ss, name);
 
+        // Arrays
         name = NAME(PieceProtectedByPawnBonus);
         PieceProtectedByPawnBonus.to_cpp(parameters, ss, name);
-        ss << "\n";
-
-        name = NAME(PawnPhalanxBonus);
-        PawnPhalanxBonus.to_cpp(parameters, ss, name);
         ss << "\n";
 
         name = NAME(BadBishop_SameColorPawnsPenalty);
@@ -370,12 +374,6 @@ public:
         name = NAME(CheckBonus);
         CheckBonus.to_cpp(parameters, ss, name);
         ss << "\n";
-
-        name = NAME(PassedPawnBonus);
-        PassedPawnBonus.to_cpp(parameters, ss, name);
-
-        name = NAME(PassedPawnBonusNoEnemiesAheadBonus);
-        PassedPawnBonusNoEnemiesAheadBonus.to_cpp(parameters, ss, name);
 
         name = NAME(FriendlyKingDistanceToPassedPawnBonus);
         FriendlyKingDistanceToPassedPawnBonus.to_cpp(parameters, ss, name);
@@ -397,6 +395,16 @@ public:
 
         name = NAME(QueenMobilityBonus);
         QueenMobilityBonus.to_cpp(parameters, ss, name, mobilityPieceValues);
+
+        // Bucketed arrays
+        name = NAME(PassedPawnBonus);
+        PassedPawnBonus.to_cpp(parameters, ss, name);
+
+        name = NAME(PassedPawnBonusNoEnemiesAheadBonus);
+        PassedPawnBonusNoEnemiesAheadBonus.to_cpp(parameters, ss, name);
+
+        name = NAME(PawnPhalanxBonus);
+        PawnPhalanxBonus.to_cpp(parameters, ss, name);
 
         if (isFinal)
         {
@@ -496,8 +504,8 @@ int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int sa
 
     if (File[squareIndex] != 7 && GetBit(sameSidePawns, squareIndex + 1))
     {
-        packedBonus += PawnPhalanxBonus.packed[rank];
-        IncrementCoefficients(coefficients, PawnPhalanxBonus.index + rank - PawnPhalanxBonus.start, color);
+        packedBonus += PawnPhalanxBonus.packed(bucket, rank);
+        IncrementCoefficients(coefficients, PawnPhalanxBonus.index(bucket, rank - PawnPhalanxBonus.start), color);
     }
 
     return packedBonus;
