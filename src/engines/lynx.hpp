@@ -27,7 +27,7 @@ const static int numParameters = psqtIndexCount +
                                  PieceAttackedByPawnPenalty.size +
 
                                  // Arrays
-                                 PieceProtectedByPawnBonus.tunableSize +
+                                 PawnPhalanxBonus.tunableSize +
                                  BadBishop_SameColorPawnsPenalty.tunableSize +
                                  BadBishop_BlockedCentralPawnsPenalty.tunableSize +
                                  CheckBonus.tunableSize +
@@ -42,7 +42,7 @@ const static int numParameters = psqtIndexCount +
                                  // Bucketed arrays
                                  PassedPawnBonus.size +                    // PSQTBucketCount * 6, removing 1 rank values
                                  PassedPawnBonusNoEnemiesAheadBonus.size + // PSQTBucketCount * 6, removing 1 rank values
-                                 PawnPhalanxBonus.size;                    // PSQTBucketCount * 6, removing 1 rank values
+                                 PieceProtectedByPawnBonus.size;           // PSQTBucketCount * 6, removing 1 rank values
 
 class Lynx
 {
@@ -113,7 +113,7 @@ public:
         PieceAttackedByPawnPenalty.add(result);
 
         // Arrays
-        PieceProtectedByPawnBonus.add(result);
+        PawnPhalanxBonus.add(result);
         BadBishop_SameColorPawnsPenalty.add(result);
         BadBishop_BlockedCentralPawnsPenalty.add(result);
         CheckBonus.add(result);
@@ -129,11 +129,11 @@ public:
         // Bucketed arrays
         PassedPawnBonus.add(result);
         PassedPawnBonusNoEnemiesAheadBonus.add(result);
-        PawnPhalanxBonus.add(result);
+        PieceProtectedByPawnBonus.add(result);
 
         assert(PassedPawnBonus.bucketTunableSize == 6);
         assert(PassedPawnBonusNoEnemiesAheadBonus.bucketTunableSize == 6);
-        assert(PawnPhalanxBonus.bucketTunableSize == 6);
+        assert(PieceProtectedByPawnBonus.bucketTunableSize == 5);
         assert(FriendlyKingDistanceToPassedPawnBonus.tunableSize == 7);
         assert(EnemyKingDistanceToPassedPawnPenalty.tunableSize == 7);
         assert(VirtualKingMobilityBonus.tunableSize == 28);
@@ -264,8 +264,8 @@ public:
         PieceAttackedByPawnPenalty.to_csharp(parameters, ss, name);
 
         // Arrays
-        name = NAME(PieceProtectedByPawnBonus);
-        PieceProtectedByPawnBonus.to_csharp(parameters, ss, name);
+        name = NAME(PawnPhalanxBonus);
+        PawnPhalanxBonus.to_csharp(parameters, ss, name);
 
         name = NAME(BadBishop_SameColorPawnsPenalty);
         BadBishop_SameColorPawnsPenalty.to_csharp(parameters, ss, name);
@@ -304,8 +304,8 @@ public:
         name = NAME(PassedPawnBonusNoEnemiesAheadBonus);
         PassedPawnBonusNoEnemiesAheadBonus.to_csharp(parameters, ss, name);
 
-        name = NAME(PawnPhalanxBonus);
-        PawnPhalanxBonus.to_csharp(parameters, ss, name);
+        name = NAME(PieceProtectedByPawnBonus);
+        PieceProtectedByPawnBonus.to_csharp(parameters, ss, name);
 
         if (isFinal)
         {
@@ -359,8 +359,8 @@ public:
         PieceAttackedByPawnPenalty.to_cpp(parameters, ss, name);
 
         // Arrays
-        name = NAME(PieceProtectedByPawnBonus);
-        PieceProtectedByPawnBonus.to_cpp(parameters, ss, name);
+        name = NAME(PawnPhalanxBonus);
+        PawnPhalanxBonus.to_cpp(parameters, ss, name);
         ss << "\n";
 
         name = NAME(BadBishop_SameColorPawnsPenalty);
@@ -403,8 +403,8 @@ public:
         name = NAME(PassedPawnBonusNoEnemiesAheadBonus);
         PassedPawnBonusNoEnemiesAheadBonus.to_cpp(parameters, ss, name);
 
-        name = NAME(PawnPhalanxBonus);
-        PawnPhalanxBonus.to_cpp(parameters, ss, name);
+        name = NAME(PieceProtectedByPawnBonus);
+        PieceProtectedByPawnBonus.to_cpp(parameters, ss, name);
 
         if (isFinal)
         {
@@ -504,8 +504,8 @@ int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int sa
 
     if (File[squareIndex] != 7 && GetBit(sameSidePawns, squareIndex + 1))
     {
-        packedBonus += PawnPhalanxBonus.packed(bucket, rank);
-        IncrementCoefficients(coefficients, PawnPhalanxBonus.index(bucket, rank - PawnPhalanxBonus.start), color);
+        packedBonus += PawnPhalanxBonus.packed[rank];
+        IncrementCoefficients(coefficients, PawnPhalanxBonus.index + rank - PawnPhalanxBonus.start, color);
     }
 
     return packedBonus;
@@ -762,8 +762,8 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
 
         // Pieces protected by pawns bonus
         const auto protectedPiecesByWhitePawns = chess::builtin::popcount(whitePawnAttacks & bitboard);
-        packedScore += (PieceProtectedByPawnBonus.packed[pieceIndex] * protectedPiecesByWhitePawns);
-        IncrementCoefficients(coefficients, PieceProtectedByPawnBonus.index + pieceIndex, chess::Color::WHITE, protectedPiecesByWhitePawns);
+        packedScore += (PieceProtectedByPawnBonus.packed(whiteBucket, pieceIndex) * protectedPiecesByWhitePawns);
+        IncrementCoefficients(coefficients, PieceProtectedByPawnBonus.index(whiteBucket, pieceIndex), chess::Color::WHITE, protectedPiecesByWhitePawns);
 
         while (bitboard != 0)
         {
@@ -813,8 +813,8 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
 
         // Pieces protected by pawns bonus
         const auto protectedPiecesByBlackPawns = chess::builtin::popcount(blackPawnAttacks & bitboard);
-        packedScore -= (PieceProtectedByPawnBonus.packed[tunerPieceIndex] * protectedPiecesByBlackPawns);
-        IncrementCoefficients(coefficients, PieceProtectedByPawnBonus.index + tunerPieceIndex, chess::Color::BLACK, protectedPiecesByBlackPawns);
+        packedScore -= (PieceProtectedByPawnBonus.packed(blackBucket, tunerPieceIndex) * protectedPiecesByBlackPawns);
+        IncrementCoefficients(coefficients, PieceProtectedByPawnBonus.index(blackBucket, tunerPieceIndex), chess::Color::BLACK, protectedPiecesByBlackPawns);
 
         while (bitboard != 0)
         {
