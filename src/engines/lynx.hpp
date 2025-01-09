@@ -41,8 +41,9 @@ const static int numParameters = psqtIndexCount +
 
                                  // Bucketed arrays
                                  PassedPawnBonus.size +                    // PSQTBucketCount * 6, removing 1 rank values
-                                 PassedPawnEnemyBonus.size +                    // PSQTBucketCount * 6, removing 1 rank values
+                                 PassedPawnEnemyBonus.size +               // PSQTBucketCount * 6, removing 1 rank values
                                  PassedPawnBonusNoEnemiesAheadBonus.size + // PSQTBucketCount * 6, removing 1 rank values
+                                 PassedPawnBonusNoEnemiesAheadEnemyBonus.size + // PSQTBucketCount * 6, removing 1 rank values
                                  PieceProtectedByPawnBonus.size;           // PSQTBucketCount * 6, removing 1 rank values
 
 class Lynx
@@ -131,11 +132,13 @@ public:
         PassedPawnBonus.add(result);
         PassedPawnEnemyBonus.add(result);
         PassedPawnBonusNoEnemiesAheadBonus.add(result);
+        PassedPawnBonusNoEnemiesAheadEnemyBonus.add(result);
         PieceProtectedByPawnBonus.add(result);
 
         assert(PassedPawnBonus.bucketTunableSize == 6);
         assert(PassedPawnEnemyBonus.bucketTunableSize == 6);
         assert(PassedPawnBonusNoEnemiesAheadBonus.bucketTunableSize == 6);
+        assert(PassedPawnBonusNoEnemiesAheadEnemyBonus.bucketTunableSize == 6);
         assert(PieceProtectedByPawnBonus.bucketTunableSize == 5);
         assert(FriendlyKingDistanceToPassedPawnBonus.tunableSize == 7);
         assert(EnemyKingDistanceToPassedPawnPenalty.tunableSize == 7);
@@ -310,6 +313,9 @@ public:
         name = NAME(PassedPawnBonusNoEnemiesAheadBonus);
         PassedPawnBonusNoEnemiesAheadBonus.to_csharp(parameters, ss, name);
 
+        name = NAME(PassedPawnBonusNoEnemiesAheadEnemyBonus);
+        PassedPawnBonusNoEnemiesAheadEnemyBonus.to_csharp(parameters, ss, name);
+
         name = NAME(PieceProtectedByPawnBonus);
         PieceProtectedByPawnBonus.to_csharp(parameters, ss, name);
 
@@ -412,6 +418,9 @@ public:
         name = NAME(PassedPawnBonusNoEnemiesAheadBonus);
         PassedPawnBonusNoEnemiesAheadBonus.to_cpp(parameters, ss, name);
 
+        name = NAME(PassedPawnBonusNoEnemiesAheadEnemyBonus);
+        PassedPawnBonusNoEnemiesAheadEnemyBonus.to_cpp(parameters, ss, name);
+
         name = NAME(PieceProtectedByPawnBonus);
         PieceProtectedByPawnBonus.to_cpp(parameters, ss, name);
 
@@ -501,6 +510,9 @@ int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int op
         {
             packedBonus += PassedPawnBonusNoEnemiesAheadBonus.packed(bucket, rank);
             IncrementCoefficients(coefficients, PassedPawnBonusNoEnemiesAheadBonus.index(bucket, rank - PassedPawnBonusNoEnemiesAheadBonus.start), color); // There's no coefficient for rank 0
+
+            packedBonus += PassedPawnBonusNoEnemiesAheadEnemyBonus.packed(oppositeSideBucket, rank);
+            IncrementCoefficients(coefficients, PassedPawnBonusNoEnemiesAheadEnemyBonus.index(oppositeSideBucket, rank - PassedPawnBonusNoEnemiesAheadEnemyBonus.start), color); // There's no coefficient for rank 0
         }
 
         // King distance to passed pawn
