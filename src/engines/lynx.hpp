@@ -28,7 +28,6 @@ const static int numParameters = psqtIndexCount +
 
                                  // Arrays
                                  PawnPhalanxBonus.tunableSize +
-                                 ConnectedRooksBonus.tunableSize +
                                  BadBishop_SameColorPawnsPenalty.tunableSize +
                                  BadBishop_BlockedCentralPawnsPenalty.tunableSize +
                                  CheckBonus.tunableSize +
@@ -41,6 +40,7 @@ const static int numParameters = psqtIndexCount +
                                  QueenMobilityBonus.tunableSize +
 
                                  // Bucketed arrays
+                                 ConnectedRooksBonus.size +                // PSQTBucketCount * 8,
                                  PassedPawnBonus.size +                    // PSQTBucketCount * 6, removing 1 rank values
                                  PassedPawnBonusNoEnemiesAheadBonus.size + // PSQTBucketCount * 6, removing 1 rank values
                                  PieceProtectedByPawnBonus.size;           // PSQTBucketCount * 6, removing 1 rank values
@@ -136,7 +136,7 @@ public:
         assert(PassedPawnBonus.bucketTunableSize == 6);
         assert(PassedPawnBonusNoEnemiesAheadBonus.bucketTunableSize == 6);
         assert(PieceProtectedByPawnBonus.bucketTunableSize == 5);
-        assert(ConnectedRooksBonus.tunableSize == 8);
+        assert(ConnectedRooksBonus.bucketTunableSize == 8);
         assert(FriendlyKingDistanceToPassedPawnBonus.tunableSize == 7);
         assert(EnemyKingDistanceToPassedPawnPenalty.tunableSize == 7);
         assert(VirtualKingMobilityBonus.tunableSize == 28);
@@ -270,9 +270,6 @@ public:
         name = NAME(PawnPhalanxBonus);
         PawnPhalanxBonus.to_csharp(parameters, ss, name);
 
-        name = NAME(ConnectedRooksBonus);
-        ConnectedRooksBonus.to_csharp(parameters, ss, name);
-
         name = NAME(BadBishop_SameColorPawnsPenalty);
         BadBishop_SameColorPawnsPenalty.to_csharp(parameters, ss, name);
 
@@ -312,6 +309,9 @@ public:
 
         name = NAME(PieceProtectedByPawnBonus);
         PieceProtectedByPawnBonus.to_csharp(parameters, ss, name);
+
+        name = NAME(ConnectedRooksBonus);
+        ConnectedRooksBonus.to_csharp(parameters, ss, name);
 
         if (isFinal)
         {
@@ -369,10 +369,6 @@ public:
         PawnPhalanxBonus.to_cpp(parameters, ss, name);
         ss << "\n";
 
-        name = NAME(ConnectedRooksBonus);
-        ConnectedRooksBonus.to_cpp(parameters, ss, name);
-        ss << "\n";
-
         name = NAME(BadBishop_SameColorPawnsPenalty);
         BadBishop_SameColorPawnsPenalty.to_cpp(parameters, ss, name);
         ss << "\n";
@@ -415,6 +411,9 @@ public:
 
         name = NAME(PieceProtectedByPawnBonus);
         PieceProtectedByPawnBonus.to_cpp(parameters, ss, name);
+
+        name = NAME(ConnectedRooksBonus);
+        ConnectedRooksBonus.to_cpp(parameters, ss, name);
 
         if (isFinal)
         {
@@ -568,8 +567,8 @@ int RookAdditonalEvaluation(int squareIndex, int pieceIndex, int bucket, int opp
             rank = 7 - rank;
         }
 
-        packedBonus += ConnectedRooksBonus.packed[rank];
-        IncrementCoefficients(coefficients, ConnectedRooksBonus.index - ConnectedRooksBonus.start + rank, color);
+        packedBonus += ConnectedRooksBonus.packed(bucket, rank);
+        IncrementCoefficients(coefficients, ConnectedRooksBonus.index(bucket, rank - ConnectedRooksBonus.start), color);
     }
 
     return packedBonus;

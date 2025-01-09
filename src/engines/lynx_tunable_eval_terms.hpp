@@ -5921,14 +5921,6 @@ TunableArray PawnPhalanxBonus(
 	1,
 	0);
 
-TunableArray ConnectedRooksBonus(
-	chess::PieceType::ROOK,
-	std::vector<int>{0, 4, 21, 28, 60, 213, -50, 100},
-	std::vector<int>{0, 5, 11, 25, 77, 186, 404, 100},
-	0,
-	0);
-
-
 TunableArray BadBishop_SameColorPawnsPenalty(
 	chess::PieceType::PAWN,
 	std::vector<int>{137, 138, 135, 129, 122, 118, 113, 108, 106},
@@ -6166,6 +6158,62 @@ TunableArrayBucketed PieceProtectedByPawnBonus(
 		std::vector<int>{-3, 27, -12, 39, 62},
 		std::vector<int>{2, 48, 8, 29, 35},
 		std::vector<int>{3, 27, 8, 14, -16},
+
+	}},
+	0);
+
+TunableArrayBucketed ConnectedRooksBonus(
+	chess::PieceType::PAWN,
+	std::array<std::vector<int>, PSQTBucketCount>{{
+		std::vector<int>{0, 4, 21, 28, 60, 213, -50, 100},
+		std::vector<int>{0, 4, 21, 28, 60, 213, -50, 100},
+		std::vector<int>{0, 4, 21, 28, 60, 213, -50, 100},
+		std::vector<int>{0, 4, 21, 28, 60, 213, -50, 100},
+		std::vector<int>{0, 4, 21, 28, 60, 213, -50, 100},
+		std::vector<int>{0, 4, 21, 28, 60, 213, -50, 100},
+		std::vector<int>{0, 4, 21, 28, 60, 213, -50, 100},
+		std::vector<int>{0, 4, 21, 28, 60, 213, -50, 100},
+		std::vector<int>{0, 4, 21, 28, 60, 213, -50, 100},
+		std::vector<int>{0, 4, 21, 28, 60, 213, -50, 100},
+		std::vector<int>{0, 4, 21, 28, 60, 213, -50, 100},
+		std::vector<int>{0, 4, 21, 28, 60, 213, -50, 100},
+		std::vector<int>{0, 4, 21, 28, 60, 213, -50, 100},
+		std::vector<int>{0, 4, 21, 28, 60, 213, -50, 100},
+		std::vector<int>{0, 4, 21, 28, 60, 213, -50, 100},
+		std::vector<int>{0, 4, 21, 28, 60, 213, -50, 100},
+		std::vector<int>{0, 4, 21, 28, 60, 213, -50, 100},
+		std::vector<int>{0, 4, 21, 28, 60, 213, -50, 100},
+		std::vector<int>{0, 4, 21, 28, 60, 213, -50, 100},
+		std::vector<int>{0, 4, 21, 28, 60, 213, -50, 100},
+		std::vector<int>{0, 4, 21, 28, 60, 213, -50, 100},
+		std::vector<int>{0, 4, 21, 28, 60, 213, -50, 100},
+		std::vector<int>{0, 4, 21, 28, 60, 213, -50, 100},
+
+	}},
+	std::array<std::vector<int>, PSQTBucketCount>{{
+		std::vector<int>{0, 4, 21, 28, 60, 213, -50, 100},
+		std::vector<int>{0, 4, 21, 28, 60, 213, -50, 100},
+		std::vector<int>{0, 4, 21, 28, 60, 213, -50, 100},
+		std::vector<int>{0, 4, 21, 28, 60, 213, -50, 100},
+		std::vector<int>{0, 4, 21, 28, 60, 213, -50, 100},
+		std::vector<int>{0, 4, 21, 28, 60, 213, -50, 100},
+		std::vector<int>{0, 4, 21, 28, 60, 213, -50, 100},
+		std::vector<int>{0, 4, 21, 28, 60, 213, -50, 100},
+		std::vector<int>{0, 4, 21, 28, 60, 213, -50, 100},
+		std::vector<int>{0, 4, 21, 28, 60, 213, -50, 100},
+		std::vector<int>{0, 4, 21, 28, 60, 213, -50, 100},
+		std::vector<int>{0, 4, 21, 28, 60, 213, -50, 100},
+		std::vector<int>{0, 4, 21, 28, 60, 213, -50, 100},
+		std::vector<int>{0, 4, 21, 28, 60, 213, -50, 100},
+		std::vector<int>{0, 4, 21, 28, 60, 213, -50, 100},
+		std::vector<int>{0, 4, 21, 28, 60, 213, -50, 100},
+		std::vector<int>{0, 4, 21, 28, 60, 213, -50, 100},
+		std::vector<int>{0, 4, 21, 28, 60, 213, -50, 100},
+		std::vector<int>{0, 4, 21, 28, 60, 213, -50, 100},
+		std::vector<int>{0, 4, 21, 28, 60, 213, -50, 100},
+		std::vector<int>{0, 4, 21, 28, 60, 213, -50, 100},
+		std::vector<int>{0, 4, 21, 28, 60, 213, -50, 100},
+		std::vector<int>{0, 4, 21, 28, 60, 213, -50, 100},
 
 	}},
 	0);
