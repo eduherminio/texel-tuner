@@ -6050,6 +6050,62 @@ TunableArrayBucketed PassedPawnBonus(
 	}},
 	1);
 
+TunableArrayBucketed PassedPawnEnemyBonus(
+	chess::PieceType::PAWN,
+	std::array<std::vector<int>, PSQTBucketCount>{{
+		std::vector<int>{0, -38, -18, -16, 22, 24, 143},
+		std::vector<int>{0, -45, -23, -9, 13, 2, 142},
+		std::vector<int>{0, -37, -41, -7, 5, 9, 119},
+		std::vector<int>{0, -32, -41, -7, 16, 17, 148},
+		std::vector<int>{0, -36, -38, -6, 5, 2, 75},
+		std::vector<int>{0, -34, -34, -9, 23, 21, 145},
+		std::vector<int>{0, -37, -28, -13, 19, 37, 113},
+		std::vector<int>{0, -35, -28, -12, 28, 43, 142},
+		std::vector<int>{0, -74, -34, -28, 13, 55, 170},
+		std::vector<int>{0, -43, -37, -24, 14, 46, 144},
+		std::vector<int>{0, -25, -57, -27, 23, 10, 137},
+		std::vector<int>{0, -45, -42, -21, 27, 28, 113},
+		std::vector<int>{0, -38, -43, -19, 13, 46, 151},
+		std::vector<int>{0, -48, -42, -26, 24, 56, 159},
+		std::vector<int>{0, -24, -45, -21, 33, 34, 159},
+		std::vector<int>{0, -94, -36, -40, -36, 11, 110},
+		std::vector<int>{0, -193, -95, -29, -74, 92, 158},
+		std::vector<int>{0, -52, -71, -48, 7, 96, 213},
+		std::vector<int>{0, -46, -93, 32, 23, 171, 232},
+		std::vector<int>{0, -53, -45, -11, 60, 100, 165},
+		std::vector<int>{0, -65, 11, -32, -26, 114, 149},
+		std::vector<int>{0, -93, -75, -93, 4, 125, 167},
+		std::vector<int>{0, -82, -26, -61, -73, -7, 77},
+
+	}},
+	std::array<std::vector<int>, PSQTBucketCount>{{
+		std::vector<int>{0, -16, -27, -1, 23, 66, 179},
+		std::vector<int>{0, -29, -27, -5, 30, 67, 176},
+		std::vector<int>{0, -46, -25, -12, 17, 53, 196},
+		std::vector<int>{0, -37, -7, 1, 32, 39, 169},
+		std::vector<int>{0, -46, -18, -6, 23, 59, 195},
+		std::vector<int>{0, -43, -24, 2, 18, 65, 161},
+		std::vector<int>{0, -46, -31, -2, 28, 71, 163},
+		std::vector<int>{0, -38, -20, 0, 23, 61, 176},
+		std::vector<int>{0, -18, -16, 5, 25, 55, 150},
+		std::vector<int>{0, -29, -17, 2, 24, 46, 182},
+		std::vector<int>{0, -40, -13, 1, 19, 55, 176},
+		std::vector<int>{0, -37, -19, -1, 15, 60, 175},
+		std::vector<int>{0, -33, -18, 1, 25, 58, 157},
+		std::vector<int>{0, -36, -12, 6, 26, 58, 148},
+		std::vector<int>{0, -35, -9, 7, 24, 63, 155},
+		std::vector<int>{0, -12, -17, 3, 35, 66, 173},
+		std::vector<int>{0, 3, -11, 6, 21, 34, 179},
+		std::vector<int>{0, -23, -12, -1, 14, 8, 162},
+		std::vector<int>{0, -41, -12, -12, 6, 2, 149},
+		std::vector<int>{0, -26, -24, -9, 3, 24, 155},
+		std::vector<int>{0, -27, -36, -2, 17, 20, 149},
+		std::vector<int>{0, -16, -13, 10, 3, 15, 167},
+		std::vector<int>{0, -15, -13, 13, 22, 58, 219},
+
+	}},
+	1);
+
 TunableArrayBucketed PassedPawnBonusNoEnemiesAheadBonus(
 	chess::PieceType::PAWN,
 	std::array<std::vector<int>, PSQTBucketCount>{{
