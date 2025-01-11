@@ -17,7 +17,6 @@ using u64 = uint64_t;
 constexpr int enemyKingBaseIndex = psqtIndexCount / 2;
 const static int numParameters = psqtIndexCount +
                                  // DoubledPawnPenalty.size
-                                 IsolatedPawnPenalty.size +
                                  OpenFileRookBonus.size +
                                  SemiOpenFileRookBonus.size +
                                  SemiOpenFileKingPenalty.size +
@@ -27,6 +26,7 @@ const static int numParameters = psqtIndexCount +
                                  PieceAttackedByPawnPenalty.size +
 
                                  // Arrays
+                                 IsolatedPawnPenalty.tunableSize +
                                  PawnPhalanxBonus.tunableSize +
                                  BadBishop_SameColorPawnsPenalty.tunableSize +
                                  BadBishop_BlockedCentralPawnsPenalty.tunableSize +
@@ -103,7 +103,6 @@ public:
         add_piece_values(5, 0, 64, 0); // Kings
 
         // DoubledPawnPenalty.add(result);
-        IsolatedPawnPenalty.add(result);
         OpenFileRookBonus.add(result);
         SemiOpenFileRookBonus.add(result);
         SemiOpenFileKingPenalty.add(result);
@@ -113,6 +112,7 @@ public:
         PieceAttackedByPawnPenalty.add(result);
 
         // Arrays
+        IsolatedPawnPenalty.add(result);
         PawnPhalanxBonus.add(result);
         BadBishop_SameColorPawnsPenalty.add(result);
         BadBishop_BlockedCentralPawnsPenalty.add(result);
@@ -239,9 +239,6 @@ public:
         ss << "public static class EvaluationParams" << std::endl
            << "{" << std::endl;
 
-        name = NAME(IsolatedPawnPenalty);
-        IsolatedPawnPenalty.to_csharp(parameters, ss, name);
-
         name = NAME(OpenFileRookBonus);
         OpenFileRookBonus.to_csharp(parameters, ss, name);
 
@@ -264,6 +261,9 @@ public:
         PieceAttackedByPawnPenalty.to_csharp(parameters, ss, name);
 
         // Arrays
+        name = NAME(IsolatedPawnPenalty);
+        IsolatedPawnPenalty.to_csharp(parameters, ss, name);
+
         name = NAME(PawnPhalanxBonus);
         PawnPhalanxBonus.to_csharp(parameters, ss, name);
 
@@ -334,9 +334,6 @@ public:
         // name = NAME(DoubledPawnPenalty);
         // DoubledPawnPenalty.to_json(parameters, ss, name);
 
-        name = NAME(IsolatedPawnPenalty);
-        IsolatedPawnPenalty.to_cpp(parameters, ss, name);
-
         name = NAME(OpenFileRookBonus);
         OpenFileRookBonus.to_cpp(parameters, ss, name);
 
@@ -359,6 +356,10 @@ public:
         PieceAttackedByPawnPenalty.to_cpp(parameters, ss, name);
 
         // Arrays
+        name = NAME(IsolatedPawnPenalty);
+        IsolatedPawnPenalty.to_cpp(parameters, ss, name);
+        ss << "\n";
+
         name = NAME(PawnPhalanxBonus);
         PawnPhalanxBonus.to_cpp(parameters, ss, name);
         ss << "\n";
@@ -474,8 +475,9 @@ int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int sa
     // Isolated pawn
     if ((sameSidePawns & IsolatedPawnMasks[squareIndex]) == 0) // isIsolatedPawn
     {
-        packedBonus += IsolatedPawnPenalty.packed;
-        IncrementCoefficients(coefficients, IsolatedPawnPenalty.index, color);
+        const auto pawnBucket = PawnBucketLayout[squareIndex];
+        packedBonus += IsolatedPawnPenalty.packed[pawnBucket];
+        IncrementCoefficients(coefficients, IsolatedPawnPenalty.index + pawnBucket - IsolatedPawnPenalty.start, color);
     }
 
     // Passed pawn
