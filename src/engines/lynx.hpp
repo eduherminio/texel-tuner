@@ -462,6 +462,7 @@ int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int sa
     auto oppositeSidePieces = blackPieces;
     auto passedPawnMask = WhitePassedPawnMasks[squareIndex];
     auto rank = Rank[squareIndex];
+    auto pawnBucketIndex = squareIndex;
 
     if (color == chess::Color::BLACK)
     {
@@ -470,12 +471,13 @@ int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int sa
         oppositeSidePieces = whitePieces;
         passedPawnMask = BlackPassedPawnMasks[squareIndex];
         rank = 7 - rank;
+        pawnBucketIndex ^= 56;
     }
 
     // Isolated pawn
     if ((sameSidePawns & IsolatedPawnMasks[squareIndex]) == 0) // isIsolatedPawn
     {
-        const auto pawnBucket = PawnBucketLayout[squareIndex];
+        const auto pawnBucket = PawnBucketLayout[pawnBucketIndex];
         packedBonus += IsolatedPawnPenalty.packed[pawnBucket];
         IncrementCoefficients(coefficients, IsolatedPawnPenalty.index + pawnBucket - IsolatedPawnPenalty.start, color);
     }
