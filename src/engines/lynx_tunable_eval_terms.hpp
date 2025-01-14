@@ -6048,7 +6048,7 @@ TunableArrayBucketed PassedPawnBonus(
 		std::vector<int>{0, -15, -13, 13, 22, 58, 219},
 
 	}},
-	1);
+	0);
 
 TunableArrayBucketed PassedPawnBonusNoEnemiesAheadBonus(
 	chess::PieceType::PAWN,
@@ -6104,7 +6104,7 @@ TunableArrayBucketed PassedPawnBonusNoEnemiesAheadBonus(
 		std::vector<int>{0, -9, -3, 20, 61, 101, 54},
 
 	}},
-	1);
+	0);
 
 TunableArrayBucketed PieceProtectedByPawnBonus(
 	chess::PieceType::PAWN,

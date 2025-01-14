@@ -131,8 +131,8 @@ public:
         PassedPawnBonusNoEnemiesAheadBonus.add(result);
         PieceProtectedByPawnBonus.add(result);
 
-        assert(PassedPawnBonus.bucketTunableSize == 6);
-        assert(PassedPawnBonusNoEnemiesAheadBonus.bucketTunableSize == 6);
+        assert(PassedPawnBonus.bucketTunableSize == 7);
+        assert(PassedPawnBonusNoEnemiesAheadBonus.bucketTunableSize == 7);
         assert(PieceProtectedByPawnBonus.bucketTunableSize == 5);
         assert(FriendlyKingDistanceToPassedPawnBonus.tunableSize == 7);
         assert(EnemyKingDistanceToPassedPawnPenalty.tunableSize == 7);
@@ -461,6 +461,7 @@ int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int sa
     auto oppositeSidePieces = blackPieces;
     auto passedPawnMask = WhitePassedPawnMasks[squareIndex];
     auto rank = Rank[squareIndex];
+    auto pawnBucket = PawnBucketLayout[squareIndex];
 
     if (color == chess::Color::BLACK)
     {
@@ -469,6 +470,7 @@ int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int sa
         oppositeSidePieces = whitePieces;
         passedPawnMask = BlackPassedPawnMasks[squareIndex];
         rank = 7 - rank;
+        pawnBucket = PawnBucketLayout[squareIndex ^ 56];
     }
 
     // Isolated pawn
@@ -481,14 +483,14 @@ int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int sa
     // Passed pawn
     if ((opposideSidePawns & passedPawnMask) == 0)
     {
-        packedBonus += PassedPawnBonus.packed(bucket, rank);
-        IncrementCoefficients(coefficients, PassedPawnBonus.index(bucket, rank - PassedPawnBonus.start), color); // There's no coefficient for rank 0
+        packedBonus += PassedPawnBonus.packed(bucket, pawnBucket);
+        IncrementCoefficients(coefficients, PassedPawnBonus.index(bucket, pawnBucket - PassedPawnBonus.start), color); // There's no coefficient for rank 0
 
         // Passed pawn without opponent pieces ahead (in its passed pawn mask)
         if ((oppositeSidePieces & passedPawnMask) == 0)
         {
-            packedBonus += PassedPawnBonusNoEnemiesAheadBonus.packed(bucket, rank);
-            IncrementCoefficients(coefficients, PassedPawnBonusNoEnemiesAheadBonus.index(bucket, rank - PassedPawnBonusNoEnemiesAheadBonus.start), color); // There's no coefficient for rank 0
+            packedBonus += PassedPawnBonusNoEnemiesAheadBonus.packed(bucket, pawnBucket);
+            IncrementCoefficients(coefficients, PassedPawnBonusNoEnemiesAheadBonus.index(bucket, pawnBucket - PassedPawnBonusNoEnemiesAheadBonus.start), color); // There's no coefficient for rank 0
         }
 
         // King distance to passed pawn
