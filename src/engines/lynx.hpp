@@ -40,11 +40,11 @@ const static int numParameters = psqtIndexCount +
                                  QueenMobilityBonus.tunableSize +
 
                                  // Bucketed arrays
-                                 PassedPawnBonus.size +                    // PSQTBucketCount * 6, removing 1 rank values
-                                 PassedPawnEnemyBonus.size +               // PSQTBucketCount * 6, removing 1 rank values
-                                 PassedPawnBonusNoEnemiesAheadBonus.size + // PSQTBucketCount * 6, removing 1 rank values
+                                 PassedPawnBonus.size +                         // PSQTBucketCount * 6, removing 1 rank values
+                                 PassedPawnEnemyBonus.size +                    // PSQTBucketCount * 6, removing 1 rank values
+                                 PassedPawnBonusNoEnemiesAheadBonus.size +      // PSQTBucketCount * 6, removing 1 rank values
                                  PassedPawnBonusNoEnemiesAheadEnemyBonus.size + // PSQTBucketCount * 6, removing 1 rank values
-                                 PieceProtectedByPawnBonus.size;           // PSQTBucketCount * 6, removing 1 rank values
+                                 PieceProtectedByPawnBonus.size;                // PSQTBucketCount * 6, removing 1 rank values
 
 class Lynx
 {
@@ -135,10 +135,10 @@ public:
         PassedPawnBonusNoEnemiesAheadEnemyBonus.add(result);
         PieceProtectedByPawnBonus.add(result);
 
-        assert(PassedPawnBonus.bucketTunableSize == 6);
-        assert(PassedPawnEnemyBonus.bucketTunableSize == 6);
-        assert(PassedPawnBonusNoEnemiesAheadBonus.bucketTunableSize == 6);
-        assert(PassedPawnBonusNoEnemiesAheadEnemyBonus.bucketTunableSize == 6);
+        assert(PassedPawnBonus.bucketTunableSize == 12);
+        assert(PassedPawnEnemyBonus.bucketTunableSize == 12);
+        assert(PassedPawnBonusNoEnemiesAheadBonus.bucketTunableSize == 12);
+        assert(PassedPawnBonusNoEnemiesAheadEnemyBonus.bucketTunableSize == 12);
         assert(PieceProtectedByPawnBonus.bucketTunableSize == 5);
         assert(FriendlyKingDistanceToPassedPawnBonus.tunableSize == 7);
         assert(EnemyKingDistanceToPassedPawnPenalty.tunableSize == 7);
@@ -459,7 +459,7 @@ void ResetLS1B(std::uint64_t &board)
     board &= (board - 1);
 }
 
-int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int oppositeSideBucket,  int sameSideKingSquare, int oppositeSideKingSquare, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
+int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int oppositeSideBucket, int sameSideKingSquare, int oppositeSideKingSquare, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
 {
     int packedBonus = 0;
     // auto doublePawnsCount = chess::builtin::popcount(GetPieceSwappingEndianness(board, chess::PieceType::PAWN, color) & (FileMasks[squareIndex]));
@@ -479,6 +479,7 @@ int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int op
     auto oppositeSidePieces = blackPieces;
     auto passedPawnMask = WhitePassedPawnMasks[squareIndex];
     auto rank = Rank[squareIndex];
+    auto semiRank = SemiRankBucket[squareIndex];
 
     if (color == chess::Color::BLACK)
     {
@@ -487,6 +488,7 @@ int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int op
         oppositeSidePieces = whitePieces;
         passedPawnMask = BlackPassedPawnMasks[squareIndex];
         rank = 7 - rank;
+        semiRank = SemiRankBucket[squareIndex ^ 56];
     }
 
     // Isolated pawn
@@ -499,20 +501,20 @@ int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int op
     // Passed pawn
     if ((opposideSidePawns & passedPawnMask) == 0)
     {
-        packedBonus += PassedPawnBonus.packed(bucket, rank);
-        IncrementCoefficients(coefficients, PassedPawnBonus.index(bucket, rank - PassedPawnBonus.start), color); // There's no coefficient for rank 0
+        packedBonus += PassedPawnBonus.packed(bucket, semiRank);
+        IncrementCoefficients(coefficients, PassedPawnBonus.index(bucket, semiRank - PassedPawnBonus.start), color); // There's no coefficient for rank 0
 
-        packedBonus += PassedPawnEnemyBonus.packed(oppositeSideBucket, rank);
-        IncrementCoefficients(coefficients, PassedPawnEnemyBonus.index(oppositeSideBucket, rank - PassedPawnEnemyBonus.start), color); // There's no coefficient for rank 0
+        packedBonus += PassedPawnEnemyBonus.packed(oppositeSideBucket, semiRank);
+        IncrementCoefficients(coefficients, PassedPawnEnemyBonus.index(oppositeSideBucket, semiRank - PassedPawnEnemyBonus.start), color); // There's no coefficient for rank 0
 
         // Passed pawn without opponent pieces ahead (in its passed pawn mask)
         if ((oppositeSidePieces & passedPawnMask) == 0)
         {
-            packedBonus += PassedPawnBonusNoEnemiesAheadBonus.packed(bucket, rank);
-            IncrementCoefficients(coefficients, PassedPawnBonusNoEnemiesAheadBonus.index(bucket, rank - PassedPawnBonusNoEnemiesAheadBonus.start), color); // There's no coefficient for rank 0
+            packedBonus += PassedPawnBonusNoEnemiesAheadBonus.packed(bucket, semiRank);
+            IncrementCoefficients(coefficients, PassedPawnBonusNoEnemiesAheadBonus.index(bucket, semiRank - PassedPawnBonusNoEnemiesAheadBonus.start), color); // There's no coefficient for rank 0
 
-            packedBonus += PassedPawnBonusNoEnemiesAheadEnemyBonus.packed(oppositeSideBucket, rank);
-            IncrementCoefficients(coefficients, PassedPawnBonusNoEnemiesAheadEnemyBonus.index(oppositeSideBucket, rank - PassedPawnBonusNoEnemiesAheadEnemyBonus.start), color); // There's no coefficient for rank 0
+            packedBonus += PassedPawnBonusNoEnemiesAheadEnemyBonus.packed(oppositeSideBucket, semiRank);
+            IncrementCoefficients(coefficients, PassedPawnBonusNoEnemiesAheadEnemyBonus.index(oppositeSideBucket, semiRank - PassedPawnBonusNoEnemiesAheadEnemyBonus.start), color); // There's no coefficient for rank 0
         }
 
         // King distance to passed pawn
@@ -801,7 +803,7 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
             ++pieceCount[pieceIndex];
 
             packedScore += AdditionalPieceEvaluation(pieceSquareIndex, pieceIndex, whiteBucket, blackBucket, whiteKing, blackKing, blackPawnAttacks, board, chess::Color::WHITE, coefficients);
- 
+
             if (pieceIndex == 0)
             {
                 IncrementCoefficients(coefficients,
