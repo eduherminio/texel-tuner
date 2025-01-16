@@ -41,11 +41,11 @@ const static int numParameters = psqtIndexCount +
                                  QueenMobilityBonus.tunableSize +
 
                                  // Bucketed arrays
-                                 PassedPawnBonus.size +                    // PSQTBucketCount * 6, removing 1 rank values
-                                 PassedPawnEnemyBonus.size +               // PSQTBucketCount * 6, removing 1 rank values
-                                 PassedPawnBonusNoEnemiesAheadBonus.size + // PSQTBucketCount * 6, removing 1 rank values
+                                 PassedPawnBonus.size +                         // PSQTBucketCount * 6, removing 1 rank values
+                                 PassedPawnEnemyBonus.size +                    // PSQTBucketCount * 6, removing 1 rank values
+                                 PassedPawnBonusNoEnemiesAheadBonus.size +      // PSQTBucketCount * 6, removing 1 rank values
                                  PassedPawnBonusNoEnemiesAheadEnemyBonus.size + // PSQTBucketCount * 6, removing 1 rank values
-                                 PieceProtectedByPawnBonus.size;           // PSQTBucketCount * 6, removing 1 rank values
+                                 PieceProtectedByPawnBonus.size;                // PSQTBucketCount * 6, removing 1 rank values
 
 class Lynx
 {
@@ -113,8 +113,9 @@ public:
         OpenFileKingPenalty.add(result);
         KingShieldBonus.add(result);
         BishopPairBonus.add(result);
-        DoubledPawnPenalty.add(result);
         PieceAttackedByPawnPenalty.add(result);
+
+        DoubledPawnPenalty.add(result);
 
         // Arrays
         PawnPhalanxBonus.add(result);
@@ -268,11 +269,12 @@ public:
         name = NAME(BishopPairBonus);
         BishopPairBonus.to_csharp(parameters, ss, name);
 
-        name = NAME(DoubledPawnPenalty);
-        DoubledPawnPenalty.to_csharp(parameters, ss, name);
-
         name = NAME(PieceAttackedByPawnPenalty);
         PieceAttackedByPawnPenalty.to_csharp(parameters, ss, name);
+
+        // Single bucketed
+        name = NAME(DoubledPawnPenalty);
+        DoubledPawnPenalty.to_csharp(parameters, ss, name);
 
         // Arrays
         name = NAME(PawnPhalanxBonus);
@@ -372,11 +374,12 @@ public:
         name = NAME(BishopPairBonus);
         BishopPairBonus.to_cpp(parameters, ss, name);
 
-        name = NAME(DoubledPawnPenalty);
-        DoubledPawnPenalty.to_cpp(parameters, ss, name);
-
         name = NAME(PieceAttackedByPawnPenalty);
         PieceAttackedByPawnPenalty.to_cpp(parameters, ss, name);
+
+        // Single bucketed
+        name = NAME(DoubledPawnPenalty);
+        DoubledPawnPenalty.to_cpp(parameters, ss, name);
 
         // Arrays
         name = NAME(PawnPhalanxBonus);
@@ -467,7 +470,7 @@ void ResetLS1B(std::uint64_t &board)
     board &= (board - 1);
 }
 
-int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int oppositeSideBucket,  int sameSideKingSquare, int oppositeSideKingSquare, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
+int PawnAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int oppositeSideBucket, int sameSideKingSquare, int oppositeSideKingSquare, const chess::Board &board, const chess::Color &color, coefficients_t &coefficients)
 {
     int packedBonus = 0;
     // auto doublePawnsCount = chess::builtin::popcount(GetPieceSwappingEndianness(board, chess::PieceType::PAWN, color) & (FileMasks[squareIndex]));
@@ -809,7 +812,7 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
             ++pieceCount[pieceIndex];
 
             packedScore += AdditionalPieceEvaluation(pieceSquareIndex, pieceIndex, whiteBucket, blackBucket, whiteKing, blackKing, blackPawnAttacks, board, chess::Color::WHITE, coefficients);
- 
+
             if (pieceIndex == 0)
             {
                 IncrementCoefficients(coefficients,
@@ -918,9 +921,10 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
     auto doubleWhitePawnsCount = chess::builtin::popcount(whitePawns & ShiftUp(whitePawns));
     auto doubleBlackPawnsCount = chess::builtin::popcount(blackPawns & ShiftUp(blackPawns));
 
-    packedScore += DoubledPawnPenalty.packed * (doubleWhitePawnsCount - doubleBlackPawnsCount);
-    IncrementCoefficients(coefficients, DoubledPawnPenalty.index, chess::Color::WHITE, doubleWhitePawnsCount);
-    IncrementCoefficients(coefficients, DoubledPawnPenalty.index, chess::Color::BLACK, doubleBlackPawnsCount);
+    packedScore += DoubledPawnPenalty.packed(whiteBucket) * doubleWhitePawnsCount -
+                   DoubledPawnPenalty.packed(blackBucket) * doubleBlackPawnsCount;
+    IncrementCoefficients(coefficients, DoubledPawnPenalty.index(whiteBucket), chess::Color::WHITE, doubleWhitePawnsCount);
+    IncrementCoefficients(coefficients, DoubledPawnPenalty.index(blackBucket), chess::Color::BLACK, doubleBlackPawnsCount);
 
     // Bishop pair bonus
     if (board.pieces(chess::PieceType::BISHOP, chess::Color::WHITE).count() >= 2)

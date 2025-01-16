@@ -5912,8 +5912,35 @@ TunableSingle SemiOpenFileKingPenalty(-23, 5);
 TunableSingle OpenFileKingPenalty(-65, 3);
 TunableSingle KingShieldBonus(24, -3);
 TunableSingle BishopPairBonus(30, 72);
-TunableSingle DoubledPawnPenalty(30, 72);
 TunableSingle PieceAttackedByPawnPenalty(-48, -33);
+
+TunableSingleBucketed DoubledPawnPenalty(std::array<i32, PSQTBucketCount>(
+    {
+        S(-8, -29),
+        S(-18, -24),
+        S(-9, -35),
+        S(-3, -33),
+        S(-20, -23),
+        S(-15, -26),
+        S(-19, -31),
+        S(-15, -20),
+        S(-7, -31),
+        S(-12, -31),
+        S(-7, -35),
+        S(-11, -32),
+        S(-10, -31),
+        S(-12, -29),
+        S(-1, -28),
+        S(-2, -44),
+        S(-0, -52),
+        S(-21, -47),
+        S(-56, -26),
+        S(-51, -26),
+        S(38, -49),
+        S(36, -58),
+        S(93, -53),
+    }));
+
 TunableArray PawnPhalanxBonus(
 	chess::PieceType::PAWN,
 	std::vector<int>{0, 4, 21, 28, 60, 210, -51},
