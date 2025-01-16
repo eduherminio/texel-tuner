@@ -24,6 +24,7 @@ const static int numParameters = psqtIndexCount +
                                  OpenFileKingPenalty.size +
                                  KingShieldBonus.size +
                                  BishopPairBonus.size +
+                                 DoubledPawnPenalty.size +
                                  PieceAttackedByPawnPenalty.size +
 
                                  // Arrays
@@ -112,6 +113,7 @@ public:
         OpenFileKingPenalty.add(result);
         KingShieldBonus.add(result);
         BishopPairBonus.add(result);
+        DoubledPawnPenalty.add(result);
         PieceAttackedByPawnPenalty.add(result);
 
         // Arrays
@@ -266,6 +268,9 @@ public:
         name = NAME(BishopPairBonus);
         BishopPairBonus.to_csharp(parameters, ss, name);
 
+        name = NAME(DoubledPawnPenalty);
+        DoubledPawnPenalty.to_csharp(parameters, ss, name);
+
         name = NAME(PieceAttackedByPawnPenalty);
         PieceAttackedByPawnPenalty.to_csharp(parameters, ss, name);
 
@@ -366,6 +371,9 @@ public:
 
         name = NAME(BishopPairBonus);
         BishopPairBonus.to_cpp(parameters, ss, name);
+
+        name = NAME(DoubledPawnPenalty);
+        DoubledPawnPenalty.to_cpp(parameters, ss, name);
 
         name = NAME(PieceAttackedByPawnPenalty);
         PieceAttackedByPawnPenalty.to_cpp(parameters, ss, name);
@@ -905,6 +913,14 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
         coefficients,
         enemyKingBaseIndex + (48 * PSQTBucketCount) + (64 * PSQTBucketCount * 4) + (64 * whiteBucket) + (blackKing ^ 56),
         chess::Color::BLACK);
+
+    // Doubled pawns
+    auto doubleWhitePawnsCount = chess::builtin::popcount(whitePawns & ShiftUp(whitePawns));
+    auto doubleBlackPawnsCount = chess::builtin::popcount(blackPawns & ShiftUp(blackPawns));
+
+    packedScore += DoubledPawnPenalty.packed * (doubleWhitePawnsCount - doubleBlackPawnsCount);
+    IncrementCoefficients(coefficients, DoubledPawnPenalty.index, chess::Color::WHITE, doubleWhitePawnsCount);
+    IncrementCoefficients(coefficients, DoubledPawnPenalty.index, chess::Color::BLACK, doubleBlackPawnsCount);
 
     // Bishop pair bonus
     if (board.pieces(chess::PieceType::BISHOP, chess::Color::WHITE).count() >= 2)
