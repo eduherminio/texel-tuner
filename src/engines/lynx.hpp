@@ -903,10 +903,10 @@ EvalResult Lynx::get_external_eval_result(const chess::Board &board)
     // Doubled pawns
     auto doubleWhitePawnsCount = chess::builtin::popcount(whitePawns & ShiftUp(whitePawns));
     auto doubleBlackPawnsCount = chess::builtin::popcount(blackPawns & ShiftUp(blackPawns));
-
-    packedScore += DoubledPawnPenalty.packed * (doubleWhitePawnsCount - doubleBlackPawnsCount);
-    IncrementCoefficients(coefficients, DoubledPawnPenalty.index, chess::Color::WHITE, doubleWhitePawnsCount);
-    IncrementCoefficients(coefficients, DoubledPawnPenalty.index, chess::Color::BLACK, doubleBlackPawnsCount);
+    packedScore += DoubledPawnPenalty.packed(whiteBucket) * (doubleWhitePawnsCount);
+    packedScore -= DoubledPawnPenalty.packed(blackBucket) * doubleBlackPawnsCount;
+    IncrementCoefficients(coefficients, DoubledPawnPenalty.index(whiteBucket), chess::Color::WHITE, doubleWhitePawnsCount);
+    IncrementCoefficients(coefficients, DoubledPawnPenalty.index(blackBucket), chess::Color::BLACK, doubleBlackPawnsCount);
 
     // Bishop pair bonus
     if (board.pieces(chess::PieceType::BISHOP, chess::Color::WHITE).count() >= 2)
