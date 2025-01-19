@@ -657,6 +657,11 @@ int BishopAdditionalEvaluation(int squareIndex, int pieceIndex, int bucket, int 
     packedBonus += CheckBonus.packed[noColorPieceIndex] * checksCount;
     IncrementCoefficients(coefficients, CheckBonus.index + noColorPieceIndex - CheckBonus.start, color, checksCount);
 
+    // Major threats
+    const auto threatsCount = (board.pieces(chess::PieceType::ROOK, ~color) | board.pieces(chess::PieceType::QUEEN, ~color)).count();
+    packedBonus += MinorMajorThreatsBonus.packed * threatsCount;
+    IncrementCoefficients(coefficients, MinorMajorThreatsBonus.index, color, threatsCount);
+
     return packedBonus;
 }
 
